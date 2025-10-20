@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .drop-shadow-glow {
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+  }
+}
+
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;

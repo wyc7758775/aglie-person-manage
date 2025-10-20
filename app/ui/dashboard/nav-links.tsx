@@ -1,25 +1,22 @@
 "use client";
 
 import {
-  UserGroupIcon,
   HomeIcon,
-  DocumentDuplicateIcon,
+  HeartIcon,
+  CalendarDaysIcon,
+  CheckCircleIcon,
+  GiftIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { name: "Home", href: "/dashboard", icon: HomeIcon },
-  {
-    name: "requirement",
-    href: "/dashboard/requirement",
-    icon: DocumentDuplicateIcon,
-  },
-  { name: "reward", href: "/dashboard/reward", icon: DocumentDuplicateIcon },
-  { name: "task", href: "/dashboard/task", icon: DocumentDuplicateIcon },
-  { name: "project", href: "/dashboard/project", icon: DocumentDuplicateIcon },
-  { name: "defect", href: "/dashboard/defect", icon: DocumentDuplicateIcon },
+  { name: "Overview", href: "/dashboard/overview", icon: HomeIcon },
+  { name: "Habits", href: "/dashboard/habits", icon: HeartIcon },
+  { name: "Dailies", href: "/dashboard/dailies", icon: CalendarDaysIcon },
+  { name: "To Dos", href: "/dashboard/todos", icon: CheckCircleIcon },
+  { name: "Rewards", href: "/dashboard/rewards", icon: GiftIcon },
 ];
 
 export default function NavLinks() {
