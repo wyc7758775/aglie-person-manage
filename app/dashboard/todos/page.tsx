@@ -31,28 +31,28 @@ export default function TodosPage() {
               title="Organize closet >> Organize clutter"
               description="Time to specify the cluttered area!"
               color="orange"
-              onToggle={() => console.log('Toggle organize closet')}
+              onClick={() => console.log('Toggle organize closet')}
             />
             
             <TaskCard
               title="Join Habitica (Check me off!)"
               description="Time to either complete the To Do, edit it, or remove it."
               color="purple"
-              onToggle={() => console.log('Toggle join habitica')}
+              onClick={() => console.log('Toggle join habitica')}
             />
             
             <TaskCard
               title="Prepare presentation"
               description="Create slides for next week's meeting"
               color="blue"
-              onToggle={() => console.log('Toggle presentation')}
+              onClick={() => console.log('Toggle presentation')}
             />
             
             <TaskCard
               title="Buy groceries"
               description="Weekly shopping for household items"
               color="green"
-              onToggle={() => console.log('Toggle groceries')}
+              onClick={() => console.log('Toggle groceries')}
             />
           </div>
           

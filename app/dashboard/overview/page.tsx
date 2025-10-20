@@ -253,9 +253,9 @@ export default function Page() {
                   title={habit.title}
                   description={habit.description}
                   color={habit.color}
-                  score={habit.score}
+                  points={habit.score}
                   completed={habit.completed}
-                  onToggle={() => handleToggleTask(habit.id, 'habits')}
+                  onClick={() => handleToggleTask(habit.id, 'habits')}
                 />
               ))
             ) : (
@@ -282,9 +282,9 @@ export default function Page() {
                   title={daily.title}
                   description={daily.description}
                   color={daily.color}
-                  score={daily.score}
+                  points={daily.score}
                   completed={daily.completed}
-                  onToggle={() => handleToggleTask(daily.id, 'dailies')}
+                  onClick={() => handleToggleTask(daily.id, 'dailies')}
                 />
               ))
             ) : (
@@ -311,9 +311,9 @@ export default function Page() {
                   title={todo.title}
                   description={todo.description}
                   color={todo.color}
-                  score={todo.score}
+                  points={todo.score}
                   completed={todo.completed}
-                  onToggle={() => handleToggleTask(todo.id, 'todos')}
+                  onClick={() => handleToggleTask(todo.id, 'todos')}
                 />
               ))
             ) : (

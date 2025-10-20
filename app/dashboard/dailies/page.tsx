@@ -31,24 +31,24 @@ export default function DailiesPage() {
               title="Morning meditation"
               description="10 minutes of mindfulness"
               color="purple"
-              score={12}
-              onToggle={() => console.log('Toggle meditation')}
+              points={12}
+              onClick={() => console.log('Toggle meditation')}
             />
             
             <TaskCard
               title="Check emails"
               description="Review and respond to important emails"
               color="blue"
-              score={8}
-              onToggle={() => console.log('Toggle emails')}
+              points={8}
+              onClick={() => console.log('Toggle emails')}
             />
             
             <TaskCard
               title="Plan tomorrow"
               description="Review schedule and prepare for next day"
               color="orange"
-              score={10}
-              onToggle={() => console.log('Toggle planning')}
+              points={10}
+              onClick={() => console.log('Toggle planning')}
             />
           </div>
           

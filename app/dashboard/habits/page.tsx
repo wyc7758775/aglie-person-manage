@@ -31,24 +31,24 @@ export default function HabitsPage() {
               title="Drink 8 glasses of water"
               description="Stay hydrated throughout the day"
               color="blue"
-              score={15}
-              onToggle={() => console.log('Toggle water habit')}
+              points={15}
+              onClick={() => console.log('Toggle water habit')}
             />
             
             <TaskCard
               title="Exercise for 30 minutes"
               description="Daily physical activity"
               color="green"
-              score={20}
-              onToggle={() => console.log('Toggle exercise habit')}
+              points={20}
+              onClick={() => console.log('Toggle exercise habit')}
             />
             
             <TaskCard
               title="Read for 20 minutes"
               description="Expand your knowledge"
               color="purple"
-              score={10}
-              onToggle={() => console.log('Toggle reading habit')}
+              points={10}
+              onClick={() => console.log('Toggle reading habit')}
             />
           </div>
           
