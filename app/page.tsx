@@ -5,18 +5,86 @@
 
 "use client";
 
-import AcmeLogo from "@/app/ui/acme-logo";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import {
-  CalendarIcon,
-  CheckCircleIcon,
-  ClipboardIcon,
-  ChartBarIcon,
-} from "@heroicons/react/24/outline";
-import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import AgButton from "@/app/ui/ag-button";
+import { ToastContainer } from "@/app/ui/toast";
+
+// 声明全局showToast方法
+declare global {
+  interface Window {
+    showToast?: (message: string, type: 'success' | 'error' | 'info', duration?: number) => void;
+  }
+}
 
 export default function Page() {
+  const [nickname, setNickname] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info', duration = 3000) => {
+    if (window.showToast) {
+      window.showToast(message, type, duration);
+    }
+  };
+
+  // 防抖函数
+  const debounce = (func: Function, delay: number) => {
+    let timeoutId: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func.apply(null, args), delay);
+    };
+  };
+
+  const loginAction = async () => {
+    if (!nickname || !password) {
+      showToast('请填写昵称和密码', 'error');
+      return;
+    }
+
+    if (isLoading) return; // 防止重复点击
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nickname: nickname,
+          password: password
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('登录成功:', data.user);
+        showToast(`欢迎回来，${data.user.nickname}！`, 'success');
+        
+        // 延迟跳转，让用户看到成功提示
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 1500);
+      } else {
+        console.error('登录失败:', data.message);
+        showToast(`登录失败: ${data.message}`, 'error');
+      }
+    } catch (error) {
+      console.error('登录请求失败:', error);
+      showToast('登录请求失败，请稍后重试', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 使用防抖的登录函数
+  const handleLogin = debounce(loginAction, 300);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-orange-100 via-pink-50 to-purple-100 relative overflow-hidden">
       {/* 主要布局容器 */}
@@ -36,60 +104,74 @@ export default function Page() {
                 <h2 className="text-2xl font-semibold text-gray-800">Log in</h2>
               </div>
 
-              <form className="space-y-4 mb-4">
-                {/* 邮箱输入框 */}
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg
-                      className="h-5 w-5 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="email"
-                    placeholder="e-mail address"
-                    className="w-full pl-10 pr-4 py-3 bg-white/50 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent text-gray-800 placeholder-gray-500"
-                  />
-                </div>
+              <form className="space-y-4 mb-4" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+                {/* 昵称输入框 */}
+                 <div className="relative">
+                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                     <svg
+                       className="h-5 w-5 text-gray-400"
+                       fill="none"
+                       viewBox="0 0 24 24"
+                       stroke="currentColor"
+                     >
+                       <path
+                         strokeLinecap="round"
+                         strokeLinejoin="round"
+                         strokeWidth={2}
+                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                       />
+                     </svg>
+                   </div>
+                   <input
+                     type="text"
+                     placeholder="nickname"
+                     value={nickname}
+                     onChange={(e) => setNickname(e.target.value)}
+                     className="w-full pl-10 pr-4 py-3 bg-white/50 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent text-gray-800 placeholder-gray-500"
+                   />
+                 </div>
 
                 {/* 密码输入框 */}
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg
-                      className="h-5 w-5 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="password"
-                    placeholder="password"
-                    className="w-full pl-10 pr-20 py-3 bg-white/50 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent text-gray-800 placeholder-gray-500"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    I forgot
-                  </button>
-                </div>
+                 <div className="relative">
+                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                     <svg
+                       className="h-5 w-5 text-gray-400"
+                       fill="none"
+                       viewBox="0 0 24 24"
+                       stroke="currentColor"
+                     >
+                       <path
+                         strokeLinecap="round"
+                         strokeLinejoin="round"
+                         strokeWidth={2}
+                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                       />
+                     </svg>
+                   </div>
+                   <input
+                     type={showPassword ? "text" : "password"}
+                     placeholder="password"
+                     value={password}
+                     onChange={(e) => setPassword(e.target.value)}
+                     className="w-full pl-10 pr-12 py-3 bg-white/50 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent text-gray-800 placeholder-gray-500"
+                   />
+                   <button
+                     type="button"
+                     onClick={() => setShowPassword(!showPassword)}
+                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                   >
+                     {showPassword ? (
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                       </svg>
+                     ) : (
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                       </svg>
+                     )}
+                   </button>
+                 </div>
 
                 {/* 登录按钮 */}
                 <div className="flex items-center justify-between">
@@ -102,7 +184,8 @@ export default function Page() {
                   <AgButton
                     variant="primary"
                     size="md"
-                    onClick={() => console.log('Login clicked')}
+                    onClick={handleLogin}
+                    disabled={isLoading}
                     icon={
                       <svg
                         className="w-4 h-4"
@@ -119,7 +202,7 @@ export default function Page() {
                       </svg>
                     }
                   >
-                    Login
+                    {isLoading ? 'Logging in...' : 'Login'}
                   </AgButton>
                 </div>
               </form>
@@ -236,6 +319,9 @@ export default function Page() {
           </div>
         </div>
       </div>
+      
+      {/* Toast容器 */}
+      <ToastContainer />
     </main>
   );
 }

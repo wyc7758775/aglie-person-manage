@@ -4,9 +4,22 @@
 // However, these types are generated automatically if you're using an ORM such as Prisma.
 export type User = {
   id: string;
-  name: string;
-  email: string;
+  nickname: string;
   password: string;
+};
+
+export type LoginRequest = {
+  nickname: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  success: boolean;
+  message: string;
+  user?: {
+    id: string;
+    nickname: string;
+  };
 };
 
 export type Customer = {

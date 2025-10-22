@@ -3,9 +3,23 @@
 const users = [
   {
     id: '410544b2-4001-4271-9855-fec4b6a6442a',
-    name: 'User',
-    email: 'user@nextmail.com',
+    nickname: 'admin',
     password: '123456',
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440000',
+    nickname: 'testuser',
+    password: 'password123',
+  },
+  {
+    id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+    nickname: '敏捷小助手',
+    password: 'agile2024',
+  },
+  {
+    id: '6ba7b811-9dad-11d1-80b4-00c04fd430c8',
+    nickname: 'developer',
+    password: 'dev123',
   },
 ];
 
