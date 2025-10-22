@@ -41,14 +41,13 @@ export default function TaskCard({
   };
 
   return (
-    <div
-      className={clsx(
-        'relative rounded-md shadow-sm transition-all mb-2',
-        colorClasses[color],
-        {
-          'opacity-60': completed,
-        }
-      )}
+    <div 
+      className={`
+        relative p-3 rounded-lg border transition-all duration-200 cursor-pointer
+        ${completed ? 'bg-gray-100 border-gray-300 text-gray-700' : `bg-${color}-100 border-${color}-300 text-${color}-800`}
+        hover:shadow-md hover:scale-[1.01]
+      `}
+      onClick={onClick}
     >
       <div className="flex items-start justify-between p-3">
         <div className="flex items-start space-x-3">

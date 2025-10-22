@@ -27,10 +27,10 @@ export default function SectionContainer({
   children
 }: SectionContainerProps) {
   return (
-    <div className="rounded-lg bg-purple-50 p-2 shadow-sm">
-      <div className="mb-1 flex items-center justify-between border-b border-gray-200 pb-1">
+    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md border border-[#EE3F4D]/10">
+      <div className="mb-1 flex items-center justify-between border-b border-[#EE3F4D]/20 pb-2">
         <div className="flex items-center space-x-2">
-          <h2 className="text-base font-medium text-gray-900">{title}</h2>
+          <h2 className="text-xl font-bold text-[#333]">{title}</h2>
           {badge !== undefined && (
             <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
               {badge}

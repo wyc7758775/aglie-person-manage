@@ -24,7 +24,7 @@ export default function TopNav() {
   ];
 
   return (
-    <div className="w-full bg-gradient-to-r from-purple-800 to-indigo-700 text-white shadow-md">
+    <div className="w-full bg-gradient-to-r from-[#F9FFD3] to-[#EE3F4D] text-[#333] shadow-md">
       <div className="px-3 py-0.5">
         <div className="flex items-center justify-between">
           {/* Logo和品牌 */}
@@ -43,9 +43,9 @@ export default function TopNav() {
                 key={link.name}
                 href={link.href}
                 className={clsx(
-                  "px-2 py-0.5 text-xs font-medium rounded-md transition-all duration-200 hover:bg-white/10 hover:shadow-inner",
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 hover:bg-[#EE3F4D]/20 hover:shadow-inner",
                   {
-                    "bg-white/20 font-bold shadow-inner": pathname === link.href || pathname.startsWith(link.href + '/'),
+                    "bg-[#EE3F4D]/30 font-bold shadow-inner text-[#333]": pathname === link.href || pathname.startsWith(link.href + '/'),
                   }
                 )}
               >
