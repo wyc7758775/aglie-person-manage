@@ -2,6 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 字体优化 */
+@layer base {
+  html {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-variant-ligatures: common-ligatures;
+  }
+  
+  body {
+    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* 标题字体优化 */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+  
+  /* 代码字体 */
+  code, pre {
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  }
+  
+  /* 登录页面字体优化 */
+  .login-title {
+    font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  
+  .login-subtitle {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.005em;
+  }
+  
+  .login-hint {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+  }
+  
+  .brand-text {
+    font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+}
+
 /* 登录页面动画效果 */
 @keyframes blob {
   0% {

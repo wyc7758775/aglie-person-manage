@@ -208,9 +208,10 @@ export default function Page() {
         showToast(`欢迎回来，${data.user.nickname}！`, "success");
 
         // 延迟跳转，让用户看到成功提示
-        setTimeout(() => {
+        const timer = setTimeout(() => {
           router.push("/dashboard");
-        }, 1500);
+          clearTimeout(timer);
+        }, 200);
       } else {
         console.error("登录失败:", data.message);
         showToast(`登录失败: ${data.message}`, "error");
@@ -244,9 +245,11 @@ export default function Page() {
             <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl p-6 shadow-2xl w-80 flex-[2] mb-4">
               {/* 顶部标题区域 */}
               <div className="flex justify-between items-start mb-4">
-                <div className="text-sm text-gray-600">Agile Person Manage</div>
+                <div className="text-sm text-gray-600 brand-text">
+                  Agile Person Manage
+                </div>
                 <div
-                  className="text-sm text-gray-600 cursor-pointer"
+                  className="text-sm text-gray-600 cursor-pointer brand-text"
                   onClick={() => router.push("/sign-up")}
                 >
                   Sign up
@@ -254,7 +257,9 @@ export default function Page() {
               </div>
 
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold text-gray-800">Log in</h2>
+                <h2 className="text-2xl font-semibold text-gray-800 login-title">
+                  Log in
+                </h2>
               </div>
 
               <form
@@ -306,9 +311,8 @@ export default function Page() {
                 {/* 登录按钮 */}
                 <div className="flex items-center justify-between">
                   <div className="text-left mr-2">
-                    <p className="text-xs text-gray-600 leading-relaxed">
-                      Keep out of reach of children and pets. Keep out of reach
-                      of children and pets.
+                    <p className="text-xs text-gray-600 leading-relaxed login-hint">
+                      Make every day fulfilling and rewarding.
                     </p>
                   </div>
                   <AgButton
@@ -325,8 +329,9 @@ export default function Page() {
 
               {/* 底部文字 */}
               <div className="mt-4 text-center">
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Keep out of reach of children and pets.
+                <p className="text-xs text-gray-600 leading-relaxed login-hint">
+                  Focus on the present, plan for the future, achieve a better
+                  you.
                 </p>
               </div>
             </div>
@@ -349,7 +354,7 @@ export default function Page() {
               <div className="flex items-end justify-end">
                 <button
                   onClick={routerBlog}
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                  className="text-sm text-gray-300 hover:text-white transition-colors brand-text"
                 >
                   About me
                 </button>
@@ -410,7 +415,7 @@ export default function Page() {
 
                   <div className="flex items-center space-x-2">
                     <StarIcon className="w-4 h-4 text-gray-600" />
-                    <span className="text-gray-700 font-medium text-sm">
+                    <span className="text-gray-700 font-medium text-sm brand-text">
                       Star
                     </span>
                   </div>
