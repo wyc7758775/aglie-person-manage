@@ -22,6 +22,20 @@ export type LoginResponse = {
   };
 };
 
+export type RegisterRequest = {
+  nickname: string;
+  password: string;
+};
+
+export type RegisterResponse = {
+  success: boolean;
+  message: string;
+  user?: {
+    id: string;
+    nickname: string;
+  };
+};
+
 export type Customer = {
   id: string;
   name: string;

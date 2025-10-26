@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LoginRequest, LoginResponse } from '@/app/lib/definitions';
-import { findUserByNickname, verifyUserPassword, getSafeUserInfo, validateNickname, validatePassword } from '@/app/lib/auth';
+import { findUserByNickname, verifyUserPassword, getSafeUserInfo, validateNickname, validatePassword } from '@/app/lib/auth-db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 查找用户
-    const user = findUserByNickname(nickname);
+    const user = await findUserByNickname(nickname);
     if (!user) {
       const response: LoginResponse = {
         success: false,
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 验证密码
-    if (!verifyUserPassword(user, password)) {
+    if (!(await verifyUserPassword(user, password))) {
       const response: LoginResponse = {
         success: false,
         message: '密码错误',

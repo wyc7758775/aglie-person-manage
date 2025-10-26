@@ -66,6 +66,49 @@ export function validateNickname(nickname: string): {
 }
 
 /**
+ * 注册新用户
+ */
+export function registerUser(nickname: string, password: string): {
+  success: boolean;
+  message: string;
+  user?: User;
+} {
+  // 验证昵称
+  const nicknameValidation = validateNickname(nickname);
+  if (!nicknameValidation.valid) {
+    return { success: false, message: nicknameValidation.message! };
+  }
+
+  // 验证密码
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.valid) {
+    return { success: false, message: passwordValidation.message! };
+  }
+
+  // 检查用户是否已存在
+  const existingUser = findUserByNickname(nickname);
+  if (existingUser) {
+    return { success: false, message: "用户昵称已存在" };
+  }
+
+  // 创建新用户
+  const newUser: User = {
+    id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    nickname,
+    password, // 在实际项目中应该加密密码
+  };
+
+  // 添加到用户列表（在实际项目中应该保存到数据库）
+  users.push(newUser);
+
+  return {
+    success: true,
+    message: "注册成功",
+    user: newUser,
+  };
+}
+
+/**
  * 验证密码格式
  */
 export function validatePassword(password: string): {
