@@ -235,7 +235,7 @@ export default function Page() {
 
         // 延迟跳转，让用户看到成功提示
         const timer = setTimeout(() => {
-          router.push("/dashboard");
+          router.push("/dashboard/overview");
           clearTimeout(timer);
         }, 200);
       } else {
@@ -348,13 +348,17 @@ export default function Page() {
             {/* 左侧列 - 登录卡片和个人名片 */}
             <div className="flex flex-col h-[540px]">
               {/* 登录卡片 */}
-              <div className={`bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl p-6 w-80 flex-[2] mb-4 relative transition-all duration-[700ms] ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${
-                isSignUpMode ? 'transform translate-x-[120px] translate-y-[20px] scale-108 z-40 shadow-[0_20px_40px_-8px_rgba(0,0,0,0.2)]' : 'transform translate-x-0 translate-y-0 scale-100 z-30 shadow-2xl'
-              }`}
-              style={{
-                height: 'auto',
-                minHeight: 'fit-content'
-              }}>
+              <div
+                className={`bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl p-6 w-80 flex-[2] mb-4 relative transition-all duration-[700ms] ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${
+                  isSignUpMode
+                    ? "transform translate-x-[120px] translate-y-[20px] scale-108 z-40 shadow-[0_20px_40px_-8px_rgba(0,0,0,0.2)]"
+                    : "transform translate-x-0 translate-y-0 scale-100 z-30 shadow-2xl"
+                }`}
+                style={{
+                  height: "auto",
+                  minHeight: "fit-content",
+                }}
+              >
                 {/* 顶部标题区域 */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="text-sm text-gray-600 brand-text">
@@ -421,11 +425,13 @@ export default function Page() {
                   </div>
 
                   {/* 确认密码输入框 - 优化动画 */}
-                  <div className={`transition-all duration-[600ms] ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] overflow-hidden ${
-                    isSignUpMode 
-                      ? 'max-h-[100px] opacity-100 mb-4 transform translate-y-0 scale-100' 
-                      : 'max-h-0 opacity-0 mb-0 transform translate-y-[-15px] scale-90'
-                  }`}>
+                  <div
+                    className={`transition-all duration-[600ms] ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] overflow-hidden ${
+                      isSignUpMode
+                        ? "max-h-[100px] opacity-100 mb-4 transform translate-y-0 scale-100"
+                        : "max-h-0 opacity-0 mb-0 transform translate-y-[-15px] scale-90"
+                    }`}
+                  >
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <LockIcon className="h-5 w-5 text-gray-400" />
@@ -529,11 +535,11 @@ export default function Page() {
 
             {/* 右侧信息卡片 - 双层结构 */}
             <div
-                className={`relative w-80 h-[540px] transition-all duration-[900ms] ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] ${
-                  isSignUpMode
-                    ? "transform translate-x-[-130px] translate-y-[-70px] scale-53 rotate-[7deg] opacity-70"
-                    : "transform translate-x-0 translate-y-0 scale-100 rotate-0 opacity-100"
-                }`}
+              className={`relative w-80 h-[540px] transition-all duration-[900ms] ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] ${
+                isSignUpMode
+                  ? "transform translate-x-[-130px] translate-y-[-70px] scale-53 rotate-[7deg] opacity-70"
+                  : "transform translate-x-0 translate-y-0 scale-100 rotate-0 opacity-100"
+              }`}
               style={{
                 zIndex: isSignUpMode ? 2 : 20,
               }}
