@@ -8,14 +8,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AgButton from "@/app/ui/ag-button";
+import InfoCard from "@/app/ui/info-card";
 import { ToastContainer } from "@/app/ui/toast";
 import {
   UserIcon,
   LockIcon,
   EyeIcon,
   EyeOffIcon,
-  ChevronRightIcon,
-  StarIcon,
 } from "@/app/ui/icons";
 
 // 声明全局showToast方法
@@ -24,7 +23,7 @@ declare global {
     showToast?: (
       message: string,
       type: "success" | "error" | "info",
-      duration?: number
+      duration?: number,
     ) => void;
   }
 }
@@ -156,14 +155,20 @@ export default function Page() {
 
     // 自动填充上次登录成功的账号密码
     try {
-      const savedNickname = localStorage.getItem("lastLoginNickname");
-      const savedPassword = localStorage.getItem("lastLoginPassword");
+      if (
+        typeof window !== "undefined" &&
+        window.localStorage &&
+        typeof window.localStorage.getItem === "function"
+      ) {
+        const savedNickname = window.localStorage.getItem("lastLoginNickname");
+        const savedPassword = window.localStorage.getItem("lastLoginPassword");
 
-      if (savedNickname) {
-        setNickname(savedNickname);
-      }
-      if (savedPassword) {
-        setPassword(savedPassword);
+        if (savedNickname) {
+          setNickname(savedNickname);
+        }
+        if (savedPassword) {
+          setPassword(savedPassword);
+        }
       }
     } catch (error) {
       console.log("读取保存的登录信息失败:", error);
@@ -182,7 +187,7 @@ export default function Page() {
   const showToast = (
     message: string,
     type: "success" | "error" | "info",
-    duration = 3000
+    duration = 3000,
   ) => {
     if (window.showToast) {
       window.showToast(message, type, duration);
@@ -227,8 +232,14 @@ export default function Page() {
 
         // 保存登录成功的账号密码
         try {
-          localStorage.setItem("lastLoginNickname", nickname);
-          localStorage.setItem("lastLoginPassword", password);
+          if (
+            typeof window !== "undefined" &&
+            window.localStorage &&
+            typeof window.localStorage.setItem === "function"
+          ) {
+            window.localStorage.setItem("lastLoginNickname", nickname);
+            window.localStorage.setItem("lastLoginPassword", password);
+          }
         } catch (error) {
           console.log("保存登录信息失败:", error);
         }
@@ -300,8 +311,14 @@ export default function Page() {
           setConfirmPassword("");
           // 保存注册成功的账号密码
           try {
-            localStorage.setItem("lastLoginNickname", nickname);
-            localStorage.setItem("lastLoginPassword", password);
+            if (
+              typeof window !== "undefined" &&
+              window.localStorage &&
+              typeof window.localStorage.setItem === "function"
+            ) {
+              window.localStorage.setItem("lastLoginNickname", nickname);
+              window.localStorage.setItem("lastLoginPassword", password);
+            }
           } catch (error) {
             console.log("保存登录信息失败:", error);
           }
@@ -483,8 +500,8 @@ export default function Page() {
                           ? "Signing up..."
                           : "Logging in..."
                         : isSignUpMode
-                        ? "Sign up"
-                        : "Login"}
+                          ? "Sign up"
+                          : "Login"}
                     </AgButton>
                   </div>
                 </form>
@@ -534,25 +551,13 @@ export default function Page() {
             </div>
 
             {/* 右侧信息卡片 - 双层结构 */}
-            <div
-              className={`relative w-80 h-[540px] transition-all duration-[900ms] ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] ${
-                isSignUpMode
-                  ? "transform translate-x-[-130px] translate-y-[-70px] scale-53 rotate-[7deg] opacity-70"
-                  : "transform translate-x-0 translate-y-0 scale-100 rotate-0 opacity-100"
-              }`}
-              style={{
-                zIndex: isSignUpMode ? 2 : 20,
-              }}
-            >
-              {/* 第一层：白色背景底层 */}
-              <div className="absolute inset-0 bg-white rounded-3xl shadow-2xl">
-                {/* 橙色圆形装饰 - 居中对齐 */}
-                <div className="absolute right-1/2 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-gradient-to-br from-orange-300 to-orange-400 rounded-full">
-                  {/* 内部装饰 */}
-                  <div className="absolute top-6 right-6 w-6 h-6 bg-orange-200/40 rounded-full"></div>
-                </div>
-              </div>
-
+            <InfoCard
+              locationInfo={locationInfo}
+              dateInfo={dateInfo}
+              timeInfo={timeInfo}
+              isSignUpMode={isSignUpMode}
+              onJoinInClick={routerJoinInProject}
+            />
               {/* 第二层：毛玻璃效果容器 - 左侧半宽 */}
               <div className="relative z-10 w-40 h-full bg-white/40 backdrop-blur-xl rounded-3xl p-6 border border-white/30">
                 {/*  当前地址 */}
@@ -603,7 +608,6 @@ export default function Page() {
                   </div>
                 </div>
               </div>
-
               {/* Join in 按钮 - 位于第一层右下角 */}
               <div className="absolute bottom-6 right-6">
                 <AgButton
