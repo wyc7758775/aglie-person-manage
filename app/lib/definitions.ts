@@ -1,3 +1,6 @@
+// 用户角色类型
+export type UserRole = 'user' | 'superadmin';
+
 // This file contains type definitions for your data.
 // It describes the shape of the data, and what data type each property should accept.
 // For simplicity of teaching, we're manually defining these types.
@@ -6,6 +9,7 @@ export type User = {
   id: string;
   nickname: string;
   password: string;
+  role?: UserRole;
 };
 
 export type LoginRequest = {
@@ -19,6 +23,7 @@ export type LoginResponse = {
   user?: {
     id: string;
     nickname: string;
+    isAdmin: boolean;
   };
 };
 

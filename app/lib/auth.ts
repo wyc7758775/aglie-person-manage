@@ -1,5 +1,5 @@
 import { users } from "./placeholder-data";
-import { User } from "./definitions";
+import { User, UserRole } from "./definitions";
 
 /**
  * 根据昵称查找用户
@@ -16,21 +16,34 @@ export function findUserById(id: string): User | undefined {
 }
 
 /**
+ * 验证用户是否为超级管理员
+ */
+export function isSuperAdmin(user: User): boolean {
+  return user.role === 'superadmin';
+}
+
+/**
+ * 获取用户角色
+ */
+export function getUserRole(user: User): 'user' | 'superadmin' {
+  return user.role || 'user';
+}
+
+/**
  * 验证用户密码
  */
 export function verifyUserPassword(user: User, password: string): boolean {
-  // 这里简化处理，直接比较明文密码
-  // 实际项目中应该使用 bcrypt.compare() 比较哈希密码
   return user.password === password;
 }
 
 /**
  * 获取安全的用户信息（不包含密码）
  */
-export function getSafeUserInfo(user: User) {
+export function getSafeUserInfo(user: User & { role: UserRole }) {
   return {
     id: user.id,
     nickname: user.nickname,
+    isAdmin: user.role === 'superadmin',
   };
 }
 
@@ -92,10 +105,11 @@ export function registerUser(nickname: string, password: string): {
   }
 
   // 创建新用户
-  const newUser: User = {
+  const newUser: User & { role: UserRole } = {
     id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     nickname,
-    password, // 在实际项目中应该加密密码
+    password,
+    role: 'user',
   };
 
   // 添加到用户列表（在实际项目中应该保存到数据库）

@@ -2,6 +2,23 @@
 
 This file contains guidelines for AI agents working in this repository.
 
+## Project Context
+
+### Purpose
+这个是一个可以提供个人用户使用的项目管理的系统，基于敏捷开发，将自己生活中的所有要做的事情产品化。以符合《人人都是产品经理》这本书的理念。
+
+核心功能模块包括：
+- **任务管理**：爱好、习惯、任务、欲望四种任务类型
+- **项目管理**：支持 life | code 两种项目类型，包含目标与标签
+- **需求管理**：描述功能、用户角色、优先级、截止时间
+- **缺陷管理**：针对代码项目，记录标题、严重程度、状态、关联仓库信息
+- **奖励机制**：基于积分、徽章、等级、兑换的激励系统
+
+### Tech Stack
+- next
+- react
+- TypeScript
+
 ## Build & Development Commands
 
 ```bash

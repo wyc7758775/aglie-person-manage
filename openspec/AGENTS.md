@@ -1,3 +1,7 @@
+ # 基本规则
+ * 以后所有的思考和注释都用中文
+ * Always respond in 中文
+ 
 # OpenSpec Instructions
 
 Instructions for AI coding assistants using OpenSpec for spec-driven development.

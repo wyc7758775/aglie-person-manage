@@ -8,6 +8,7 @@ interface SectionContainerProps {
   activeFilter?: string;
   onFilterChange?: (filter: string) => void;
   onAddClick?: () => void;
+  onClick?: () => void;
   addButtonText?: string;
   children: React.ReactNode;
 }
@@ -23,6 +24,7 @@ export default function SectionContainer({
   activeFilter,
   onFilterChange,
   onAddClick,
+  onClick,
   addButtonText = `Add a ${title.slice(0, -1)}`,
   children
 }: SectionContainerProps) {
@@ -62,14 +64,14 @@ export default function SectionContainer({
         {/* 添加按钮 */}
         {onAddClick && (
           <button
-            onClick={onAddClick}
+            onClick={onClick || onAddClick}
             className="mb-3 flex w-full items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
           >
             <PlusIcon className="mr-1 h-4 w-4" />
             {addButtonText}
           </button>
         )}
-
+      
         {/* 内容区域 */}
         {children}
       </div>

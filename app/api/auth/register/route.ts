@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RegisterRequest, RegisterResponse } from '@/app/lib/definitions';
 import { registerUser, getSafeUserInfo } from '@/app/lib/auth-db';
+import { User } from '@/app/lib/definitions';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     const response: RegisterResponse = {
       success: true,
       message: result.message,
-      user: getSafeUserInfo(result.user!),
+      user: getSafeUserInfo(result.user as User & { role: 'user' }),
     };
 
     return NextResponse.json(response, { status: 201 });

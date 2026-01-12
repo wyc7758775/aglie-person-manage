@@ -1,25 +1,37 @@
 // This file contains placeholder data that you'll be replacing with real data in the Data Fetching chapter:
 // https://nextjs.org/learn/dashboard-app/fetching-data
-const users = [
+import { User, UserRole } from './definitions';
+
+const users: (User & { role: UserRole })[] = [
   {
     id: "410544b2-4001-4271-9855-fec4b6a6442a",
     nickname: "admin",
     password: "123456",
+    role: "user",
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440000",
     nickname: "testuser",
     password: "password123",
+    role: "user",
   },
   {
     id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
     nickname: "敏捷小助手",
     password: "agile2024",
+    role: "user",
   },
   {
     id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
     nickname: "developer",
     password: "dev123",
+    role: "user",
+  },
+  {
+    id: "superadmin-001",
+    nickname: "wuyucun",
+    password: "wyc7758775",
+    role: "superadmin",
   },
 ];
 

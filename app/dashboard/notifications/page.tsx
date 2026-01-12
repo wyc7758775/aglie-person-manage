@@ -1,7 +1,10 @@
+"use client";
+
 import SectionContainer from '@/app/ui/dashboard/section-container';
 import { NotificationIcon, UserIcon } from '@/app/ui/icons';
 import { CalendarIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
+
 
 // 通知类型
 type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'reminder';
@@ -238,10 +241,10 @@ export default function NotificationsPage() {
       </div>
 
       <SectionContainer
-        title="通知列表"
-        badge={notifications.length}
-        filters={filters}
-      >
+          title="通知中心"
+          badge={notifications.length}
+          filters={filters}
+        >
         <div className="space-y-4">
           {notifications.length > 0 ? (
             notifications.map((notification) => (

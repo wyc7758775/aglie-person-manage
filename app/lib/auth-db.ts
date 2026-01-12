@@ -1,4 +1,4 @@
-import { User } from "./definitions";
+import { User, UserRole } from "./definitions";
 import {
   findUserByNickname as dbFindUserByNickname,
   findUserById as dbFindUserById,
@@ -12,22 +12,22 @@ import {
  */
 export async function findUserByNickname(
   nickname: string
-): Promise<User | null> {
-  return await dbFindUserByNickname(nickname);
+): Promise<(User & { role: UserRole }) | null> {
+  return await dbFindUserByNickname(nickname) as (User & { role: UserRole }) | null;
 }
 
 /**
  * 根据ID查找用户
  */
-export async function findUserById(id: string): Promise<User | null> {
-  return await dbFindUserById(id);
+export async function findUserById(id: string): Promise<(User & { role: UserRole }) | null> {
+  return await dbFindUserById(id) as (User & { role: UserRole }) | null;
 }
 
 /**
  * 验证用户密码
  */
 export async function verifyUserPassword(
-  user: User,
+  user: User & { role: UserRole },
   password: string
 ): Promise<boolean> {
   return await dbVerifyUserPassword(user, password);
@@ -36,7 +36,7 @@ export async function verifyUserPassword(
 /**
  * 获取安全的用户信息（不包含密码）
  */
-export function getSafeUserInfo(user: User) {
+export function getSafeUserInfo(user: User & { role: UserRole }) {
   return dbGetSafeUserInfo(user);
 }
 

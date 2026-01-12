@@ -1,9 +1,22 @@
 import bcrypt from 'bcrypt';
-import { User } from './definitions';
+import { User, UserRole } from './definitions';
+import { users as placeholderUsers } from './placeholder-data';
 
-// 内存数据库 - 模拟真实数据库操作
-let users: User[] = [];
-let isInitialized = false;
+// 使用 globalThis 避免开发模式热重载导致数据丢失
+const globalForDb = globalThis as unknown as {
+  users: (User & { role: UserRole })[];
+  isInitialized: boolean;
+};
+
+if (!globalForDb.users) {
+  globalForDb.users = [];
+}
+if (!globalForDb.isInitialized) {
+  globalForDb.isInitialized = false;
+}
+
+const users = globalForDb.users;
+let isInitialized = globalForDb.isInitialized;
 
 /**
  * 初始化数据库表结构
@@ -11,9 +24,19 @@ let isInitialized = false;
 export async function initializeDatabase() {
   try {
     // 清空现有数据
-    users = [];
+    users.length = 0;
     isInitialized = true;
-    
+    globalForDb.isInitialized = true;
+
+    // 从 placeholder-data.ts 加载初始用户
+    for (const user of placeholderUsers) {
+      const hashedPassword = await bcrypt.hash(user.password, 10);
+      users.push({
+        ...user,
+        password: hashedPassword,
+      });
+    }
+
     console.log('内存数据库初始化完成');
     return { success: true };
   } catch (error) {
@@ -51,7 +74,7 @@ export async function findUserById(id: string): Promise<User | null> {
 /**
  * 创建新用户
  */
-export async function createUser(nickname: string, password: string): Promise<User> {
+export async function createUser(nickname: string, password: string, role?: UserRole): Promise<User & { role: UserRole }> {
   try {
     // 检查用户是否已存在
     const existingUser = await findUserByNickname(nickname);
@@ -65,10 +88,11 @@ export async function createUser(nickname: string, password: string): Promise<Us
     // 生成简单的UUID
     const id = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    const newUser: User = {
+    const newUser: User & { role: UserRole } = {
       id,
       nickname,
       password: hashedPassword,
+      role: role || 'user',
     };
     
     users.push(newUser);
@@ -86,7 +110,7 @@ export async function createUser(nickname: string, password: string): Promise<Us
 /**
  * 验证用户密码
  */
-export async function verifyUserPassword(user: User, password: string): Promise<boolean> {
+export async function verifyUserPassword(user: User & { role: UserRole }, password: string): Promise<boolean> {
   try {
     return await bcrypt.compare(password, user.password);
   } catch (error) {
@@ -102,6 +126,7 @@ export function getSafeUserInfo(user: User) {
   return {
     id: user.id,
     nickname: user.nickname,
+    isAdmin: user.role === 'superadmin',
   };
 }
 
@@ -141,5 +166,5 @@ export async function getAllUsers(): Promise<User[]> {
  * 清空所有用户数据（仅用于测试）
  */
 export async function clearAllUsers(): Promise<void> {
-  users = [];
+  users.length = 0;
 }

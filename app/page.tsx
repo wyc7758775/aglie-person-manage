@@ -15,6 +15,7 @@ import {
   LockIcon,
   EyeIcon,
   EyeOffIcon,
+  ChevronRightIcon,
 } from "@/app/ui/icons";
 
 // 声明全局showToast方法
@@ -558,72 +559,10 @@ export default function Page() {
               isSignUpMode={isSignUpMode}
               onJoinInClick={routerJoinInProject}
             />
-              {/* 第二层：毛玻璃效果容器 - 左侧半宽 */}
-              <div className="relative z-10 w-40 h-full bg-white/40 backdrop-blur-xl rounded-3xl p-6 border border-white/30">
-                {/*  当前地址 */}
-                <div className="absolute top-4 left-4 text-left">
-                  <div className="text-gray-600 text-xs font-medium">
-                    {locationInfo.city}
-                  </div>
-                  <div className="text-gray-500 text-xs">
-                    {locationInfo.region}
-                  </div>
-                </div>
-
-                {/* 主要内容 */}
-                <div className="flex flex-col h-full">
-                  {/* 日期部分 */}
-                  <div className="mb-6 mt-8">
-                    <div className="text-4xl font-bold text-gray-900 leading-none">
-                      {dateInfo.weekday}
-                    </div>
-                    <div className="text-2xl font-light text-gray-400 mt-1">
-                      {dateInfo.dayWithSuffix}
-                    </div>
-                  </div>
-
-                  {/* 中间空间 */}
-                  <div className="flex-1"></div>
-
-                  {/* 底部信息 */}
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <div className="text-gray-700 font-medium text-sm">
-                        {timeInfo.displayTime}
-                      </div>
-                      <div className="text-gray-600 text-xs">
-                        {locationInfo.ip}
-                      </div>
-                      <div className="text-gray-600 text-xs">
-                        {locationInfo.country}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <StarIcon className="w-4 h-4 text-gray-600" />
-                      <span className="text-gray-700 font-medium text-sm brand-text">
-                        Star
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* Join in 按钮 - 位于第一层右下角 */}
-              <div className="absolute bottom-6 right-6">
-                <AgButton
-                  variant="primary"
-                  size="md"
-                  onClick={routerJoinInProject}
-                  icon={<ChevronRightIcon className="w-4 h-4" />}
-                >
-                  Join in
-                </AgButton>
-              </div>
-            </div>
           </div>
         </div>
       </div>
-
+ 
       {/* Toast容器 */}
       <ToastContainer />
     </main>
