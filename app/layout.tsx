@@ -1,5 +1,6 @@
 import "@/app/ui/global.css";
 import { notoSansSC } from "@/app/ui/fonts";
+import { LanguageProvider } from "@/app/lib/i18n";
 
 export default function RootLayout({
   children,
@@ -8,7 +9,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${notoSansSC.className} antialiased`}>{children}</body>
+      <body className={`${notoSansSC.className} antialiased`}>
+        <LanguageProvider>{children}</LanguageProvider>
+      </body>
     </html>
   );
 }

@@ -13,50 +13,46 @@ import {
   RewardIcon,
   DefectIcon,
 } from "@/app/ui/icons";
-/**
- * 右侧垂直导航组件
- * 显示应用程序的主要导航链接和用户操作
- */
+import { useLanguage } from "@/app/lib/i18n";
+
 export default function SideNav() {
   const pathname = usePathname();
-  // 状态管理 - 使用统一的指示器位置
+  const { t } = useLanguage();
   const [indicatorPosition, setIndicatorPosition] = useState({
     top: 0,
     show: false,
   });
 
-  // 移动状态跟踪 - 用于椭圆拉伸效果
   const [isMoving, setIsMoving] = useState(false);
 
-  // 主导航链接
   const mainLinks = [
     {
-      name: "Overview",
+      nameKey: "dashboard.nav.overview",
       href: "/dashboard/overview",
       icon: <DashboardIcon className="w-5 h-5" />,
     },
     {
-      name: "Project",
+      nameKey: "dashboard.nav.project",
       href: "/dashboard/project",
       icon: <ProjectIcon className="w-5 h-5" />,
     },
     {
-      name: "Requirement",
+      nameKey: "dashboard.nav.requirement",
       href: "/dashboard/requirement",
       icon: <DatabaseIcon className="w-5 h-5" />,
     },
     {
-      name: "Tasks",
+      nameKey: "dashboard.nav.task",
       href: "/dashboard/task",
       icon: <TaskIcon className="w-5 h-5" />,
     },
     {
-      name: "Defect",
+      nameKey: "dashboard.nav.defect",
       href: "/dashboard/defect",
       icon: <DefectIcon className="w-5 h-5" />,
     },
     {
-      name: "Rewards",
+      nameKey: "dashboard.nav.rewards",
       href: "/dashboard/rewards",
       icon: <RewardIcon className="w-5 h-5" />,
     },
@@ -64,12 +60,12 @@ export default function SideNav() {
 
   const optionsMenus = [
     {
-      name: "Notifications",
+      nameKey: "dashboard.nav.notifications",
       href: "/dashboard/notifications",
       icon: <NotificationIcon className="w-5 h-5" />,
     },
     {
-      name: "Setting",
+      nameKey: "dashboard.nav.setting",
       href: "/dashboard/setting",
       icon: <SettingsIcon className="w-5 h-5 text-gray-500" />,
     },
@@ -188,10 +184,10 @@ export default function SideNav() {
                 pathname === link.href || pathname.startsWith(link.href + "/");
               return (
                 <Link
-                  key={link.name}
+                  key={link.nameKey}
                   href={link.href}
                   className="group relative z-10"
-                  title={link.name}
+                  title={t(link.nameKey)}
                 >
                   <div className="w-10 h-10 flex items-center justify-center transition-all duration-300 ease-in-out rounded-full">
                     <div
@@ -216,10 +212,10 @@ export default function SideNav() {
                 pathname === link.href || pathname.startsWith(link.href + "/");
               return (
                 <Link
-                  key={link.name}
+                  key={link.nameKey}
                   href={link.href}
                   className="group relative z-10"
-                  title={link.name}
+                  title={t(link.nameKey)}
                 >
                   <div className="w-10 h-10 flex items-center justify-center transition-all duration-300 ease-in-out rounded-full">
                     <div

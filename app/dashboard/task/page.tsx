@@ -1,17 +1,15 @@
 'use client';
 
 import SectionContainer from '@/app/ui/dashboard/section-container';
-import { TaskIcon, UserIcon } from '@/app/ui/icons';
+import { UserIcon } from '@/app/ui/icons';
 import { CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
+import { useLanguage } from '@/app/lib/i18n';
 
-// 任务状态类型
 type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
 
-// 任务优先级类型
 type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
-// 任务接口
 interface Task {
   id: string;
   title: string;
@@ -25,74 +23,74 @@ interface Task {
   tags: string[];
 }
 
-// 生成示例任务数据
 function generateSampleTasks(): Task[] {
   return [
     {
       id: '1',
-      title: '用户登录功能开发',
-      description: '实现用户登录、注册和密码重置功能',
+      title: 'User Login Feature',
+      description: 'Implement user login, registration and password reset',
       status: 'in_progress',
       priority: 'high',
-      assignee: '张三',
+      assignee: 'Zhang San',
       dueDate: '2024-01-15',
       estimatedHours: 16,
       completedHours: 8,
-      tags: ['前端', '认证']
+      tags: ['Frontend', 'Auth']
     },
     {
       id: '2',
-      title: 'API接口文档编写',
-      description: '编写完整的API接口文档和使用示例',
+      title: 'API Documentation',
+      description: 'Write complete API documentation with examples',
       status: 'todo',
       priority: 'medium',
-      assignee: '李四',
+      assignee: 'Li Si',
       dueDate: '2024-01-20',
       estimatedHours: 12,
       completedHours: 0,
-      tags: ['文档', '后端']
+      tags: ['Documentation', 'Backend']
     },
     {
       id: '3',
-      title: '数据库性能优化',
-      description: '优化查询性能，添加必要的索引',
+      title: 'Database Optimization',
+      description: 'Optimize query performance and add indexes',
       status: 'review',
       priority: 'high',
-      assignee: '王五',
+      assignee: 'Wang Wu',
       dueDate: '2024-01-18',
       estimatedHours: 20,
       completedHours: 18,
-      tags: ['数据库', '性能']
+      tags: ['Database', 'Performance']
     },
     {
       id: '4',
-      title: '移动端适配',
-      description: '确保应用在移动设备上的良好体验',
+      title: 'Mobile Adaptation',
+      description: 'Ensure good experience on mobile devices',
       status: 'done',
       priority: 'medium',
-      assignee: '赵六',
+      assignee: 'Zhao Liu',
       dueDate: '2024-01-10',
       estimatedHours: 24,
       completedHours: 24,
-      tags: ['前端', '移动端']
+      tags: ['Frontend', 'Mobile']
     },
     {
       id: '5',
-      title: '安全漏洞修复',
-      description: '修复已发现的安全漏洞',
+      title: 'Security Fix',
+      description: 'Fix discovered security vulnerabilities',
       status: 'todo',
       priority: 'urgent',
-      assignee: '钱七',
+      assignee: 'Qian Qi',
       dueDate: '2024-01-12',
       estimatedHours: 8,
       completedHours: 0,
-      tags: ['安全', '修复']
+      tags: ['Security', 'Fix']
     }
   ];
 }
 
-// 任务卡片组件
 function TaskCard({ task }: { task: Task }) {
+  const { t } = useLanguage();
+  
   const statusColors = {
     todo: 'bg-gray-100 text-gray-800',
     in_progress: 'bg-blue-100 text-blue-800',
@@ -107,20 +105,6 @@ function TaskCard({ task }: { task: Task }) {
     urgent: 'bg-red-100 text-red-600'
   };
 
-  const statusLabels = {
-    todo: '待开始',
-    in_progress: '进行中',
-    review: '待审核',
-    done: '已完成'
-  };
-
-  const priorityLabels = {
-    low: '低',
-    medium: '中',
-    high: '高',
-    urgent: '紧急'
-  };
-
   const progress = (task.completedHours / task.estimatedHours) * 100;
 
   return (
@@ -132,13 +116,13 @@ function TaskCard({ task }: { task: Task }) {
             'px-2 py-1 rounded-full text-xs font-medium',
             priorityColors[task.priority]
           )}>
-            {priorityLabels[task.priority]}
+            {t(`task.priority.${task.priority}`)}
           </span>
           <span className={clsx(
             'px-2 py-1 rounded-full text-xs font-medium',
             statusColors[task.status]
           )}>
-            {statusLabels[task.status]}
+            {t(`task.filters.${task.status}`)}
           </span>
         </div>
       </div>
@@ -162,7 +146,7 @@ function TaskCard({ task }: { task: Task }) {
 
       <div className="mb-4">
         <div className="flex justify-between text-sm text-gray-600 mb-1">
-          <span>进度</span>
+          <span>{t('task.progress')}</span>
           <span>{Math.round(progress)}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -187,16 +171,22 @@ function TaskCard({ task }: { task: Task }) {
   );
 }
 
-// 主页面组件
 export default function TasksPage() {
+  const { t } = useLanguage();
   const tasks = generateSampleTasks();
   
-  const filters = ['全部', '待开始', '进行中', '待审核', '已完成'];
+  const filters = [
+    t('task.filters.all'),
+    t('task.filters.todo'),
+    t('task.filters.inProgress'),
+    t('task.filters.review'),
+    t('task.filters.done')
+  ];
 
   return (
     <div className="space-y-6">
       <SectionContainer
-        title="任务管理"
+        title={t('task.title')}
         badge={tasks.length}
         filters={filters}
       >

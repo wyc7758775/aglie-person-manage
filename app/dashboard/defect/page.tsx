@@ -1,20 +1,17 @@
 'use client';
 
 import SectionContainer from '@/app/ui/dashboard/section-container';
-import { DefectIcon, UserIcon } from '@/app/ui/icons';
+import { UserIcon } from '@/app/ui/icons';
 import { CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
+import { useLanguage } from '@/app/lib/i18n';
 
-// 缺陷状态类型
 type DefectStatus = 'open' | 'in_progress' | 'resolved' | 'closed' | 'reopened';
 
-// 缺陷严重程度类型
 type DefectSeverity = 'low' | 'medium' | 'high' | 'critical';
 
-// 缺陷类型
 type DefectType = 'bug' | 'performance' | 'ui' | 'security' | 'compatibility';
 
-// 缺陷接口
 interface Defect {
   id: string;
   title: string;
@@ -30,84 +27,84 @@ interface Defect {
   steps: string[];
 }
 
-// 生成示例缺陷数据
 function generateSampleDefects(): Defect[] {
   return [
     {
       id: 'DEF-001',
-      title: '登录页面无法正常提交',
-      description: '用户点击登录按钮后，页面无响应，控制台显示网络错误',
+      title: 'Login page submission issue',
+      description: 'Page unresponsive after clicking login button, network error in console',
       status: 'open',
       severity: 'high',
       type: 'bug',
-      assignee: '张三',
-      reporter: '李四',
+      assignee: 'Zhang San',
+      reporter: 'Li Si',
       createdDate: '2024-01-10',
       dueDate: '2024-01-15',
-      environment: '生产环境',
-      steps: ['打开登录页面', '输入用户名和密码', '点击登录按钮', '观察页面响应']
+      environment: 'Production',
+      steps: ['Open login page', 'Enter username and password', 'Click login button', 'Observe response']
     },
     {
       id: 'DEF-002',
-      title: '页面加载速度过慢',
-      description: '首页加载时间超过5秒，影响用户体验',
+      title: 'Slow page loading',
+      description: 'Homepage takes more than 5 seconds to load',
       status: 'in_progress',
       severity: 'medium',
       type: 'performance',
-      assignee: '王五',
-      reporter: '赵六',
+      assignee: 'Wang Wu',
+      reporter: 'Zhao Liu',
       createdDate: '2024-01-08',
       dueDate: '2024-01-20',
-      environment: '测试环境',
-      steps: ['访问首页', '记录加载时间', '分析性能瓶颈']
+      environment: 'Testing',
+      steps: ['Visit homepage', 'Record load time', 'Analyze bottlenecks']
     },
     {
       id: 'DEF-003',
-      title: '移动端布局错乱',
-      description: '在小屏幕设备上，导航菜单显示异常',
+      title: 'Mobile layout issue',
+      description: 'Navigation menu displays incorrectly on small screens',
       status: 'resolved',
       severity: 'medium',
       type: 'ui',
-      assignee: '钱七',
-      reporter: '孙八',
+      assignee: 'Qian Qi',
+      reporter: 'Sun Ba',
       createdDate: '2024-01-05',
       dueDate: '2024-01-12',
-      environment: '移动端',
-      steps: ['使用手机访问网站', '查看导航菜单', '测试响应式布局']
+      environment: 'Mobile',
+      steps: ['Use phone to visit', 'Check navigation', 'Test responsive layout']
     },
     {
       id: 'DEF-004',
-      title: '数据泄露风险',
-      description: 'API接口未进行适当的权限验证',
+      title: 'Data leakage risk',
+      description: 'API interfaces lack proper authentication',
       status: 'open',
       severity: 'critical',
       type: 'security',
-      assignee: '周九',
-      reporter: '吴十',
+      assignee: 'Zhou Jiu',
+      reporter: 'Wu Shi',
       createdDate: '2024-01-12',
       dueDate: '2024-01-14',
-      environment: '生产环境',
-      steps: ['测试API接口', '检查权限验证', '评估安全风险']
+      environment: 'Production',
+      steps: ['Test API', 'Check authentication', 'Assess risk']
     },
     {
       id: 'DEF-005',
-      title: 'IE浏览器兼容性问题',
-      description: '在IE11中，部分功能无法正常使用',
+      title: 'IE browser compatibility',
+      description: 'Some features not working in IE11',
       status: 'closed',
       severity: 'low',
       type: 'compatibility',
-      assignee: '郑十一',
-      reporter: '王十二',
+      assignee: 'Zheng Shi Yi',
+      reporter: 'Wang Shi Er',
       createdDate: '2024-01-01',
       dueDate: '2024-01-10',
       environment: 'IE11',
-      steps: ['使用IE11打开网站', '测试各项功能', '记录兼容性问题']
+      steps: ['Open in IE11', 'Test features', 'Record issues']
     }
   ];
 }
 
-// 缺陷卡片组件
 function DefectCard({ defect }: { defect: Defect }) {
+  const { t } = useLanguage();
+  
   const statusColors = {
     open: 'bg-red-100 text-red-800',
     in_progress: 'bg-blue-100 text-blue-800',
@@ -131,29 +128,6 @@ function DefectCard({ defect }: { defect: Defect }) {
     compatibility: 'bg-green-50 text-green-700'
   };
 
-  const statusLabels = {
-    open: '待处理',
-    in_progress: '处理中',
-    resolved: '已解决',
-    closed: '已关闭',
-    reopened: '重新打开'
-  };
-
-  const severityLabels = {
-    low: '低',
-    medium: '中',
-    high: '高',
-    critical: '严重'
-  };
-
-  const typeLabels = {
-    bug: '功能缺陷',
-    performance: '性能问题',
-    ui: '界面问题',
-    security: '安全问题',
-    compatibility: '兼容性'
-  };
-
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
@@ -164,7 +138,7 @@ function DefectCard({ defect }: { defect: Defect }) {
               'px-2 py-1 rounded-full text-xs font-medium',
               typeColors[defect.type]
             )}>
-              {typeLabels[defect.type]}
+              {t(`defect.type.${defect.type}`)}
             </span>
           </div>
           <h3 className="text-lg font-semibold text-gray-900">{defect.title}</h3>
@@ -174,13 +148,13 @@ function DefectCard({ defect }: { defect: Defect }) {
             'px-2 py-1 rounded-full text-xs font-medium',
             severityColors[defect.severity]
           )}>
-            {severityLabels[defect.severity]}
+            {t(`defect.severity.${defect.severity}`)}
           </span>
           <span className={clsx(
             'px-2 py-1 rounded-full text-xs font-medium',
             statusColors[defect.status]
           )}>
-            {statusLabels[defect.status]}
+            {t(`defect.filters.${defect.status}`)}
           </span>
         </div>
       </div>
@@ -190,28 +164,28 @@ function DefectCard({ defect }: { defect: Defect }) {
       <div className="grid grid-cols-2 gap-4 mb-4 text-sm text-gray-500">
         <div className="flex items-center gap-1">
           <UserIcon className="w-4 h-4" />
-          <span>负责人: {defect.assignee}</span>
+          <span>{t('defect.assignee')}: {defect.assignee}</span>
         </div>
         <div className="flex items-center gap-1">
           <UserIcon className="w-4 h-4" />
-          <span>报告人: {defect.reporter}</span>
+          <span>{t('defect.reporter')}: {defect.reporter}</span>
         </div>
         <div className="flex items-center gap-1">
           <CalendarIcon className="w-4 h-4" />
-          <span>创建: {defect.createdDate}</span>
+          <span>{t('defect.created')}: {defect.createdDate}</span>
         </div>
         <div className="flex items-center gap-1">
           <ClockIcon className="w-4 h-4" />
-          <span>截止: {defect.dueDate}</span>
+          <span>{t('defect.due')}: {defect.dueDate}</span>
         </div>
       </div>
 
       <div className="mb-4">
         <div className="text-sm text-gray-600 mb-2">
-          <span className="font-medium">环境:</span> {defect.environment}
+          <span className="font-medium">{t('defect.environment')}:</span> {defect.environment}
         </div>
         <div className="text-sm text-gray-600">
-          <span className="font-medium">复现步骤:</span>
+          <span className="font-medium">{t('defect.steps')}:</span>
           <ol className="list-decimal list-inside mt-1 space-y-1">
             {defect.steps.map((step, index) => (
               <li key={index} className="text-xs text-gray-500">{step}</li>
@@ -223,16 +197,22 @@ function DefectCard({ defect }: { defect: Defect }) {
   );
 }
 
-// 主页面组件
 export default function DefectPage() {
+  const { t } = useLanguage();
   const defects = generateSampleDefects();
   
-  const filters = ['全部', '待处理', '处理中', '已解决', '已关闭'];
+  const filters = [
+    t('defect.filters.all'),
+    t('defect.filters.open'),
+    t('defect.filters.inProgress'),
+    t('defect.filters.resolved'),
+    t('defect.filters.closed')
+  ];
 
   return (
     <div className="space-y-6">
       <SectionContainer
-        title="缺陷管理"
+        title={t('defect.title')}
         badge={defects.length}
         filters={filters}
       >

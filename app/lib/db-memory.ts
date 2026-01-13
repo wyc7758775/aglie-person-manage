@@ -18,26 +18,55 @@ if (!globalForDb.isInitialized) {
 const users = globalForDb.users;
 let isInitialized = globalForDb.isInitialized;
 
+// 自动初始化数据库
+async function autoInitialize() {
+  if (!isInitialized) {
+    try {
+      users.length = 0;
+      
+      for (const user of placeholderUsers) {
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        users.push({
+          ...user,
+          password: hashedPassword,
+        });
+      }
+      
+      isInitialized = true;
+      globalForDb.isInitialized = true;
+      console.log('内存数据库自动初始化完成');
+    } catch (error) {
+      console.error('内存数据库自动初始化失败:', error);
+    }
+  }
+}
+
+// 在模块加载时尝试初始化（仅在服务器端）
+if (typeof window === 'undefined') {
+  autoInitialize();
+}
+
 /**
  * 初始化数据库表结构
  */
 export async function initializeDatabase() {
   try {
-    // 清空现有数据
-    users.length = 0;
-    isInitialized = true;
-    globalForDb.isInitialized = true;
+    if (!isInitialized) {
+      users.length = 0;
+      isInitialized = true;
+      globalForDb.isInitialized = true;
 
-    // 从 placeholder-data.ts 加载初始用户
-    for (const user of placeholderUsers) {
-      const hashedPassword = await bcrypt.hash(user.password, 10);
-      users.push({
-        ...user,
-        password: hashedPassword,
-      });
+      // 从 placeholder-data.ts 加载初始用户
+      for (const user of placeholderUsers) {
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        users.push({
+          ...user,
+          password: hashedPassword,
+        });
+      }
+
+      console.log('内存数据库初始化完成');
     }
-
-    console.log('内存数据库初始化完成');
     return { success: true };
   } catch (error) {
     console.error('数据库初始化失败:', error);

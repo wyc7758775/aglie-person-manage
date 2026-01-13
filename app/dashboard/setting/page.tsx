@@ -1,109 +1,105 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SectionContainer from '@/app/ui/dashboard/section-container';
-import { 
-  UserIcon, 
-  BellIcon, 
-  CogIcon, 
+import LanguageSwitcher from '@/app/ui/language-switcher';
+import {
+  UserIcon,
+  BellIcon,
   ShieldCheckIcon,
   EyeIcon,
   EyeSlashIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
+import { useLanguage } from '@/app/lib/i18n';
 
 interface SettingSection {
   id: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   icon: React.ComponentType<any>;
   settings: Setting[];
 }
 
 interface Setting {
   id: string;
-  label: string;
-  description?: string;
-  type: 'toggle' | 'select' | 'input' | 'password';
+  labelKey: string;
+  descriptionKey?: string;
+  type: 'toggle' | 'select' | 'input' | 'password' | 'language';
   value: any;
-  options?: { label: string; value: string }[];
+  options?: { labelKey: string; label: string; value: string }[];
 }
 
-const generateSettingSections = (): SettingSection[] => [
+const generateSettingSections = (t: (key: string) => string, locale: string): SettingSection[] => [
   {
     id: 'profile',
-    title: '个人资料',
-    description: '管理您的个人信息和偏好设置',
+    titleKey: 'setting.profile.title',
+    descriptionKey: 'setting.profile.description',
     icon: UserIcon,
     settings: [
       {
         id: 'username',
-        label: '用户名',
+        labelKey: 'setting.profile.username',
         type: 'input',
         value: 'john_doe'
       },
       {
         id: 'email',
-        label: '邮箱地址',
+        labelKey: 'setting.profile.email',
         type: 'input',
         value: 'john.doe@example.com'
       },
       {
         id: 'language',
-        label: '语言',
-        description: '选择界面显示语言',
-        type: 'select',
-        value: 'zh-CN',
-        options: [
-          { label: '中文', value: 'zh-CN' },
-          { label: 'English', value: 'en-US' },
-          { label: '日本語', value: 'ja-JP' }
-        ]
+        labelKey: 'setting.profile.language',
+        descriptionKey: 'setting.profile.languageDescription',
+        type: 'language',
+        value: locale
       },
       {
         id: 'timezone',
-        label: '时区',
+        labelKey: 'setting.profile.timezone',
         type: 'select',
         value: 'Asia/Shanghai',
         options: [
-          { label: '北京时间 (UTC+8)', value: 'Asia/Shanghai' },
-          { label: '东京时间 (UTC+9)', value: 'Asia/Tokyo' },
-          { label: '纽约时间 (UTC-5)', value: 'America/New_York' }
+          { labelKey: 'common.time.beijing', label: t('common.time.beijing'), value: 'Asia/Shanghai' },
+          { labelKey: 'common.time.tokyo', label: t('common.time.tokyo'), value: 'Asia/Tokyo' },
+          { labelKey: 'common.time.newyork', label: t('common.time.newyork'), value: 'America/New_York' }
         ]
       }
     ]
   },
   {
     id: 'notifications',
-    title: '通知设置',
-    description: '管理您的通知偏好',
+    titleKey: 'setting.notifications.title',
+    descriptionKey: 'setting.notifications.description',
     icon: BellIcon,
     settings: [
       {
         id: 'email_notifications',
-        label: '邮件通知',
-        description: '接收重要更新的邮件通知',
+        labelKey: 'setting.notifications.emailNotifications',
+        descriptionKey: 'setting.notifications.emailNotificationsDescription',
         type: 'toggle',
         value: true
       },
       {
         id: 'push_notifications',
-        label: '推送通知',
-        description: '接收浏览器推送通知',
+        labelKey: 'setting.notifications.pushNotifications',
+        descriptionKey: 'setting.notifications.pushNotificationsDescription',
         type: 'toggle',
         value: false
       },
       {
         id: 'task_reminders',
-        label: '任务提醒',
-        description: '任务截止日期前的提醒',
+        labelKey: 'setting.notifications.taskReminders',
+        descriptionKey: 'setting.notifications.taskRemindersDescription',
         type: 'toggle',
         value: true
       },
       {
         id: 'daily_summary',
-        label: '每日总结',
-        description: '每天发送工作总结邮件',
+        labelKey: 'setting.notifications.dailySummary',
+        descriptionKey: 'setting.notifications.dailySummaryDescription',
         type: 'toggle',
         value: false
       }
@@ -111,32 +107,32 @@ const generateSettingSections = (): SettingSection[] => [
   },
   {
     id: 'appearance',
-    title: '外观设置',
-    description: '自定义界面外观',
+    titleKey: 'setting.appearance.title',
+    descriptionKey: 'setting.appearance.description',
     icon: EyeIcon,
     settings: [
       {
         id: 'theme',
-        label: '主题',
+        labelKey: 'setting.appearance.theme',
         type: 'select',
         value: 'light',
         options: [
-          { label: '浅色主题', value: 'light' },
-          { label: '深色主题', value: 'dark' },
-          { label: '跟随系统', value: 'system' }
+          { labelKey: 'setting.appearance.themeLight', label: t('setting.appearance.themeLight'), value: 'light' },
+          { labelKey: 'setting.appearance.themeDark', label: t('setting.appearance.themeDark'), value: 'dark' },
+          { labelKey: 'setting.appearance.themeSystem', label: t('setting.appearance.themeSystem'), value: 'system' }
         ]
       },
       {
         id: 'compact_mode',
-        label: '紧凑模式',
-        description: '使用更紧凑的界面布局',
+        labelKey: 'setting.appearance.compactMode',
+        descriptionKey: 'setting.appearance.compactModeDescription',
         type: 'toggle',
         value: false
       },
       {
         id: 'show_completed',
-        label: '显示已完成项目',
-        description: '在列表中显示已完成的项目',
+        labelKey: 'setting.appearance.showCompleted',
+        descriptionKey: 'setting.appearance.showCompletedDescription',
         type: 'toggle',
         value: true
       }
@@ -144,32 +140,32 @@ const generateSettingSections = (): SettingSection[] => [
   },
   {
     id: 'security',
-    title: '安全设置',
-    description: '管理您的账户安全',
+    titleKey: 'setting.security.title',
+    descriptionKey: 'setting.security.description',
     icon: ShieldCheckIcon,
     settings: [
       {
         id: 'current_password',
-        label: '当前密码',
+        labelKey: 'setting.security.currentPassword',
         type: 'password',
         value: ''
       },
       {
         id: 'new_password',
-        label: '新密码',
+        labelKey: 'setting.security.newPassword',
         type: 'password',
         value: ''
       },
       {
         id: 'confirm_password',
-        label: '确认新密码',
+        labelKey: 'setting.security.confirmPassword',
         type: 'password',
         value: ''
       },
       {
         id: 'two_factor',
-        label: '双因素认证',
-        description: '启用双因素认证以提高账户安全性',
+        labelKey: 'setting.security.twoFactor',
+        descriptionKey: 'setting.security.twoFactorDescription',
         type: 'toggle',
         value: false
       }
@@ -177,7 +173,7 @@ const generateSettingSections = (): SettingSection[] => [
   }
 ];
 
-function SettingItem({ setting, onUpdate }: { setting: Setting; onUpdate: (id: string, value: any) => void }) {
+function SettingItem({ setting, onUpdate, t }: { setting: Setting; onUpdate: (id: string, value: any) => void; t: (key: string) => string }) {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (value: any) => {
@@ -188,13 +184,13 @@ function SettingItem({ setting, onUpdate }: { setting: Setting; onUpdate: (id: s
     <div className="flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0">
       <div className="flex-1">
         <label className="block text-sm font-medium text-gray-900">
-          {setting.label}
+          {t(setting.labelKey)}
         </label>
-        {setting.description && (
-          <p className="text-sm text-gray-500 mt-1">{setting.description}</p>
+        {setting.descriptionKey && (
+          <p className="text-sm text-gray-500 mt-1">{t(setting.descriptionKey)}</p>
         )}
       </div>
-      
+
       <div className="ml-4">
         {setting.type === 'toggle' && (
           <button
@@ -210,7 +206,7 @@ function SettingItem({ setting, onUpdate }: { setting: Setting; onUpdate: (id: s
             />
           </button>
         )}
-        
+
         {setting.type === 'select' && (
           <select
             value={setting.value}
@@ -224,7 +220,14 @@ function SettingItem({ setting, onUpdate }: { setting: Setting; onUpdate: (id: s
             ))}
           </select>
         )}
-        
+
+        {setting.type === 'language' && (
+          <LanguageSwitcher
+            value={setting.value}
+            onChange={handleChange}
+          />
+        )}
+
         {setting.type === 'input' && (
           <input
             type="text"
@@ -233,7 +236,7 @@ function SettingItem({ setting, onUpdate }: { setting: Setting; onUpdate: (id: s
             className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
         )}
-        
+
         {setting.type === 'password' && (
           <div className="relative">
             <input
@@ -261,9 +264,9 @@ function SettingItem({ setting, onUpdate }: { setting: Setting; onUpdate: (id: s
   );
 }
 
-function SettingSectionCard({ section, onUpdate }: { section: SettingSection; onUpdate: (sectionId: string, settingId: string, value: any) => void }) {
+function SettingSectionCard({ section, onUpdate, t }: { section: SettingSection; onUpdate: (sectionId: string, settingId: string, value: any) => void; t: (key: string) => string }) {
   const Icon = section.icon;
-  
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center mb-4">
@@ -271,26 +274,27 @@ function SettingSectionCard({ section, onUpdate }: { section: SettingSection; on
           <Icon className="h-6 w-6 text-blue-600" />
         </div>
         <div className="ml-3">
-          <h3 className="text-lg font-medium text-gray-900">{section.title}</h3>
-          <p className="text-sm text-gray-500">{section.description}</p>
+          <h3 className="text-lg font-medium text-gray-900">{t(section.titleKey)}</h3>
+          <p className="text-sm text-gray-500">{t(section.descriptionKey)}</p>
         </div>
       </div>
-      
+
       <div className="space-y-0">
         {section.settings.map((setting) => (
           <SettingItem
             key={setting.id}
             setting={setting}
             onUpdate={(settingId, value) => onUpdate(section.id, settingId, value)}
+            t={t}
           />
         ))}
       </div>
-      
+
       {section.id === 'security' && (
         <div className="mt-6 pt-4 border-t border-gray-200">
           <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             <CheckIcon className="h-4 w-4 mr-2" />
-            更新密码
+            {t('setting.security.updatePassword')}
           </button>
         </div>
       )}
@@ -299,7 +303,12 @@ function SettingSectionCard({ section, onUpdate }: { section: SettingSection; on
 }
 
 export default function SettingsPage() {
-  const [sections, setSections] = useState<SettingSection[]>(generateSettingSections());
+  const { t, locale } = useLanguage();
+  const [sections, setSections] = useState<SettingSection[]>([]);
+
+  useEffect(() => {
+    setSections(generateSettingSections(t, locale));
+  }, [t, locale]);
 
   const handleSettingUpdate = (sectionId: string, settingId: string, value: any) => {
     setSections(prevSections =>
@@ -318,7 +327,7 @@ export default function SettingsPage() {
 
   return (
     <SectionContainer
-      title="设置"
+      title={t('setting.title')}
     >
       <div className="space-y-6">
         {sections.map((section) => (
@@ -326,21 +335,22 @@ export default function SettingsPage() {
             key={section.id}
             section={section}
             onUpdate={handleSettingUpdate}
+            t={t}
           />
         ))}
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-medium text-gray-900">数据管理</h3>
-              <p className="text-sm text-gray-500 mt-1">导出或删除您的数据</p>
+              <h3 className="text-lg font-medium text-gray-900">{t('setting.dataManagement.title')}</h3>
+              <p className="text-sm text-gray-500 mt-1">{t('setting.dataManagement.description')}</p>
             </div>
             <div className="flex space-x-3">
               <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                导出数据
+                {t('setting.dataManagement.export')}
               </button>
               <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                删除账户
+                {t('setting.dataManagement.deleteAccount')}
               </button>
             </div>
           </div>

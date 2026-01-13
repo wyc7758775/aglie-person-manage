@@ -1,6 +1,6 @@
 /**
- * 玻璃拟态风格登录界面
- * 现代玻璃效果设计，营造轻盈通透的视觉体验
+ * Glassmorphism login interface
+ * Modern glass effect design, creating a light and transparent visual experience
  */
 
 "use client";
@@ -17,8 +17,9 @@ import {
   EyeOffIcon,
   ChevronRightIcon,
 } from "@/app/ui/icons";
+import { useLanguage } from "@/app/lib/i18n";
 
-// 声明全局showToast方法
+// Declare global showToast method
 declare global {
   interface Window {
     showToast?: (
@@ -29,15 +30,15 @@ declare global {
   }
 }
 
-// 获取当前日期信息的函数
+// Get current date info function
 function getCurrentDateInfo() {
   const now = new Date();
 
-  // 获取星期几的缩写
+  // Get weekday abbreviation
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const weekday = weekdays[now.getDay()];
 
-  // 获取日期并添加序数后缀
+  // Get date with ordinal suffix
   const day = now.getDate();
   const getDayWithSuffix = (day: number) => {
     if (day >= 11 && day <= 13) {
@@ -61,61 +62,57 @@ function getCurrentDateInfo() {
   };
 }
 
-// 获取IP地址和位置信息的函数
+// Get IP and location info function
 async function getLocationInfo() {
-  // 检查是否为本地开发环境
+  // Check if it's local development environment
   const isLocalhost =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1" ||
     window.location.hostname === "0.0.0.0";
 
   if (isLocalhost) {
-    // 本地环境直接返回本地IP信息
     return {
-      city: "本地开发",
-      region: "开发环境",
-      country: "本地主机",
+      city: "Local Dev",
+      region: "Development",
+      country: "Localhost",
       ip: "127.0.0.1",
       timezone: "Asia/Shanghai",
     };
   }
 
   try {
-    // 使用免费的IP地理位置API
     const response = await fetch("https://ipapi.co/json/");
     const data = await response.json();
 
     return {
-      city: data.city || "未知城市",
-      region: data.region || "未知地区",
-      country: data.country_name || "未知国家",
-      ip: data.ip || "未知IP",
+      city: data.city || "Unknown City",
+      region: data.region || "Unknown Region",
+      country: data.country_name || "Unknown Country",
+      ip: data.ip || "Unknown IP",
       timezone: data.timezone || "UTC",
     };
   } catch (error) {
-    console.error("获取位置信息失败:", error);
+    console.error("Failed to get location info:", error);
     return {
-      city: "本地",
-      region: "本地网络",
-      country: "中国",
+      city: "Local",
+      region: "Local Network",
+      country: "China",
       ip: "127.0.0.1",
       timezone: "Asia/Shanghai",
     };
   }
 }
 
-// 获取当前时间信息的函数
+// Get current time info function
 function getCurrentTimeInfo() {
   const now = new Date();
   const hours = now.getHours();
   const minutes = now.getMinutes();
 
-  // 格式化时间为 HH:MM 格式
   const formattedTime = `${hours.toString().padStart(2, "0")}:${minutes
     .toString()
     .padStart(2, "0")}`;
 
-  // 判断上午/下午
   const period = hours >= 12 ? "PM" : "AM";
 
   return {
@@ -126,6 +123,7 @@ function getCurrentTimeInfo() {
 }
 
 export default function Page() {
+  const { t } = useLanguage();
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -134,27 +132,22 @@ export default function Page() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [locationInfo, setLocationInfo] = useState({
-    city: "加载中...",
-    region: "获取位置信息",
+    city: "Loading...",
+    region: "Getting location",
     country: "",
     ip: "",
     timezone: "",
   });
   const router = useRouter();
 
-  // 获取当前日期信息
   const dateInfo = getCurrentDateInfo();
-
-  // 获取当前时间信息
   const [timeInfo, setTimeInfo] = useState(getCurrentTimeInfo());
 
-  // 获取位置信息和自动填充登录信息
   useEffect(() => {
     getLocationInfo().then((info) => {
       setLocationInfo(info);
     });
 
-    // 自动填充上次登录成功的账号密码
     try {
       if (
         typeof window !== "undefined" &&
@@ -172,15 +165,14 @@ export default function Page() {
         }
       }
     } catch (error) {
-      console.log("读取保存的登录信息失败:", error);
+      console.log("Failed to read saved login info:", error);
     }
   }, []);
 
-  // 每分钟更新时间
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeInfo(getCurrentTimeInfo());
-    }, 60000); // 每60秒更新一次
+    }, 60000);
 
     return () => clearInterval(timer);
   }, []);
@@ -195,7 +187,6 @@ export default function Page() {
     }
   };
 
-  // 防抖函数
   const debounce = (func: Function, delay: number) => {
     let timeoutId: NodeJS.Timeout;
     return (...args: any[]) => {
@@ -206,11 +197,11 @@ export default function Page() {
 
   const loginAction = async () => {
     if (!nickname || !password) {
-      showToast("请填写昵称和密码", "error");
+      showToast(t("login.errors.nicknameRequired"), "error");
       return;
     }
 
-    if (isLoading) return; // 防止重复点击
+    if (isLoading) return;
 
     setIsLoading(true);
     try {
@@ -228,10 +219,9 @@ export default function Page() {
       const data = await response.json();
 
       if (data.success) {
-        console.log("登录成功:", data.user);
-        showToast(`欢迎回来，${data.user.nickname}！`, "success");
+        console.log("Login success:", data.user);
+        showToast(t("login.success.welcomeBack", { nickname: data.user.nickname }), "success");
 
-        // 保存登录成功的账号密码
         try {
           if (
             typeof window !== "undefined" &&
@@ -242,21 +232,20 @@ export default function Page() {
             window.localStorage.setItem("lastLoginPassword", password);
           }
         } catch (error) {
-          console.log("保存登录信息失败:", error);
+          console.log("Failed to save login info:", error);
         }
 
-        // 延迟跳转，让用户看到成功提示
         const timer = setTimeout(() => {
           router.push("/dashboard/overview");
           clearTimeout(timer);
         }, 200);
       } else {
-        console.error("登录失败:", data.message);
-        showToast(`登录失败: ${data.message}`, "error");
+        console.error("Login failed:", data.message);
+        showToast(t("login.errors.loginFailed", { message: data.message }), "error");
       }
     } catch (error) {
-      console.error("登录请求失败:", error);
-      showToast("登录请求失败，请稍后重试", "error");
+      console.error("Login request failed:", error);
+      showToast(t("login.errors.requestFailed"), "error");
     } finally {
       setIsLoading(false);
     }
@@ -271,21 +260,21 @@ export default function Page() {
 
   const registerAction = async () => {
     if (!nickname || !password || !confirmPassword) {
-      showToast("请填写所有字段", "error");
+      showToast(t("login.errors.allFieldsRequired"), "error");
       return;
     }
 
     if (password !== confirmPassword) {
-      showToast("两次输入的密码不一致", "error");
+      showToast(t("login.errors.passwordMismatch"), "error");
       return;
     }
 
     if (password.length < 6) {
-      showToast("密码长度至少6位", "error");
+      showToast(t("login.errors.passwordTooShort"), "error");
       return;
     }
 
-    if (isLoading) return; // 防止重复点击
+    if (isLoading) return;
 
     setIsLoading(true);
     try {
@@ -303,14 +292,12 @@ export default function Page() {
       const data = await response.json();
 
       if (data.success) {
-        console.log("注册成功:", data.user);
-        showToast(`注册成功，欢迎 ${data.user.nickname}！`, "success");
+        console.log("Registration success:", data.user);
+        showToast(t("login.success.registerSuccess", { nickname: data.user.nickname }), "success");
 
-        // 注册成功后自动切换到登录模式
         setTimeout(() => {
           setIsSignUpMode(false);
           setConfirmPassword("");
-          // 保存注册成功的账号密码
           try {
             if (
               typeof window !== "undefined" &&
@@ -321,22 +308,21 @@ export default function Page() {
               window.localStorage.setItem("lastLoginPassword", password);
             }
           } catch (error) {
-            console.log("保存登录信息失败:", error);
+            console.log("Failed to save login info:", error);
           }
         }, 1000);
       } else {
-        console.error("注册失败:", data.message);
-        showToast(`注册失败: ${data.message}`, "error");
+        console.error("Registration failed:", data.message);
+        showToast(t("login.errors.registerFailed", { message: data.message }), "error");
       }
     } catch (error) {
-      console.error("注册请求失败:", error);
-      showToast("注册请求失败，请稍后重试", "error");
+      console.error("Registration request failed:", error);
+      showToast(t("login.errors.registerRequestFailed"), "error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 切换登录/注册模式
   const toggleMode = () => {
     setIsSignUpMode(!isSignUpMode);
     setPassword("");
@@ -345,27 +331,19 @@ export default function Page() {
     setShowConfirmPassword(false);
   };
 
-  // 使用防抖的登录函数
   const handleLogin = debounce(loginAction, 300);
-
-  // 使用防抖的注册函数
   const handleRegister = debounce(registerAction, 300);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-orange-100 via-pink-50 to-purple-100 relative overflow-hidden">
-      {/* 主要布局容器 */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-8">
-        {/* 主要内容区域 */}
         <div className="flex items-center justify-center w-full">
-          {/* 水平布局容器 */}
           <div
             className={`flex items-center justify-center space-x-8 max-w-6xl transition-all duration-700 ease-in-out ${
               isSignUpMode ? "mb-8" : "mb-0"
             }`}
           >
-            {/* 左侧列 - 登录卡片和个人名片 */}
             <div className="flex flex-col h-[540px]">
-              {/* 登录卡片 */}
               <div
                 className={`bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl p-6 w-80 flex-[2] mb-4 relative transition-all duration-[700ms] ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${
                   isSignUpMode
@@ -377,7 +355,6 @@ export default function Page() {
                   minHeight: "fit-content",
                 }}
               >
-                {/* 顶部标题区域 */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="text-sm text-gray-600 brand-text">
                     Agile Person Manage
@@ -386,13 +363,13 @@ export default function Page() {
                     className="text-xs text-gray-600 cursor-pointer brand-text hover:text-gray-800 transition-colors duration-200 px-2 py-1 rounded-lg hover:bg-white/20"
                     onClick={toggleMode}
                   >
-                    {isSignUpMode ? "Log in" : "Sign up"}
+                    {isSignUpMode ? t("login.switchingToLogin") : t("login.switchingToRegister")}
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold text-gray-800 login-title whitespace-nowrap transition-all duration-[400ms] ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] transform hover:scale-105 hover:text-blue-600">
-                    {isSignUpMode ? "Sign up" : "Log in"}
+                    {isSignUpMode ? t("login.registerButton") : t("login.loginButton")}
                   </h2>
                 </div>
 
@@ -403,28 +380,26 @@ export default function Page() {
                     isSignUpMode ? handleRegister() : handleLogin();
                   }}
                 >
-                  {/* 昵称输入框 */}
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <UserIcon className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       type="text"
-                      placeholder="nickname"
+                      placeholder={t("login.nickname")}
                       value={nickname}
                       onChange={(e) => setNickname(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 bg-white/50 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent text-gray-800 placeholder-gray-500 transition-all duration-[300ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-white/60 focus:bg-white/70 focus:scale-[1.02] hover:shadow-lg"
                     />
                   </div>
 
-                  {/* 密码输入框 */}
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <LockIcon className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       type={showPassword ? "text" : "password"}
-                      placeholder="password"
+                      placeholder={t("login.password")}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full pl-10 pr-12 py-3 bg-white/50 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent text-gray-800 placeholder-gray-500 transition-all duration-[300ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-white/60 focus:bg-white/70 focus:scale-[1.02] hover:shadow-lg"
@@ -442,7 +417,6 @@ export default function Page() {
                     </button>
                   </div>
 
-                  {/* 确认密码输入框 - 优化动画 */}
                   <div
                     className={`transition-all duration-[600ms] ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] overflow-hidden ${
                       isSignUpMode
@@ -456,7 +430,7 @@ export default function Page() {
                       </div>
                       <input
                         type={showConfirmPassword ? "text" : "password"}
-                        placeholder="confirm password"
+                        placeholder={t("login.confirmPassword")}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full pl-10 pr-12 py-3 bg-white/50 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent text-gray-800 placeholder-gray-500 transition-all duration-[300ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-white/60 focus:bg-white/70 focus:scale-[1.02] hover:shadow-lg"
@@ -479,13 +453,12 @@ export default function Page() {
                     </div>
                   </div>
 
-                  {/* 登录/注册按钮 */}
                   <div className="flex items-center justify-between">
                     <div className="text-left mr-2">
                       <p className="text-xs text-gray-600 leading-relaxed login-hint">
                         {isSignUpMode
-                          ? "Join us and start your journey."
-                          : "Make every day fulfilling and rewarding."}
+                          ? t("login.hints.joinUs")
+                          : t("login.hints.makeFulfilling")}
                       </p>
                     </div>
                     <AgButton
@@ -498,25 +471,22 @@ export default function Page() {
                     >
                       {isLoading
                         ? isSignUpMode
-                          ? "Signing up..."
-                          : "Logging in..."
+                          ? t("login.loading.signingUp")
+                          : t("login.loading.loggingIn")
                         : isSignUpMode
-                          ? "Sign up"
-                          : "Login"}
+                          ? t("login.registerButton")
+                          : t("login.loginButton")}
                     </AgButton>
                   </div>
                 </form>
 
-                {/* 底部文字 */}
                 <div className="mt-4 text-center">
                   <p className="text-xs text-gray-600 leading-relaxed login-hint">
-                    Focus on the present, plan for the future, achieve a better
-                    you.
+                    {t("login.focus.present")}, {t("login.focus.future")} {t("login.focus.achieveBetter")}
                   </p>
                 </div>
               </div>
 
-              {/* 个人名片 - 在左侧列 */}
               <div
                 className={`bg-gray-900 text-white rounded-3xl p-6 w-80 shadow-2xl flex-1 flex flex-col justify-between transition-all duration-[1000ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
                   isSignUpMode
@@ -532,7 +502,6 @@ export default function Page() {
                     <h3 className="text-lg font-medium">Yoran.Wu</h3>
                     <p className="text-gray-400 text-sm">Full Stack Engineer</p>
                   </div>
-                  {/* 放入 me.png 图片 */}
                   <img
                     src="/me.png"
                     alt="me"
@@ -551,7 +520,6 @@ export default function Page() {
               </div>
             </div>
 
-            {/* 右侧信息卡片 - 双层结构 */}
             <InfoCard
               locationInfo={locationInfo}
               dateInfo={dateInfo}
@@ -562,8 +530,7 @@ export default function Page() {
           </div>
         </div>
       </div>
- 
-      {/* Toast容器 */}
+  
       <ToastContainer />
     </main>
   );
