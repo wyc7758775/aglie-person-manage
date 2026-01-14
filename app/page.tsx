@@ -148,6 +148,12 @@ export default function Page() {
       setLocationInfo(info);
     });
 
+    const params = new URLSearchParams(window.location.search);
+    const nextUrl = params.get('next');
+    if (nextUrl && nextUrl.startsWith('/dashboard')) {
+      showToast(t('login.guards.pleaseLogin'), 'info', 3000);
+    }
+
     try {
       if (
         typeof window !== "undefined" &&
@@ -230,13 +236,17 @@ export default function Page() {
           ) {
             window.localStorage.setItem("lastLoginNickname", nickname);
             window.localStorage.setItem("lastLoginPassword", password);
+            window.localStorage.setItem("auth_access_token", "token_" + Date.now());
           }
         } catch (error) {
           console.log("Failed to save login info:", error);
         }
 
+        const params = new URLSearchParams(window.location.search);
+        const nextUrl = params.get('next') || '/dashboard/overview';
+        
         const timer = setTimeout(() => {
-          router.push("/dashboard/overview");
+          router.push(nextUrl);
           clearTimeout(timer);
         }, 200);
       } else {

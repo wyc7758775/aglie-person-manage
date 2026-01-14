@@ -55,3 +55,30 @@ TBD - created by archiving change add-superadmin-account. Update Purpose after a
 - **THEN** 账号输入框默认值为 `wuyucun`
 - **AND** 密码输入框默认值为 `wyc7758775`
 
+---
+
+### Requirement: 路由保护
+系统 SHALL 保护 `/dashboard/*` 下的所有路由，未登录用户访问时自动重定向到登录页面。
+
+#### Scenario: 未登录访问受保护路由
+- **WHEN** 未登录用户直接访问 `/dashboard/overview`
+- **THEN** 系统返回 302 重定向到登录页面
+- **AND** URL 包含 `?next=/dashboard/overview` 参数
+
+#### Scenario: 登录后自动跳转到目标页面
+- **GIVEN** 用户通过 `/?next=/dashboard/task` 访问登录页面
+- **AND** 用户完成登录
+- **WHEN** 登录成功后
+- **THEN** 系统自动跳转到 `/dashboard/task`
+
+#### Scenario: 显示未登录提示
+- **GIVEN** 用户通过 `/?next=/dashboard/task` 访问登录页面
+- **WHEN** 登录页面加载完成
+- **THEN** 系统显示 Toast 提示"请先登录后再访问"
+
+#### Scenario: 已登录用户访问受保护路由
+- **GIVEN** 用户已登录（`auth_access_token` Cookie 存在）
+- **WHEN** 用户访问 `/dashboard/overview`
+- **THEN** 系统正常显示页面内容
+- **AND** 不进行重定向
+

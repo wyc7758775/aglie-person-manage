@@ -14,10 +14,12 @@ import {
   DefectIcon,
 } from "@/app/ui/icons";
 import { useLanguage } from "@/app/lib/i18n";
+import { useAuth } from "@/app/lib/hooks/useAuth";
 
 export default function SideNav() {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const { logout } = useAuth();
   const [indicatorPosition, setIndicatorPosition] = useState({
     top: 0,
     show: false,
@@ -75,7 +77,7 @@ export default function SideNav() {
   useEffect(() => {
     // 检查主导航
     const mainIndex = mainLinks.findIndex(
-      (link) => pathname === link.href || pathname.startsWith(link.href + "/")
+      (link) => pathname === link.href || pathname.startsWith(link.href + "/"),
     );
 
     if (mainIndex !== -1) {
@@ -98,7 +100,8 @@ export default function SideNav() {
     } else {
       // 检查选项菜单
       const optionsIndex = optionsMenus.findIndex(
-        (link) => pathname === link.href || pathname.startsWith(link.href + "/")
+        (link) =>
+          pathname === link.href || pathname.startsWith(link.href + "/"),
       );
 
       if (optionsIndex !== -1) {
@@ -236,25 +239,26 @@ export default function SideNav() {
       </div>
 
       <div className="flex flex-col items-center rounded-full p-1 bg-white shadow-sm transition-shadow duration-300 ease-in-out">
-        {/* 设置图标 */}
-        <Link href="/dashboard/reward">
-          <div className="w-10 h-10 flex items-center justify-center transition-all duration-300 ease-in-out rounded-full">
-            {/* 退出登录图标 */}
-            <svg
-              className="w-5 h-5 text-gray-400 opacity-60 transition-all duration-300 ease-in-out"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-          </div>
-        </Link>
+        {/* 退出登录图标 */}
+        <button
+          onClick={logout}
+          className="w-10 h-10 flex items-center justify-center transition-all duration-300 ease-in-out rounded-full bg-transparent border-none cursor-pointer"
+          title="退出登录"
+        >
+          <svg
+            className="w-5 h-5 text-gray-400 opacity-60 transition-all duration-300 ease-in-out"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+        </button>
         {/* 底部用户头像 */}
         <div className=" mt-2">
           <Link href="/dashboard/profile">

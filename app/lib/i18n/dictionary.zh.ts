@@ -59,6 +59,9 @@ export const zhCN = {
       future: '规划未来',
       achieveBetter: '成就更好的自己。',
     },
+    guards: {
+      pleaseLogin: '请先登录后再访问',
+    },
   },
   dashboard: {
     nav: {

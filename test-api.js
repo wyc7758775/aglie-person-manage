@@ -1,5 +1,5 @@
 // 测试登录API的简单脚本
-const BASE_URL = 'http://localhost:3002';
+const BASE_URL = 'http://localhost:3000';
 
 async function testLoginAPI() {
   console.log('🚀 开始测试登录API...\n');
