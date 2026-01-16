@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import NavLinks from '@/app/ui/dashboard/nav-links';
 import HabiticaLogo from '@/app/ui/acme-logo';
-import { PowerIcon } from '@heroicons/react/24/outline';
+import { PowerIcon } from "@/app/ui/icons";
 
 export default function SideNav() {
   return (

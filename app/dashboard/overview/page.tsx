@@ -1,10 +1,6 @@
 'use client';
 
-import { 
-  MagnifyingGlassIcon, 
-  TagIcon,
-  PlusIcon 
-} from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, TagIcon, PlusIcon } from '@/app/ui/icons';
 import SectionContainer from '@/app/ui/dashboard/section-container';
 import TaskCard from '@/app/ui/dashboard/task-card';
 import RewardCard from '@/app/ui/dashboard/reward-card';

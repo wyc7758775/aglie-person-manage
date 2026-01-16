@@ -1,8 +1,7 @@
 "use client";
 
 import SectionContainer from '@/app/ui/dashboard/section-container';
-import { NotificationIcon, UserIcon } from '@/app/ui/icons';
-import { CalendarIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { NotificationIcon, UserIcon, CalendarIcon, CheckIcon, XMarkIcon } from '@/app/ui/icons';
 import { clsx } from 'clsx';
 
 

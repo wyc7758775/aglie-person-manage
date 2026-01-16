@@ -1,6 +1,6 @@
 'use client';
 
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from "@/app/ui/icons";
 import SectionContainer from '@/app/ui/dashboard/section-container';
 import TaskCard from '@/app/ui/dashboard/task-card';
 

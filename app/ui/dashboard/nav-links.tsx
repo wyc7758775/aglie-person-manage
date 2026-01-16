@@ -6,7 +6,7 @@ import {
   CalendarDaysIcon,
   CheckCircleIcon,
   GiftIcon,
-} from "@heroicons/react/24/outline";
+} from "@/app/ui/icons";
 import Link from "next/link";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";

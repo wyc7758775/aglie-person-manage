@@ -10,7 +10,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
   CheckIcon
-} from '@heroicons/react/24/outline';
+} from '@/app/ui/icons';
 import { useLanguage } from '@/app/lib/i18n';
 
 interface SettingSection {

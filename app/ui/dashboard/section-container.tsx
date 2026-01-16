@@ -1,4 +1,4 @@
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from "@/app/ui/icons";
 import clsx from 'clsx';
 
 interface SectionContainerProps {

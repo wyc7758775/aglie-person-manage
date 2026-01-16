@@ -2,7 +2,7 @@
 
 import SectionContainer from '@/app/ui/dashboard/section-container';
 import { UserIcon } from '@/app/ui/icons';
-import { CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon } from "@/app/ui/icons";
 import { clsx } from 'clsx';
 import { useLanguage } from '@/app/lib/i18n';
 

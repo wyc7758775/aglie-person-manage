@@ -244,7 +244,7 @@ export default function Page() {
 
         const params = new URLSearchParams(window.location.search);
         const nextUrl = params.get('next') || '/dashboard/overview';
-        
+
         const timer = setTimeout(() => {
           router.push(nextUrl);
           clearTimeout(timer);
@@ -540,7 +540,7 @@ export default function Page() {
           </div>
         </div>
       </div>
-  
+
       <ToastContainer />
     </main>
   );

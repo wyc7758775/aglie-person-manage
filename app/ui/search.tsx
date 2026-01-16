@@ -1,6 +1,6 @@
 'use client';
 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon } from "@/app/ui/icons";
 
 export default function Search({ placeholder }: { placeholder: string }) {
   return (

@@ -6,7 +6,7 @@ import {
   CalendarIcon,
   UserGroupIcon,
   ChartBarIcon
-} from '@heroicons/react/24/outline';
+} from '@/app/ui/icons';
 import SectionContainer from '@/app/ui/dashboard/section-container';
 import { useState } from 'react';
 
