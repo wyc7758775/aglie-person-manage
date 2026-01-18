@@ -1,3 +1,9 @@
+import GameContainer from './farming/GameContainer';
+
 export default function Page() {
-  return <p>Dashboard Page</p>;
+  return (
+    <main className="min-h-screen">
+      <GameContainer />
+    </main>
+  );
 }

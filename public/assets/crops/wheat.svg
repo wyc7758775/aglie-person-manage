@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32" shape-rendering="crispEdges">
+  <style>
+    .wheat-seed { fill: #8D6E63; }
+    .wheat-growing { fill: #7CB342; }
+    .wheat-mature { fill: #FDD835; }
+    .wheat-ready { fill: #FFEB3B; }
+  </style>
+  <!-- Frame 1: Seed (0-25%) -->
+  <rect x="4" y="20" width="8" height="8" class="wheat-seed"/>
+  <!-- Frame 2: Growing (25-50%) -->
+  <rect x="36" y="12" width="4" height="12" class="wheat-growing"/>
+  <rect x="40" y="8" width="8" height="16" class="wheat-growing"/>
+  <!-- Frame 3: Mature (50-75%) -->
+  <rect x="68" y="4" width="8" height="20" class="wheat-mature"/>
+  <rect x="76" y="8" width="8" height="16" class="wheat-mature"/>
+  <!-- Frame 4: Ready (75-100%) -->
+  <rect x="100" y="0" width="12" height="28" class="wheat-ready"/>
+  <rect x="112" y="4" width="12" height="20" class="wheat-ready"/>
+</svg>

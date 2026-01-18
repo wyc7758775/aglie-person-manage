@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <!-- Soil tile - pixel style -->
+  <rect x="0" y="0" width="32" height="32" fill="#8D6E63"/>
+  <rect x="2" y="2" width="4" height="4" fill="#795548"/>
+  <rect x="14" y="6" width="4" height="4" fill="#6D4C41"/>
+  <rect x="6" y="18" width="4" height="4" fill="#6D4C41"/>
+  <rect x="22" y="2" width="4" height="4" fill="#795548"/>
+  <rect x="2" y="26" width="4" height="4" fill="#6D4C41"/>
+  <rect x="18" y="22" width="4" height="4" fill="#795548"/>
+  <rect x="10" y="10" width="2" height="2" fill="#5D4037"/>
+  <rect x="24" y="16" width="2" height="2" fill="#5D4037"/>
+</svg>

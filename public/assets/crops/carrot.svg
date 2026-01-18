@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32" shape-rendering="crispEdges">
+  <style>
+    .carrot-leaf { fill: #4CAF50; }
+    .carrot-root { fill: #FF6D00; }
+  </style>
+  <!-- Frame 1: Seed -->
+  <rect x="4" y="24" width="8" height="4" class="carrot-leaf"/>
+  <!-- Frame 2: Growing -->
+  <rect x="36" y="16" width="4" height="12" class="carrot-leaf"/>
+  <rect x="32" y="24" width="12" height="4" class="carrot-leaf"/>
+  <!-- Frame 3: Mature -->
+  <rect x="68" y="8" width="4" height="20" class="carrot-root"/>
+  <rect x="64" y="4" width="12" height="8" class="carrot-leaf"/>
+  <!-- Frame 4: Ready -->
+  <rect x="100" y="12" width="8" height="16" class="carrot-root"/>
+  <rect x="108" y="0" width="16" height="12" class="carrot-leaf"/>
+</svg>

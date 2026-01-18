@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32" shape-rendering="crispEdges">
+  <style>
+    .wm-rind { fill: #2E7D32; }
+    .wm-flesh { fill: #EF5350; }
+    .wm-seed { fill: #5D4037; }
+    .wm-vine { fill: #558B2F; }
+  </style>
+  <!-- Frame 1: Seed -->
+  <rect x="4" y="24" width="8" height="4" class="wm-vine"/>
+  <!-- Frame 2: Growing -->
+  <rect x="36" y="20" width="12" height="8" class="wm-rind"/>
+  <rect x="40" y="22" width="8" height="4" class="wm-flesh"/>
+  <!-- Frame 3: Mature -->
+  <rect x="68" y="12" width="20" height="16" class="wm-rind"/>
+  <rect x="72" y="16" width="16" height="12" class="wm-flesh"/>
+  <!-- Frame 4: Ready -->
+  <rect x="100" y="8" width="24" height="20" class="wm-rind"/>
+  <rect x="104" y="12" width="20" height="16" class="wm-flesh"/>
+  <rect x="108" y="16" width="4" height="4" class="wm-seed"/>
+  <rect x="116" y="20" width="4" height="4" class="wm-seed"/>
+</svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="32" viewBox="0 0 128 32" shape-rendering="crispEdges">
+  <!-- Wheat crop sprite sheet - 4 frames: seed, growing, mature, ready -->
+  <!-- Frame 1: Seed -->
+  <rect x="0" y="16" width="4" height="4" fill="#8D6E63"/>
+  <!-- Frame 2: Growing -->
+  <rect x="32" y="8" width="4" height="8" fill="#7CB342"/>
+  <rect x="36" y="4" width="4" height="12" fill="#8BC34A"/>
+  <!-- Frame 3: Mature -->
+  <rect x="64" y="4" width="4" height="12" fill="#FDD835"/>
+  <rect x="68" y="0" width="4" height="16" fill="#FFEB3B"/>
+  <rect x="72" y="4" width="4" height="12" fill="#FDD835"/>
+  <!-- Frame 4: Ready -->
+  <rect x="96" y="0" width="8" height="16" fill="#FFEB3B"/>
+  <rect x="104" y="4" width="8" height="12" fill="#FDD835"/>
+  <rect x="112" y="0" width="8" height="16" fill="#FFF176"/>
+</svg>
