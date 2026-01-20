@@ -1,3 +1,5 @@
+# 任何回答和生成的文档都使用中文回复我
+
 # Agent Instructions
 
 This file contains guidelines for AI agents working in this repository.

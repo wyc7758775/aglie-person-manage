@@ -1,6 +1,6 @@
 // This file contains placeholder data that you'll be replacing with real data in the Data Fetching chapter:
 // https://nextjs.org/learn/dashboard-app/fetching-data
-import { User, UserRole } from './definitions';
+import { User, UserRole, Project, ProjectType, ProjectStatus, ProjectPriority } from './definitions';
 
 const users: (User & { role: UserRole })[] = [
   {
@@ -170,4 +170,82 @@ const revenue = [
   { month: "Dec", revenue: 4800 },
 ];
 
-export { users, customers, invoices, revenue };
+const projects: Project[] = [
+  {
+    id: 'proj-1',
+    name: '敏捷人员管理系统',
+    description: '基于Next.js的现代化人员管理平台',
+    type: 'code',
+    status: 'active',
+    priority: 'high',
+    goals: ['实现用户管理', '实现项目管理', '实现任务管理'],
+    tags: ['Next.js', 'TypeScript', 'React'],
+    startDate: '2024-01-15',
+    endDate: '2024-03-30',
+    progress: 75,
+    createdAt: '2024-01-15T00:00:00.000Z',
+    updatedAt: '2024-01-20T00:00:00.000Z'
+  },
+  {
+    id: 'proj-2',
+    name: '健身计划',
+    description: '通过规律运动增强体质，保持健康生活方式',
+    type: 'life',
+    status: 'active',
+    priority: 'medium',
+    goals: ['减肥5公斤', '增肌', '每周运动3次'],
+    tags: ['健康', '运动', '健身'],
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    progress: 45,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-19T00:00:00.000Z'
+  },
+  {
+    id: 'proj-3',
+    name: '学习英语',
+    description: '提升英语水平，为工作学习做准备',
+    type: 'life',
+    status: 'planning',
+    priority: 'medium',
+    goals: ['考过六级', '阅读英文原版书籍', '能流利对话'],
+    tags: ['英语', '学习', '语言'],
+    startDate: '2024-02-01',
+    endDate: '2024-06-30',
+    progress: 0,
+    createdAt: '2024-01-18T00:00:00.000Z',
+    updatedAt: '2024-01-18T00:00:00.000Z'
+  },
+  {
+    id: 'proj-4',
+    name: '个人博客',
+    description: '搭建个人博客网站，记录学习心得',
+    type: 'code',
+    status: 'paused',
+    priority: 'low',
+    goals: ['完成基础功能', '添加评论系统', '部署上线'],
+    tags: ['博客', '前端', 'React'],
+    startDate: '2024-01-10',
+    endDate: '2024-06-01',
+    progress: 30,
+    createdAt: '2024-01-10T00:00:00.000Z',
+    updatedAt: '2024-01-15T00:00:00.000Z'
+  },
+  {
+    id: 'proj-5',
+    name: '读书计划',
+    description: '通过阅读扩展知识面，提升思维能力',
+    type: 'life',
+    status: 'active',
+    priority: 'high',
+    goals: ['读完12本书', '写读书笔记', '分享读后感'],
+    tags: ['阅读', '知识', '成长'],
+    startDate: '2024-01-01',
+    endDate: '2024-12-31',
+    progress: 15,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-19T00:00:00.000Z'
+  }
+];
+
+export { users, customers, invoices, revenue, projects };

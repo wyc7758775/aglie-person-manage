@@ -118,3 +118,35 @@ export type InvoiceForm = {
   amount: number;
   status: 'pending' | 'paid';
 };
+
+export type ProjectType = 'life' | 'code';
+
+export type ProjectStatus = 'active' | 'completed' | 'paused' | 'planning';
+
+export type ProjectPriority = 'high' | 'medium' | 'low';
+
+export type Project = {
+  id: string;
+  name: string;
+  description: string;
+  type: ProjectType;
+  status: ProjectStatus;
+  priority: ProjectPriority;
+  goals: string[];
+  tags: string[];
+  startDate: string;
+  endDate: string | null;
+  progress: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ProjectCreateRequest = Omit<Project, 'id' | 'progress' | 'createdAt' | 'updatedAt'>;
+
+export type ProjectUpdateRequest = Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>;
+
+export type ProjectResponse = {
+  success: boolean;
+  project?: Project;
+  message?: string;
+};
