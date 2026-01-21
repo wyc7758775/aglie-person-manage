@@ -137,11 +137,12 @@ export type Project = {
   startDate: string;
   endDate: string | null;
   progress: number;
+  avatar?: string;
   createdAt: string;
   updatedAt: string;
 };
 
-export type ProjectCreateRequest = Omit<Project, 'id' | 'progress' | 'createdAt' | 'updatedAt'>;
+export type ProjectCreateRequest = Omit<Project, 'id' | 'progress' | 'createdAt' | 'updatedAt' | 'avatar'>;
 
 export type ProjectUpdateRequest = Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>;
 

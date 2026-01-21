@@ -27,27 +27,27 @@ export default function RewardsPage() {
         >
           {/* 奖励网格 */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            <RewardCard icon="🍎" price={10} />
-            <RewardCard icon="🍫" price={15} />
-            <RewardCard icon="🍪" price={20} />
-            <RewardCard icon="🍷" price={25} />
-            <RewardCard icon="🎮" price={30} />
-            <RewardCard icon="🍰" price={35} />
-            <RewardCard icon="🎯" price={40} />
-            <RewardCard icon="☕" price={45} />
-            <RewardCard icon="🎪" price={50} />
-            <RewardCard icon="🎬" price={60} />
-            <RewardCard icon="🎵" price={70} />
-            <RewardCard icon="🎨" price={80} />
+            <RewardCard key="reward-apple" icon="🍎" price={10} />
+            <RewardCard key="reward-chocolate" icon="🍫" price={15} />
+            <RewardCard key="reward-cookie" icon="🍪" price={20} />
+            <RewardCard key="reward-wine" icon="🍷" price={25} />
+            <RewardCard key="reward-game" icon="🎮" price={30} />
+            <RewardCard key="reward-cake" icon="🍰" price={35} />
+            <RewardCard key="reward-target" icon="🎯" price={40} />
+            <RewardCard key="reward-coffee" icon="☕" price={45} />
+            <RewardCard key="reward-circus" icon="🎪" price={50} />
+            <RewardCard key="reward-movie" icon="🎬" price={60} />
+            <RewardCard key="reward-music" icon="🎵" price={70} />
+            <RewardCard key="reward-art" icon="🎨" price={80} />
           </div>
           
           {/* 特殊奖励 */}
           <div className="mt-4">
             <h3 className="text-sm font-medium text-gray-900 mb-3">Special Rewards</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              <RewardCard icon="🎁" price={100} />
-              <RewardCard icon="🏆" price={150} />
-              <RewardCard icon="💎" price={200} />
+              <RewardCard key="reward-gift" icon="🎁" price={100} />
+              <RewardCard key="reward-trophy" icon="🏆" price={150} />
+              <RewardCard key="reward-diamond" icon="💎" price={200} />
             </div>
           </div>
           

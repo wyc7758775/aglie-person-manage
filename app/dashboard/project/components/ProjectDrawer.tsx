@@ -1,0 +1,444 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { Project, ProjectCreateRequest, ProjectStatus, ProjectType, ProjectPriority } from '@/app/lib/definitions';
+import { useLanguage } from '@/app/lib/i18n';
+import EditableField from './EditableField';
+import EditableTagList from './EditableTagList';
+import EditableGoalList from './EditableGoalList';
+import SaveStatusIndicator, { SaveStatus } from './SaveStatusIndicator';
+import './animations.css';
+
+interface ProjectDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  project?: Project;
+  onSave?: (project: Project) => void;
+  onDelete?: (id: string) => void;
+}
+
+// 默认新项目数据
+const getDefaultProjectData = (): ProjectCreateRequest => ({
+  name: '',
+  description: '',
+  type: 'code',
+  priority: 'medium',
+  status: 'planning',
+  startDate: new Date().toISOString().split('T')[0],
+  endDate: null,
+  goals: [],
+  tags: []
+});
+
+export default function ProjectDrawer({ 
+  open, 
+  onClose, 
+  project, 
+  onSave, 
+  onDelete 
+}: ProjectDrawerProps) {
+  const { t } = useLanguage();
+  
+  // 本地项目数据
+  const [localProject, setLocalProject] = useState<ProjectCreateRequest | null>(null);
+  
+  // 全局保存状态
+  const [globalSaveStatus, setGlobalSaveStatus] = useState<SaveStatus>('idle');
+  const [globalErrorMessage, setGlobalErrorMessage] = useState<string | null>(null);
+  
+  // 提交状态（用于新建项目）
+  const [submitting, setSubmitting] = useState(false);
+  
+  // 删除对话框
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  
+  // 动画状态
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // 是否是新建模式
+  const isCreateMode = !project;
+
+  // 初始化本地数据
+  useEffect(() => {
+    if (project) {
+      setLocalProject({
+        name: project.name,
+        description: project.description || '',
+        type: project.type,
+        priority: project.priority,
+        status: project.status,
+        startDate: project.startDate,
+        endDate: project.endDate,
+        goals: project.goals || [],
+        tags: project.tags || []
+      });
+    } else {
+      setLocalProject(getDefaultProjectData());
+    }
+  }, [project]);
+
+  // 动画控制
+  useEffect(() => {
+    if (open) {
+      setIsAnimating(true);
+    } else {
+      setTimeout(() => setIsAnimating(false), 300);
+    }
+  }, [open]);
+
+  // 单字段保存（编辑模式）
+  const handleFieldSave = useCallback(async (fieldName: string, value: string | string[] | null) => {
+    // 更新本地状态
+    setLocalProject(prev => prev ? { ...prev, [fieldName]: value } : prev);
+
+    // 新建模式下不调用 API
+    if (isCreateMode) {
+      return;
+    }
+
+    // 编辑模式：调用 API 保存
+    setGlobalSaveStatus('saving');
+    setGlobalErrorMessage(null);
+
+    try {
+      const response = await fetch(`/api/projects/${project!.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [fieldName]: value })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setGlobalSaveStatus('saved');
+        // 通知父组件更新
+        if (onSave && result.project) {
+          onSave(result.project);
+        }
+        
+        setTimeout(() => {
+          setGlobalSaveStatus('idle');
+        }, 2000);
+      } else {
+        throw new Error(result.message || '保存失败');
+      }
+    } catch (error) {
+      setGlobalSaveStatus('error');
+      setGlobalErrorMessage(error instanceof Error ? error.message : '保存失败');
+    }
+  }, [isCreateMode, project, onSave]);
+
+  // 创建新项目
+  const handleCreate = async () => {
+    if (!localProject || !localProject.name.trim()) {
+      setGlobalSaveStatus('error');
+      setGlobalErrorMessage('项目名称不能为空');
+      return;
+    }
+
+    setSubmitting(true);
+    setGlobalSaveStatus('saving');
+    setGlobalErrorMessage(null);
+
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(localProject)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setGlobalSaveStatus('saved');
+        if (onSave && result.project) {
+          onSave(result.project);
+        }
+        onClose();
+      } else {
+        throw new Error(result.message || '创建失败');
+      }
+    } catch (error) {
+      setGlobalSaveStatus('error');
+      setGlobalErrorMessage(error instanceof Error ? error.message : '创建失败');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // 删除项目
+  const handleDelete = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!project || !onDelete) return;
+
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'DELETE'
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        onDelete(project.id);
+        setDeleteDialogOpen(false);
+        onClose();
+      } else {
+        alert(data.message || '删除失败');
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('删除失败，请稍后重试');
+    }
+  };
+
+  if (!isAnimating) return null;
+
+  // 类型选项
+  const typeOptions = [
+    { value: 'code', label: t('project.type.code') },
+    { value: 'life', label: t('project.type.life') }
+  ];
+
+  // 优先级选项
+  const priorityOptions = [
+    { value: 'high', label: t('project.priority.high') },
+    { value: 'medium', label: t('project.priority.medium') },
+    { value: 'low', label: t('project.priority.low') }
+  ];
+
+  // 状态选项
+  const statusOptions = [
+    { value: 'planning', label: t('project.status.planning') },
+    { value: 'active', label: t('project.status.active') },
+    { value: 'paused', label: t('project.status.paused') },
+    { value: 'completed', label: t('project.status.completed') }
+  ];
+
+  return (
+    <>
+      {/* 背景遮罩 */}
+      <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}>
+        <div
+          className="absolute inset-0 bg-black bg-opacity-50"
+          onClick={onClose}
+        />
+      </div>
+
+      {/* Drawer 主体 */}
+      <div className={`fixed inset-y-0 right-0 z-50 w-full md:w-[600px] shadow-2xl bg-white flex flex-col transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+        {/* 头部 */}
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-semibold">
+              {isCreateMode ? t('project.drawer.createTitle') || '新建项目' : t('project.drawer.editTitle') || '项目详情'}
+            </h2>
+            <SaveStatusIndicator 
+              status={globalSaveStatus} 
+              errorMessage={globalErrorMessage || undefined}
+            />
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-2xl leading-none p-1"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* 主体内容 */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {localProject && (
+            <div className="space-y-6">
+              {/* 项目头部信息 */}
+              <div className="flex items-start gap-4">
+                <div className="text-4xl">
+                  {project?.avatar || (localProject.type === 'code' ? '💻' : '🏠')}
+                </div>
+                <div className="flex-1">
+                  <EditableField
+                    value={localProject.name}
+                    fieldName="name"
+                    label={t('project.form.name')}
+                    type="text"
+                    required
+                    placeholder={t('project.form.namePlaceholder')}
+                    onSave={handleFieldSave}
+                  />
+                </div>
+              </div>
+
+              {/* 描述 */}
+              <EditableField
+                value={localProject.description}
+                fieldName="description"
+                label={t('project.form.description')}
+                type="textarea"
+                placeholder={t('project.form.descriptionPlaceholder')}
+                onSave={handleFieldSave}
+              />
+
+              {/* 类型和优先级 */}
+              <div className="grid grid-cols-2 gap-4">
+                <EditableField
+                  value={localProject.type}
+                  fieldName="type"
+                  label={t('project.form.type')}
+                  type="select"
+                  options={typeOptions}
+                  required
+                  onSave={handleFieldSave}
+                />
+                <EditableField
+                  value={localProject.priority}
+                  fieldName="priority"
+                  label={t('project.form.priority')}
+                  type="select"
+                  options={priorityOptions}
+                  required
+                  onSave={handleFieldSave}
+                />
+              </div>
+
+              {/* 状态 */}
+              <EditableField
+                value={localProject.status}
+                fieldName="status"
+                label={t('project.status')}
+                type="select"
+                options={statusOptions}
+                required
+                onSave={handleFieldSave}
+              />
+
+              {/* 日期 */}
+              <div className="grid grid-cols-2 gap-4">
+                <EditableField
+                  value={localProject.startDate}
+                  fieldName="startDate"
+                  label={t('project.startDate')}
+                  type="date"
+                  required
+                  onSave={handleFieldSave}
+                />
+                <EditableField
+                  value={localProject.endDate}
+                  fieldName="endDate"
+                  label={t('project.endDate')}
+                  type="date"
+                  onSave={handleFieldSave}
+                />
+              </div>
+
+              {/* 进度（只读） */}
+              {project && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('project.progress')}
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 bg-gray-200 rounded-full h-3">
+                      <div
+                        className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                        style={{ width: `${project.progress}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 w-12 text-right">
+                      {project.progress}%
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* 目标 */}
+              <EditableGoalList
+                goals={localProject.goals}
+                label={t('project.form.goals')}
+                placeholder={t('project.form.goalPlaceholder') || '输入目标内容'}
+                onSave={handleFieldSave}
+              />
+
+              {/* 标签 */}
+              <EditableTagList
+                tags={localProject.tags}
+                label={t('project.form.tags')}
+                placeholder={t('project.form.addTag')}
+                onSave={handleFieldSave}
+              />
+
+              {/* 时间戳（只读） */}
+              {project && (
+                <div className="text-xs text-gray-500 pt-4 border-t">
+                  <div className="flex justify-between">
+                    <span>创建时间：{new Date(project.createdAt).toLocaleString()}</span>
+                    <span>更新时间：{new Date(project.updatedAt).toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 底部操作栏 */}
+        <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
+          {/* 新建模式：显示创建按钮 */}
+          {isCreateMode && (
+            <button
+              onClick={handleCreate}
+              disabled={submitting || !localProject?.name?.trim()}
+              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {submitting ? '创建中...' : t('project.create') || '创建项目'}
+            </button>
+          )}
+          
+          {/* 编辑模式：显示删除按钮 */}
+          {!isCreateMode && project && onDelete && (
+            <button
+              onClick={handleDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium"
+            >
+              {t('project.delete')}
+            </button>
+          )}
+          
+          {/* 编辑模式下的提示文字 */}
+          {!isCreateMode && (
+            <span className="text-sm text-gray-500">
+              修改后自动保存
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* 删除确认对话框 */}
+      {deleteDialogOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4 text-red-600">
+              {t('project.deleteConfirm.title')}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {t('project.deleteConfirm.message', { name: project?.name || '' })}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteDialogOpen(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                {t('project.deleteConfirm.cancel')}
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                {t('project.deleteConfirm.confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

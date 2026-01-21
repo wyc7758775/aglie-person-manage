@@ -1,0 +1,77 @@
+/* 抽屉动画 */
+.drawer-enter {
+  transform: translateX(100%);
+}
+
+.drawer-enter-active {
+  transform: translateX(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer-exit {
+  transform: translateX(0);
+}
+
+.drawer-exit-active {
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 卡片进入动画 */
+.card-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.card-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease-out;
+}
+
+.card-exit {
+  opacity: 1;
+}
+
+.card-exit-active {
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
+}
+
+/* 卡片悬停动画 */
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease-out;
+}
+
+/* 对话框动画 */
+.dialog-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.dialog-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.2s ease-out;
+}
+
+/* 遮罩层动画 */
+.mask-enter {
+  opacity: 0;
+}
+
+.mask-enter-active {
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+}
+
+.mask-exit {
+  opacity: 1;
+}
+
+.mask-exit-active {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
