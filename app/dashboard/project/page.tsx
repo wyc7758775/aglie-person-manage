@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
 import { Project, ProjectStatus, ProjectPriority } from '@/app/lib/definitions';
 import { useLanguage } from '@/app/lib/i18n';
 import ProjectDrawer from './components/ProjectDrawer';
+import { ProjectListSkeleton } from './components/ProjectCardSkeleton';
 
 export default function ProjectPage() {
   const { t } = useLanguage();
@@ -71,11 +72,11 @@ export default function ProjectPage() {
         if (data.success && Array.isArray(data.projects)) {
         setProjects(data.projects);
       } else {
-        setError(data.message || '加载失败');
+        setError(data.message || t('project.loadFailed'));
       }
     } catch (err) {
       console.error('Fetch error:', err);
-      setError('网络错误，请稍后重试');
+      setError(t('common.errors.networkError'));
     } finally {
       setLoading(false);
     }
@@ -97,11 +98,11 @@ export default function ProjectPage() {
       if (data.success) {
         fetchProjects();
       } else {
-        alert(data.message || '删除失败');
+        alert(data.message || t('project.deleteFailed'));
       }
     } catch (err) {
       console.error('Delete error:', err);
-      alert('删除失败，请稍后重试');
+      alert(t('project.deleteFailedRetry'));
     }
   };
 
@@ -211,7 +212,7 @@ export default function ProjectPage() {
         addButtonText={t('project.add')}
       >
         {loading ? (
-          <div className="text-center py-8 text-gray-500">加载中...</div>
+          <ProjectListSkeleton />
         ) : error ? (
           <div className="text-center py-8 text-red-500">{error}</div>
         ) : projects.length === 0 ? (

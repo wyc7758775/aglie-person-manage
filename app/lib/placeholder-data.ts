@@ -1,6 +1,6 @@
 // This file contains placeholder data that you'll be replacing with real data in the Data Fetching chapter:
 // https://nextjs.org/learn/dashboard-app/fetching-data
-import { User, UserRole, Project, ProjectType, ProjectStatus, ProjectPriority } from './definitions';
+import { User, UserRole, Project, ProjectType, ProjectStatus, ProjectPriority, Requirement, RequirementStatus, RequirementPriority, RequirementType } from './definitions';
 
 const users: (User & { role: UserRole })[] = [
   {
@@ -248,4 +248,91 @@ const projects: Project[] = [
   }
 ];
 
-export { users, customers, invoices, revenue, projects };
+const requirements: Requirement[] = [
+  {
+    id: 'REQ-001',
+    title: '用户登录功能优化',
+    description: '改进用户登录体验，支持多种登录方式，增加记住密码功能',
+    type: 'enhancement',
+    status: 'development',
+    priority: 'high',
+    assignee: '张三',
+    reporter: '产品经理',
+    createdDate: '2024-01-15',
+    dueDate: '2024-02-15',
+    storyPoints: 8,
+    tags: ['用户体验', '登录', '安全']
+  },
+  {
+    id: 'REQ-002',
+    title: '数据导出功能',
+    description: '支持将用户数据导出为Excel和PDF格式，包含筛选和排序功能',
+    type: 'feature',
+    status: 'review',
+    priority: 'medium',
+    assignee: '李四',
+    reporter: '客户',
+    createdDate: '2024-01-20',
+    dueDate: '2024-03-01',
+    storyPoints: 13,
+    tags: ['数据', '导出', 'Excel', 'PDF']
+  },
+  {
+    id: 'REQ-003',
+    title: '移动端响应式适配',
+    description: '优化移动端显示效果，确保在各种屏幕尺寸下的良好体验',
+    type: 'enhancement',
+    status: 'approved',
+    priority: 'high',
+    assignee: '王五',
+    reporter: 'UI设计师',
+    createdDate: '2024-01-25',
+    dueDate: '2024-02-28',
+    storyPoints: 21,
+    tags: ['移动端', '响应式', 'UI']
+  },
+  {
+    id: 'REQ-004',
+    title: '性能监控系统',
+    description: '建立系统性能监控机制，实时监控系统运行状态和性能指标',
+    type: 'feature',
+    status: 'draft',
+    priority: 'medium',
+    assignee: '赵六',
+    reporter: '运维团队',
+    createdDate: '2024-02-01',
+    dueDate: '2024-04-01',
+    storyPoints: 34,
+    tags: ['监控', '性能', '运维']
+  },
+  {
+    id: 'REQ-005',
+    title: '修复文件上传bug',
+    description: '解决大文件上传时出现的超时和进度显示错误问题',
+    type: 'bugfix',
+    status: 'testing',
+    priority: 'critical',
+    assignee: '钱七',
+    reporter: '测试团队',
+    createdDate: '2024-02-05',
+    dueDate: '2024-02-10',
+    storyPoints: 5,
+    tags: ['bug修复', '文件上传', '超时']
+  },
+  {
+    id: 'REQ-006',
+    title: '用户权限管理重构',
+    description: '重新设计用户权限管理系统，支持更细粒度的权限控制',
+    type: 'feature',
+    status: 'completed',
+    priority: 'high',
+    assignee: '孙八',
+    reporter: '安全团队',
+    createdDate: '2023-12-01',
+    dueDate: '2024-01-31',
+    storyPoints: 55,
+    tags: ['权限', '安全', '重构']
+  }
+];
+
+export { users, customers, invoices, revenue, projects, requirements };

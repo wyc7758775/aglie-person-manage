@@ -54,6 +54,8 @@ export default function ProjectDrawer({
   
   // 动画状态
   const [isAnimating, setIsAnimating] = useState(false);
+  // 内容区域动画状态
+  const [contentVisible, setContentVisible] = useState(false);
 
   // 是否是新建模式
   const isCreateMode = !project;
@@ -81,7 +83,12 @@ export default function ProjectDrawer({
   useEffect(() => {
     if (open) {
       setIsAnimating(true);
+      // 延迟显示内容区域，让抽屉先滑入
+      setTimeout(() => {
+        setContentVisible(true);
+      }, 100);
     } else {
+      setContentVisible(false);
       setTimeout(() => setIsAnimating(false), 300);
     }
   }, [open]);
@@ -120,11 +127,11 @@ export default function ProjectDrawer({
           setGlobalSaveStatus('idle');
         }, 2000);
       } else {
-        throw new Error(result.message || '保存失败');
+        throw new Error(result.message || t('project.saveFailed'));
       }
     } catch (error) {
       setGlobalSaveStatus('error');
-      setGlobalErrorMessage(error instanceof Error ? error.message : '保存失败');
+      setGlobalErrorMessage(error instanceof Error ? error.message : t('project.saveFailed'));
     }
   }, [isCreateMode, project, onSave]);
 
@@ -132,7 +139,7 @@ export default function ProjectDrawer({
   const handleCreate = async () => {
     if (!localProject || !localProject.name.trim()) {
       setGlobalSaveStatus('error');
-      setGlobalErrorMessage('项目名称不能为空');
+      setGlobalErrorMessage(t('project.nameRequired'));
       return;
     }
 
@@ -156,11 +163,11 @@ export default function ProjectDrawer({
         }
         onClose();
       } else {
-        throw new Error(result.message || '创建失败');
+        throw new Error(result.message || t('project.createFailed'));
       }
     } catch (error) {
       setGlobalSaveStatus('error');
-      setGlobalErrorMessage(error instanceof Error ? error.message : '创建失败');
+      setGlobalErrorMessage(error instanceof Error ? error.message : t('project.createFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -185,11 +192,11 @@ export default function ProjectDrawer({
         setDeleteDialogOpen(false);
         onClose();
       } else {
-        alert(data.message || '删除失败');
+        alert(data.message || t('project.deleteFailed'));
       }
     } catch (err) {
       console.error('Delete error:', err);
-      alert('删除失败，请稍后重试');
+      alert(t('project.deleteFailedRetry'));
     }
   };
 
@@ -232,7 +239,7 @@ export default function ProjectDrawer({
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold">
-              {isCreateMode ? t('project.drawer.createTitle') || '新建项目' : t('project.drawer.editTitle') || '项目详情'}
+              {isCreateMode ? t('project.drawer.createTitle') : t('project.drawer.editTitle')}
             </h2>
             <SaveStatusIndicator 
               status={globalSaveStatus} 
@@ -248,7 +255,9 @@ export default function ProjectDrawer({
         </div>
 
         {/* 主体内容 */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className={`flex-1 overflow-y-auto p-6 transition-all duration-300 ease-out ${
+          contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
           {localProject && (
             <div className="space-y-6">
               {/* 项目头部信息 */}
@@ -355,7 +364,7 @@ export default function ProjectDrawer({
               <EditableGoalList
                 goals={localProject.goals}
                 label={t('project.form.goals')}
-                placeholder={t('project.form.goalPlaceholder') || '输入目标内容'}
+                placeholder={t('project.form.goalPlaceholder')}
                 onSave={handleFieldSave}
               />
 
@@ -371,8 +380,8 @@ export default function ProjectDrawer({
               {project && (
                 <div className="text-xs text-gray-500 pt-4 border-t">
                   <div className="flex justify-between">
-                    <span>创建时间：{new Date(project.createdAt).toLocaleString()}</span>
-                    <span>更新时间：{new Date(project.updatedAt).toLocaleString()}</span>
+                    <span>{t('project.createdAt')}：{new Date(project.createdAt).toLocaleString()}</span>
+                    <span>{t('project.updatedAt')}：{new Date(project.updatedAt).toLocaleString()}</span>
                   </div>
                 </div>
               )}
@@ -389,7 +398,7 @@ export default function ProjectDrawer({
               disabled={submitting || !localProject?.name?.trim()}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
-              {submitting ? '创建中...' : t('project.create') || '创建项目'}
+              {submitting ? t('project.creating') : t('project.create')}
             </button>
           )}
           
@@ -406,7 +415,7 @@ export default function ProjectDrawer({
           {/* 编辑模式下的提示文字 */}
           {!isCreateMode && (
             <span className="text-sm text-gray-500">
-              修改后自动保存
+              {t('project.autoSave')}
             </span>
           )}
         </div>

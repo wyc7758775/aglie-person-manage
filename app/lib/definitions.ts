@@ -151,3 +151,35 @@ export type ProjectResponse = {
   project?: Project;
   message?: string;
 };
+
+// 需求管理类型定义
+export type RequirementStatus = 'draft' | 'review' | 'approved' | 'development' | 'testing' | 'completed' | 'rejected';
+
+export type RequirementPriority = 'critical' | 'high' | 'medium' | 'low';
+
+export type RequirementType = 'feature' | 'enhancement' | 'bugfix' | 'research';
+
+export type Requirement = {
+  id: string;
+  title: string;
+  description: string;
+  type: RequirementType;
+  status: RequirementStatus;
+  priority: RequirementPriority;
+  assignee: string;
+  reporter: string;
+  createdDate: string;
+  dueDate: string;
+  storyPoints: number;
+  tags: string[];
+};
+
+export type RequirementCreateRequest = Omit<Requirement, 'id'>;
+
+export type RequirementUpdateRequest = Partial<Omit<Requirement, 'id'>>;
+
+export type RequirementResponse = {
+  success: boolean;
+  requirement?: Requirement;
+  message?: string;
+};
