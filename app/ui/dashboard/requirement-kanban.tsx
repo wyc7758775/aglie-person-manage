@@ -137,7 +137,7 @@ export default function RequirementKanban({ requirements, groupBy, onRequirement
     <div className="overflow-x-auto pb-4">
       <div className="flex space-x-4 min-w-max">
         {columns.map((columnKey) => {
-          const columnRequirements = groupedData[columnKey as keyof typeof groupedData] || [];
+          const columnRequirements: Requirement[] = (groupedData[columnKey as keyof typeof groupedData] || []) as Requirement[];
           
           return (
             <div

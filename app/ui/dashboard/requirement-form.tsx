@@ -21,12 +21,14 @@ export default function RequirementForm({ requirement, onSubmit, onCancel }: Req
     createdDate: requirement?.createdDate || new Date().toISOString().split('T')[0],
     dueDate: requirement?.dueDate || '',
     storyPoints: requirement?.storyPoints || 0,
+    points: requirement?.points || 0,
     tags: requirement?.tags || []
   });
 
   const [newTag, setNewTag] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [autoCalculatePoints, setAutoCalculatePoints] = useState(false);
 
   useEffect(() => {
     if (requirement) {
@@ -41,10 +43,24 @@ export default function RequirementForm({ requirement, onSubmit, onCancel }: Req
         createdDate: requirement.createdDate,
         dueDate: requirement.dueDate,
         storyPoints: requirement.storyPoints,
+        points: requirement.points || 0,
         tags: requirement.tags
       });
     }
   }, [requirement]);
+
+  // 自动计算积分
+  useEffect(() => {
+    if (autoCalculatePoints && formData.priority) {
+      const pointsMap: Record<RequirementPriority, number> = {
+        critical: 15,
+        high: 10,
+        medium: 5,
+        low: 2
+      };
+      setFormData(prev => ({ ...prev, points: pointsMap[formData.priority] }));
+    }
+  }, [autoCalculatePoints, formData.priority]);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -68,7 +84,11 @@ export default function RequirementForm({ requirement, onSubmit, onCancel }: Req
 
     setSubmitting(true);
     try {
-      await onSubmit(formData);
+      const submitData = {
+        ...formData,
+        autoCalculatePoints: autoCalculatePoints
+      };
+      await onSubmit(submitData as any);
     } catch (error) {
       console.error('Submit error:', error);
     } finally {
@@ -181,6 +201,43 @@ export default function RequirementForm({ requirement, onSubmit, onCancel }: Req
             min="0"
           />
         </div>
+      </div>
+
+      {/* 积分 */}
+      <div>
+        <div className="flex items-center mb-2">
+          <input
+            type="checkbox"
+            id="autoCalculatePoints"
+            checked={autoCalculatePoints}
+            onChange={(e) => setAutoCalculatePoints(e.target.checked)}
+            className="mr-2"
+          />
+          <label htmlFor="autoCalculatePoints" className="text-sm font-medium text-gray-700">
+            根据优先级自动计算积分
+          </label>
+        </div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">积分</label>
+        <input
+          type="number"
+          value={formData.points}
+          onChange={(e) => {
+            const value = parseInt(e.target.value) || 0;
+            if (value >= 0) {
+              setFormData({ ...formData, points: value });
+            }
+          }}
+          className={`w-full px-3 py-2 border rounded-md ${errors.points ? 'border-red-500' : 'border-gray-300'} ${autoCalculatePoints ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+          min="0"
+          disabled={autoCalculatePoints}
+          placeholder="输入积分值"
+        />
+        {errors.points && <p className="text-red-500 text-xs mt-1">{errors.points}</p>}
+        {autoCalculatePoints && (
+          <p className="text-xs text-gray-500 mt-1">
+            当前优先级 {formData.priority === 'critical' ? '紧急' : formData.priority === 'high' ? '高' : formData.priority === 'medium' ? '中' : '低'} 对应积分: {formData.points}
+          </p>
+        )}
       </div>
 
       {/* 分配人和报告人 */}

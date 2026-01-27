@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRequirements, createRequirement } from '@/app/lib/requirements';
+import { getRequirements, createRequirement, calculateRequirementPoints } from '@/app/lib/requirements';
 import { RequirementStatus, RequirementPriority, RequirementType } from '@/app/lib/definitions';
 
 export async function GET(request: NextRequest) {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { title, description, type, status, priority, assignee, reporter, createdDate, dueDate, storyPoints, tags } = body;
+    const { title, description, type, status, priority, assignee, reporter, createdDate, dueDate, storyPoints, tags, points, autoCalculatePoints } = body;
 
     if (!title || title.trim().length === 0) {
       return NextResponse.json(
@@ -78,6 +78,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 积分验证
+    let finalPoints = points ?? 0;
+    if (points !== undefined && points < 0) {
+      return NextResponse.json(
+        { success: false, message: '积分不能为负数' },
+        { status: 400 }
+      );
+    }
+
+    // 自动计算积分
+    if (autoCalculatePoints && priority) {
+      finalPoints = calculateRequirementPoints(priority);
+    }
+
     const requirement = await createRequirement({
       title: title.trim(),
       description: description || '',
@@ -89,6 +103,7 @@ export async function POST(request: NextRequest) {
       createdDate: createdDate || new Date().toISOString().split('T')[0],
       dueDate: dueDate || '',
       storyPoints: storyPoints || 0,
+      points: finalPoints,
       tags: tags || []
     });
 

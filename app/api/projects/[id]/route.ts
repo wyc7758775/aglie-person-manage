@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProjectById, updateProject, deleteProject } from '@/app/lib/projects';
+import { getCurrentUser } from '@/app/lib/auth-utils';
 
 export async function GET(
   request: NextRequest,
@@ -58,7 +59,19 @@ export async function PUT(
       );
     }
 
-    const project = await updateProject(id, body);
+    // 积分验证
+    if (body.points !== undefined && body.points < 0) {
+      return NextResponse.json(
+        { success: false, message: '积分不能为负数' },
+        { status: 400 }
+      );
+    }
+
+    // 获取当前用户（用于积分累加）
+    const currentUser = await getCurrentUser(request);
+    const userId = currentUser?.id;
+
+    const project = await updateProject(id, body, userId);
 
     if (!project) {
       return NextResponse.json(

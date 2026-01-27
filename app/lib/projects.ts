@@ -1,7 +1,24 @@
 import { Project, ProjectType, ProjectStatus, ProjectPriority, ProjectCreateRequest, ProjectUpdateRequest } from './definitions';
 import { projects as initialProjects } from './placeholder-data';
+import { updateUserTotalPoints } from './db-memory';
 
 let projects: Project[] = [...initialProjects];
+
+/**
+ * 根据优先级自动计算项目积分
+ */
+export function calculateProjectPoints(priority: ProjectPriority): number {
+  switch (priority) {
+    case 'high':
+      return 20;
+    case 'medium':
+      return 10;
+    case 'low':
+      return 5;
+    default:
+      return 0;
+  }
+}
 
 export async function getProjects(filters?: {
   status?: ProjectStatus;
@@ -35,6 +52,7 @@ export async function createProject(data: ProjectCreateRequest): Promise<Project
     id: `proj-${Date.now()}`,
     ...data,
     progress: 0,
+    points: data.points ?? 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -43,10 +61,22 @@ export async function createProject(data: ProjectCreateRequest): Promise<Project
   return newProject;
 }
 
-export async function updateProject(id: string, data: ProjectUpdateRequest): Promise<Project | null> {
+export async function updateProject(id: string, data: ProjectUpdateRequest, userId?: string): Promise<Project | null> {
   const index = projects.findIndex(p => p.id === id);
   if (index === -1) {
     return null;
+  }
+
+  const oldProject = projects[index];
+  const oldStatus = oldProject.status;
+  const newStatus = data.status ?? oldStatus;
+
+  // 如果状态从非 completed 变为 completed，累加积分
+  if (oldStatus !== 'completed' && newStatus === 'completed' && userId) {
+    const pointsToAdd = oldProject.points || 0;
+    if (pointsToAdd > 0) {
+      await updateUserTotalPoints(userId, pointsToAdd);
+    }
   }
 
   projects[index] = {

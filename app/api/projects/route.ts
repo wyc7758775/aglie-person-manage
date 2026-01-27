@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProjects, createProject } from '@/app/lib/projects';
+import { getProjects, createProject, calculateProjectPoints } from '@/app/lib/projects';
 import { ProjectType, ProjectStatus, ProjectPriority } from '@/app/lib/definitions';
+import { getCurrentUser } from '@/app/lib/auth-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { name, description, type, priority, startDate, endDate, goals, tags } = body;
+    const { name, description, type, priority, startDate, endDate, goals, tags, points, autoCalculatePoints } = body;
 
     if (!name || name.trim().length === 0) {
       return NextResponse.json(
@@ -78,6 +79,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 积分验证
+    let finalPoints = points ?? 0;
+    if (points !== undefined && points < 0) {
+      return NextResponse.json(
+        { success: false, message: '积分不能为负数' },
+        { status: 400 }
+      );
+    }
+
+    // 自动计算积分
+    if (autoCalculatePoints && priority) {
+      finalPoints = calculateProjectPoints(priority);
+    }
+
     const project = await createProject({
       name: name.trim(),
       description: description || '',
@@ -87,7 +102,8 @@ export async function POST(request: NextRequest) {
       startDate,
       endDate: endDate || null,
       goals: goals || [],
-      tags: tags || []
+      tags: tags || [],
+      points: finalPoints
     });
 
     return NextResponse.json(

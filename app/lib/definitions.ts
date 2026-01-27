@@ -10,6 +10,7 @@ export type User = {
   nickname: string;
   password: string;
   role?: UserRole;
+  totalPoints?: number;
 };
 
 export type LoginRequest = {
@@ -137,6 +138,7 @@ export type Project = {
   startDate: string;
   endDate: string | null;
   progress: number;
+  points: number;
   avatar?: string;
   createdAt: string;
   updatedAt: string;
@@ -171,6 +173,7 @@ export type Requirement = {
   createdDate: string;
   dueDate: string;
   storyPoints: number;
+  points: number;
   tags: string[];
 };
 

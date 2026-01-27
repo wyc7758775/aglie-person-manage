@@ -105,6 +105,9 @@ export default function RequirementCard({ requirement, onClick, onEdit, onDelete
             <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
               {requirement.storyPoints} SP
             </span>
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+              {requirement.points || 0} 积分
+            </span>
           </div>
         </div>
         <button 

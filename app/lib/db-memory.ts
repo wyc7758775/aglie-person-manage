@@ -122,6 +122,7 @@ export async function createUser(nickname: string, password: string, role?: User
       nickname,
       password: hashedPassword,
       role: role || 'user',
+      totalPoints: 0,
     };
     
     users.push(newUser);
@@ -196,4 +197,35 @@ export async function getAllUsers(): Promise<User[]> {
  */
 export async function clearAllUsers(): Promise<void> {
   users.length = 0;
+}
+
+/**
+ * 获取用户总积分
+ */
+export async function getUserTotalPoints(userId: string): Promise<number> {
+  try {
+    const user = await findUserById(userId);
+    return user?.totalPoints || 0;
+  } catch (error) {
+    console.error('获取用户总积分失败:', error);
+    return 0;
+  }
+}
+
+/**
+ * 更新用户总积分
+ */
+export async function updateUserTotalPoints(userId: string, points: number): Promise<boolean> {
+  try {
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+      return false;
+    }
+    
+    user.totalPoints = (user.totalPoints || 0) + points;
+    return true;
+  } catch (error) {
+    console.error('更新用户总积分失败:', error);
+    return false;
+  }
 }

@@ -21,7 +21,8 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
     startDate: project?.startDate || new Date().toISOString().split('T')[0],
     endDate: project?.endDate || '',
     goals: project?.goals || [],
-    tags: project?.tags || []
+    tags: project?.tags || [],
+    points: project?.points || 0
   });
 
   const [newGoal, setNewGoal] = useState('');

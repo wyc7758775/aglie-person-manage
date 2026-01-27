@@ -8,30 +8,35 @@ const users: (User & { role: UserRole })[] = [
     nickname: "admin",
     password: "123456",
     role: "user",
+    totalPoints: 0,
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440000",
     nickname: "testuser",
     password: "password123",
     role: "user",
+    totalPoints: 0,
   },
   {
     id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
     nickname: "敏捷小助手",
     password: "agile2024",
     role: "user",
+    totalPoints: 0,
   },
   {
     id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
     nickname: "developer",
     password: "dev123",
     role: "user",
+    totalPoints: 0,
   },
   {
     id: "superadmin-001",
     nickname: "wuyucun",
     password: "wyc7758775",
     role: "superadmin",
+    totalPoints: 0,
   },
 ];
 
@@ -183,6 +188,7 @@ const projects: Project[] = [
     startDate: '2024-01-15',
     endDate: '2024-03-30',
     progress: 75,
+    points: 0,
     createdAt: '2024-01-15T00:00:00.000Z',
     updatedAt: '2024-01-20T00:00:00.000Z'
   },
@@ -198,6 +204,7 @@ const projects: Project[] = [
     startDate: '2024-01-01',
     endDate: '2024-12-31',
     progress: 45,
+    points: 0,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-19T00:00:00.000Z'
   },
@@ -213,6 +220,7 @@ const projects: Project[] = [
     startDate: '2024-02-01',
     endDate: '2024-06-30',
     progress: 0,
+    points: 0,
     createdAt: '2024-01-18T00:00:00.000Z',
     updatedAt: '2024-01-18T00:00:00.000Z'
   },
@@ -228,6 +236,7 @@ const projects: Project[] = [
     startDate: '2024-01-10',
     endDate: '2024-06-01',
     progress: 30,
+    points: 0,
     createdAt: '2024-01-10T00:00:00.000Z',
     updatedAt: '2024-01-15T00:00:00.000Z'
   },
@@ -243,6 +252,7 @@ const projects: Project[] = [
     startDate: '2024-01-01',
     endDate: '2024-12-31',
     progress: 15,
+    points: 0,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-19T00:00:00.000Z'
   }
@@ -261,6 +271,7 @@ const requirements: Requirement[] = [
     createdDate: '2024-01-15',
     dueDate: '2024-02-15',
     storyPoints: 8,
+    points: 0,
     tags: ['用户体验', '登录', '安全']
   },
   {
@@ -275,6 +286,7 @@ const requirements: Requirement[] = [
     createdDate: '2024-01-20',
     dueDate: '2024-03-01',
     storyPoints: 13,
+    points: 0,
     tags: ['数据', '导出', 'Excel', 'PDF']
   },
   {
@@ -289,6 +301,7 @@ const requirements: Requirement[] = [
     createdDate: '2024-01-25',
     dueDate: '2024-02-28',
     storyPoints: 21,
+    points: 0,
     tags: ['移动端', '响应式', 'UI']
   },
   {
@@ -303,6 +316,7 @@ const requirements: Requirement[] = [
     createdDate: '2024-02-01',
     dueDate: '2024-04-01',
     storyPoints: 34,
+    points: 0,
     tags: ['监控', '性能', '运维']
   },
   {
@@ -317,6 +331,7 @@ const requirements: Requirement[] = [
     createdDate: '2024-02-05',
     dueDate: '2024-02-10',
     storyPoints: 5,
+    points: 0,
     tags: ['bug修复', '文件上传', '超时']
   },
   {
@@ -331,6 +346,7 @@ const requirements: Requirement[] = [
     createdDate: '2023-12-01',
     dueDate: '2024-01-31',
     storyPoints: 55,
+    points: 0,
     tags: ['权限', '安全', '重构']
   }
 ];

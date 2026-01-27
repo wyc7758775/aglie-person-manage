@@ -27,7 +27,8 @@ const getDefaultProjectData = (): ProjectCreateRequest => ({
   startDate: new Date().toISOString().split('T')[0],
   endDate: null,
   goals: [],
-  tags: []
+  tags: [],
+  points: 0
 });
 
 export default function ProjectDrawer({ 
@@ -56,6 +57,9 @@ export default function ProjectDrawer({
   const [isAnimating, setIsAnimating] = useState(false);
   // 内容区域动画状态
   const [contentVisible, setContentVisible] = useState(false);
+  
+  // 自动计算积分
+  const [autoCalculatePoints, setAutoCalculatePoints] = useState(false);
 
   // 是否是新建模式
   const isCreateMode = !project;
@@ -72,7 +76,8 @@ export default function ProjectDrawer({
         startDate: project.startDate,
         endDate: project.endDate,
         goals: project.goals || [],
-        tags: project.tags || []
+        tags: project.tags || [],
+        points: project.points || 0
       });
     } else {
       setLocalProject(getDefaultProjectData());
@@ -151,7 +156,10 @@ export default function ProjectDrawer({
       const response = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(localProject)
+        body: JSON.stringify({
+          ...localProject,
+          autoCalculatePoints: autoCalculatePoints
+        })
       });
 
       const result = await response.json();
@@ -359,6 +367,53 @@ export default function ProjectDrawer({
                   </div>
                 </div>
               )}
+
+              {/* 积分 */}
+              <div>
+                <div className="flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    id="autoCalculatePoints"
+                    checked={autoCalculatePoints}
+                    onChange={(e) => {
+                      setAutoCalculatePoints(e.target.checked);
+                      if (e.target.checked && localProject) {
+                        const pointsMap: Record<ProjectPriority, number> = {
+                          high: 20,
+                          medium: 10,
+                          low: 5
+                        };
+                        setLocalProject({ ...localProject, points: pointsMap[localProject.priority] });
+                      }
+                    }}
+                    className="mr-2"
+                  />
+                  <label htmlFor="autoCalculatePoints" className="text-sm font-medium text-gray-700">
+                    根据优先级自动计算积分
+                  </label>
+                </div>
+                <EditableField
+                  value={String(localProject.points || 0)}
+                  fieldName="points"
+                  label="积分"
+                  type="text"
+                  placeholder="输入积分值"
+                  disabled={autoCalculatePoints}
+                  onSave={async (fieldName, value) => {
+                    // 将字符串转换为数字
+                    const numValue = value ? parseInt(value) || 0 : 0;
+                    if (numValue < 0) {
+                      throw new Error('积分不能为负数');
+                    }
+                    await handleFieldSave(fieldName, String(numValue));
+                  }}
+                />
+                {autoCalculatePoints && localProject && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    当前优先级 {localProject.priority === 'high' ? '高' : localProject.priority === 'medium' ? '中' : '低'} 对应积分: {localProject.points}
+                  </p>
+                )}
+              </div>
 
               {/* 目标 */}
               <EditableGoalList
