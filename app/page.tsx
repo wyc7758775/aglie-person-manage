@@ -149,9 +149,9 @@ export default function Page() {
     });
 
     const params = new URLSearchParams(window.location.search);
-    const nextUrl = params.get('next');
-    if (nextUrl && nextUrl.startsWith('/dashboard')) {
-      showToast(t('login.guards.pleaseLogin'), 'info', 3000);
+    const nextUrl = params.get("next");
+    if (nextUrl && nextUrl.startsWith("/dashboard")) {
+      showToast(t("login.guards.pleaseLogin"), "info", 3000);
     }
 
     try {
@@ -226,7 +226,10 @@ export default function Page() {
 
       if (data.success) {
         console.log("Login success:", data.user);
-        showToast(t("login.success.welcomeBack", { nickname: data.user.nickname }), "success");
+        showToast(
+          t("login.success.welcomeBack", { nickname: data.user.nickname }),
+          "success",
+        );
 
         try {
           if (
@@ -236,14 +239,17 @@ export default function Page() {
           ) {
             window.localStorage.setItem("lastLoginNickname", nickname);
             window.localStorage.setItem("lastLoginPassword", password);
-            window.localStorage.setItem("auth_access_token", "token_" + Date.now());
+            window.localStorage.setItem(
+              "auth_access_token",
+              "token_" + Date.now(),
+            );
           }
         } catch (error) {
           console.log("Failed to save login info:", error);
         }
 
         const params = new URLSearchParams(window.location.search);
-        const nextUrl = params.get('next') || '/dashboard/overview';
+        const nextUrl = params.get("next") || "/dashboard/overview";
 
         const timer = setTimeout(() => {
           router.push(nextUrl);
@@ -251,7 +257,10 @@ export default function Page() {
         }, 200);
       } else {
         console.error("Login failed:", data.message);
-        showToast(t("login.errors.loginFailed", { message: data.message }), "error");
+        showToast(
+          t("login.errors.loginFailed", { message: data.message }),
+          "error",
+        );
       }
     } catch (error) {
       console.error("Login request failed:", error);
@@ -303,7 +312,10 @@ export default function Page() {
 
       if (data.success) {
         console.log("Registration success:", data.user);
-        showToast(t("login.success.registerSuccess", { nickname: data.user.nickname }), "success");
+        showToast(
+          t("login.success.registerSuccess", { nickname: data.user.nickname }),
+          "success",
+        );
 
         setTimeout(() => {
           setIsSignUpMode(false);
@@ -323,7 +335,10 @@ export default function Page() {
         }, 1000);
       } else {
         console.error("Registration failed:", data.message);
-        showToast(t("login.errors.registerFailed", { message: data.message }), "error");
+        showToast(
+          t("login.errors.registerFailed", { message: data.message }),
+          "error",
+        );
       }
     } catch (error) {
       console.error("Registration request failed:", error);
@@ -373,13 +388,17 @@ export default function Page() {
                     className="text-xs text-gray-600 cursor-pointer brand-text hover:text-gray-800 transition-colors duration-200 px-2 py-1 rounded-lg hover:bg-white/20"
                     onClick={toggleMode}
                   >
-                    {isSignUpMode ? t("login.switchingToLogin") : t("login.switchingToRegister")}
+                    {isSignUpMode
+                      ? t("login.switchingToLogin")
+                      : t("login.switchingToRegister")}
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold text-gray-800 login-title whitespace-nowrap transition-all duration-[400ms] ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] transform hover:scale-105 hover:text-blue-600">
-                    {isSignUpMode ? t("login.registerButton") : t("login.loginButton")}
+                    {isSignUpMode
+                      ? t("login.registerButton")
+                      : t("login.loginButton")}
                   </h2>
                 </div>
 
@@ -492,7 +511,8 @@ export default function Page() {
 
                 <div className="mt-4 text-center">
                   <p className="text-xs text-gray-600 leading-relaxed login-hint">
-                    {t("login.focus.present")}, {t("login.focus.future")} {t("login.focus.achieveBetter")}
+                    {t("login.focus.present")}, {t("login.focus.future")}{" "}
+                    {t("login.focus.achieveBetter")}
                   </p>
                 </div>
               </div>
