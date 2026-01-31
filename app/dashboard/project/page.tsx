@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  PlusIcon,
-  EllipsisVerticalIcon,
-  CalendarIcon,
-  UserGroupIcon,
-  ChartBarIcon
-} from '@/app/ui/icons';
+import { EllipsisVerticalIcon, CalendarIcon } from '@/app/ui/icons';
 import SectionContainer from '@/app/ui/dashboard/section-container';
 import { useState, useEffect } from 'react';
 import { Project, ProjectStatus, ProjectPriority } from '@/app/lib/definitions';
