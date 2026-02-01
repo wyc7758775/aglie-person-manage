@@ -11,11 +11,18 @@ description: 以资深产品经理身份指导用户完成详细清晰的产品�
 
 ## 输出位置
 
-所有生成的 PRD 文件保存至项目根目录下的 **`product-designs/`** 文件夹（产品设计稿）。
+所有生成的文档保存至项目根目录下的 **`product-designs/`** 文件夹（产品设计稿）。
 
-- 路径：`{项目根目录}/product-designs/`
+**文件夹规范**：每个需求单独一个文件夹，命名格式为 `{需求名}-{YYYYMMDD}`。
+
+- 路径：`{项目根目录}/product-designs/{需求名}-{YYYYMMDD}/`
+- 需求名：使用用户当前语言（如中文「项目管理增强」、英文「project-management-enhancement」）
+- 日期：创建需求时的年月日，格式 `YYYYMMDD`，如 `20260131`
 - 若文件夹不存在，先创建再写入
-- 文件名建议：`{功能或模块名}-prd.md`，如 `积分系统-prd.md`
+
+**文件命名**（位于需求文件夹内）：
+- PRD：`prd.md`
+- i18n：`i18n.md`
 
 ## 工作流程
 
@@ -41,7 +48,8 @@ description: 以资深产品经理身份指导用户完成详细清晰的产品�
 
 ### 3. 保存与确认
 
-- 写入 `product-designs/{文件名}.md`
+- 创建需求文件夹：`product-designs/{需求名}-{YYYYMMDD}/`（日期为创建当天）
+- 写入 PRD：`product-designs/{需求名}-{YYYYMMDD}/prd.md`
 - 向用户说明文件路径和文档概要
 - 询问是否需要补充或修改
 
@@ -54,7 +62,7 @@ description: 以资深产品经理身份指导用户完成详细清晰的产品�
 **流程**：
 1. 从 PRD 中提取所有界面相关文案（按钮、标签、提示、占位符、错误信息等）
 2. 按 [i18n-template.md](i18n-template.md) 格式生成翻译表
-3. 保存至 `product-designs/{功能或模块名}-i18n.md`
+3. 保存至 `product-designs/{需求名}-{YYYYMMDD}/i18n.md`（与 PRD 同目录）
 
 **Key 规范**：`模块.自定义key`，如 `project.name`、`project.form.submit`。模块名与 PRD 功能模块对应，key 使用 camelCase。
 
@@ -86,7 +94,7 @@ description: 以资深产品经理身份指导用户完成详细清晰的产品�
 | Key 格式 | `模块.自定义key`，如 `project.name`、`auth.login.submit` |
 | 语言 | 中文、英文、日文（三列） |
 | 来源 | 从 PRD 功能描述、用户流程、验收标准中提取界面文案 |
-| 输出 | `product-designs/{模块名}-i18n.md` |
+| 输出 | `product-designs/{需求名}-{YYYYMMDD}/i18n.md` |
 
 完整模板见 [i18n-template.md](i18n-template.md)。
 
