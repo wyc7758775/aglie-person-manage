@@ -23,6 +23,7 @@ export function calculateRequirementPoints(priority: RequirementPriority): numbe
 }
 
 export async function getRequirements(filters?: {
+  projectId?: string;
   status?: RequirementStatus;
   priority?: RequirementPriority;
   type?: RequirementType;
@@ -30,6 +31,9 @@ export async function getRequirements(filters?: {
   let filteredRequirements = [...requirements];
 
   if (filters) {
+    if (filters.projectId) {
+      filteredRequirements = filteredRequirements.filter(r => r.projectId === filters.projectId);
+    }
     if (filters.status) {
       filteredRequirements = filteredRequirements.filter(r => r.status === filters.status);
     }

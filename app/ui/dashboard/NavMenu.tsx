@@ -6,12 +6,10 @@ import { usePathname } from 'next/navigation';
 import {
   DashboardIcon,
   ProjectIcon,
-  TaskIcon,
-  DatabaseIcon,
   DailiesIcon,
   HabitsIcon,
   RewardIcon,
-  DefectIcon,
+  NotificationIcon,
   SettingsIcon,
   ArrowLeftIcon,
 } from '@/app/ui/icons';
@@ -25,10 +23,8 @@ interface NavMenuItem {
 const navMenuItems: NavMenuItem[] = [
   { name: '概览', href: '/dashboard/overview', icon: <DashboardIcon className="w-5 h-5" /> },
   { name: '项目', href: '/dashboard/project', icon: <ProjectIcon className="w-5 h-5" /> },
-  { name: '需求', href: '/dashboard/requirement', icon: <DatabaseIcon className="w-5 h-5" /> },
-  { name: '任务', href: '/dashboard/task', icon: <TaskIcon className="w-5 h-5" /> },
-  { name: '缺陷', href: '/dashboard/defect', icon: <DefectIcon className="w-5 h-5" /> },
   { name: '奖励', href: '/dashboard/rewards', icon: <RewardIcon className="w-5 h-5" /> },
+  { name: '通知', href: '/dashboard/notifications', icon: <NotificationIcon className="w-5 h-5" /> },
   { name: '习惯', href: '/dashboard/habits', icon: <HabitsIcon className="w-5 h-5" /> },
   { name: '每日', href: '/dashboard/dailies', icon: <DailiesIcon className="w-5 h-5" /> },
   { name: '设置', href: '/dashboard/setting', icon: <SettingsIcon className="w-5 h-5" /> },

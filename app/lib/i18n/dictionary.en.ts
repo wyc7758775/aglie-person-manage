@@ -250,6 +250,26 @@ export const enUS = {
       at_risk: 'At Risk',
       out_of_control: 'Out of Control',
     },
+    list: {
+      emptyHint: 'No projects yet, click the button below to create',
+    },
+  },
+  projectDetail: {
+    backToProjectList: 'Back to Project List',
+    switchProject: 'Switch Project',
+    currentProject: 'Current Project',
+    projectNotFound: 'Project not found',
+    defectOnlyForCode: 'Only code projects have defects',
+    emptyRequirement: 'No requirements yet',
+    emptyTask: 'No tasks yet',
+    emptyDefect: 'No defects yet',
+    loadFailed: 'Failed to load',
+    folderIconTitle: 'Back to Project List',
+    dropdown: {
+      backToProjectList: 'Back to Project List',
+      switchProject: 'Switch Project',
+      noProjects: 'No other projects',
+    },
   },
   requirement: {
     title: 'Requirements',

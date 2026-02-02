@@ -6,12 +6,9 @@ import { useState, useEffect } from "react";
 import {
   DashboardIcon,
   ProjectIcon,
-  TaskIcon,
-  DatabaseIcon,
   NotificationIcon,
   SettingsIcon,
   RewardIcon,
-  DefectIcon,
 } from "@/app/ui/icons";
 import { useLanguage } from "@/app/lib/i18n";
 import { useAuth } from "@/app/lib/hooks/useAuth";
@@ -37,21 +34,6 @@ export default function SideNav() {
       nameKey: "dashboard.nav.project",
       href: "/dashboard/project",
       icon: <ProjectIcon className="w-5 h-5" />,
-    },
-    {
-      nameKey: "dashboard.nav.requirement",
-      href: "/dashboard/requirement",
-      icon: <DatabaseIcon className="w-5 h-5" />,
-    },
-    {
-      nameKey: "dashboard.nav.task",
-      href: "/dashboard/task",
-      icon: <TaskIcon className="w-5 h-5" />,
-    },
-    {
-      nameKey: "dashboard.nav.defect",
-      href: "/dashboard/defect",
-      icon: <DefectIcon className="w-5 h-5" />,
     },
     {
       nameKey: "dashboard.nav.rewards",

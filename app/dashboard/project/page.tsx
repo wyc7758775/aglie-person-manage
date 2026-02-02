@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { EllipsisVerticalIcon, CalendarIcon } from '@/app/ui/icons';
 import SectionContainer from '@/app/ui/dashboard/section-container';
 import { useState, useEffect } from 'react';
@@ -9,6 +10,7 @@ import ProjectDrawer from './components/ProjectDrawer';
 import { ProjectListSkeleton } from './components/ProjectCardSkeleton';
 
 export default function ProjectPage() {
+  const router = useRouter();
   const { t } = useLanguage();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +122,7 @@ export default function ProjectPage() {
     return (
         <div
           className={`project-card group ${getTypeBgColor(project.type)} rounded-lg border border-gray-200 p-4 relative cursor-pointer hover:shadow-md transition-shadow`}
-          onClick={() => handleOpenDrawer(project)}
+          onClick={() => router.push(`/dashboard/project/${project.id}`)}
         >
         <div className="absolute top-4 right-4 z-10">
           <button

@@ -253,6 +253,26 @@ export const jaJP = {
       at_risk: 'リスクあり',
       out_of_control: '制御不能',
     },
+    list: {
+      emptyHint: 'プロジェクトがまだありません。下のボタンから作成してください',
+    },
+  },
+  projectDetail: {
+    backToProjectList: 'プロジェクト一覧に戻る',
+    switchProject: 'プロジェクトを切り替え',
+    currentProject: '現在のプロジェクト',
+    projectNotFound: 'プロジェクトが見つかりません',
+    defectOnlyForCode: 'コードプロジェクトのみ不具合があります',
+    emptyRequirement: '要件はまだありません',
+    emptyTask: 'タスクはまだありません',
+    emptyDefect: '不具合はまだありません',
+    loadFailed: '読み込みに失敗しました',
+    folderIconTitle: 'プロジェクト一覧に戻る',
+    dropdown: {
+      backToProjectList: 'プロジェクト一覧に戻る',
+      switchProject: 'プロジェクトを切り替え',
+      noProjects: '他のプロジェクトはありません',
+    },
   },
   requirement: {
     title: '要件管理',

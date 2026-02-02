@@ -163,6 +163,7 @@ export type RequirementType = 'feature' | 'enhancement' | 'bugfix' | 'research';
 
 export type Requirement = {
   id: string;
+  projectId: string;
   title: string;
   description: string;
   type: RequirementType;
@@ -184,5 +185,67 @@ export type RequirementUpdateRequest = Partial<Omit<Requirement, 'id'>>;
 export type RequirementResponse = {
   success: boolean;
   requirement?: Requirement;
+  message?: string;
+};
+
+// 任务管理类型定义
+export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
+
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export type Task = {
+  id: string;
+  projectId: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assignee: string;
+  dueDate: string;
+  estimatedHours: number;
+  completedHours: number;
+  tags: string[];
+};
+
+export type TaskCreateRequest = Omit<Task, 'id'>;
+
+export type TaskUpdateRequest = Partial<Omit<Task, 'id'>>;
+
+export type TaskResponse = {
+  success: boolean;
+  task?: Task;
+  message?: string;
+};
+
+// 缺陷管理类型定义
+export type DefectStatus = 'open' | 'in_progress' | 'resolved' | 'closed' | 'reopened';
+
+export type DefectSeverity = 'low' | 'medium' | 'high' | 'critical';
+
+export type DefectType = 'bug' | 'performance' | 'ui' | 'security' | 'compatibility';
+
+export type Defect = {
+  id: string;
+  projectId: string;
+  title: string;
+  description: string;
+  status: DefectStatus;
+  severity: DefectSeverity;
+  type: DefectType;
+  assignee: string;
+  reporter: string;
+  createdDate: string;
+  dueDate: string;
+  environment: string;
+  steps: string[];
+};
+
+export type DefectCreateRequest = Omit<Defect, 'id'>;
+
+export type DefectUpdateRequest = Partial<Omit<Defect, 'id'>>;
+
+export type DefectResponse = {
+  success: boolean;
+  defect?: Defect;
   message?: string;
 };

@@ -253,6 +253,26 @@ export const zhCN = {
       at_risk: '有风险',
       out_of_control: '失控',
     },
+    list: {
+      emptyHint: '暂无项目，点击下方按钮新建',
+    },
+  },
+  projectDetail: {
+    backToProjectList: '返回项目列表',
+    switchProject: '切换项目',
+    currentProject: '当前项目',
+    projectNotFound: '项目不存在',
+    defectOnlyForCode: '仅代码项目有缺陷',
+    emptyRequirement: '暂无需求',
+    emptyTask: '暂无任务',
+    emptyDefect: '暂无缺陷',
+    loadFailed: '加载失败',
+    folderIconTitle: '返回项目列表',
+    dropdown: {
+      backToProjectList: '返回项目列表',
+      switchProject: '切换项目',
+      noProjects: '暂无其他项目',
+    },
   },
   requirement: {
     title: '需求管理',

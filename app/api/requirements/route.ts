@@ -7,11 +7,15 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
 
     const filters: {
+      projectId?: string;
       status?: RequirementStatus;
       priority?: RequirementPriority;
       type?: RequirementType;
     } = {};
 
+    if (searchParams.get('projectId')) {
+      filters.projectId = searchParams.get('projectId') as string;
+    }
     if (searchParams.get('status')) {
       filters.status = searchParams.get('status') as RequirementStatus;
     }
@@ -41,7 +45,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { title, description, type, status, priority, assignee, reporter, createdDate, dueDate, storyPoints, tags, points, autoCalculatePoints } = body;
+    const { projectId, title, description, type, status, priority, assignee, reporter, createdDate, dueDate, storyPoints, tags, points, autoCalculatePoints } = body;
+
+    if (!projectId || typeof projectId !== 'string' || projectId.trim().length === 0) {
+      return NextResponse.json(
+        { success: false, message: '项目ID不能为空' },
+        { status: 400 }
+      );
+    }
 
     if (!title || title.trim().length === 0) {
       return NextResponse.json(
@@ -93,6 +104,7 @@ export async function POST(request: NextRequest) {
     }
 
     const requirement = await createRequirement({
+      projectId: projectId.trim(),
       title: title.trim(),
       description: description || '',
       type,

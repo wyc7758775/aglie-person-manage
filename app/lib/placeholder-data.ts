@@ -1,6 +1,6 @@
 // This file contains placeholder data that you'll be replacing with real data in the Data Fetching chapter:
 // https://nextjs.org/learn/dashboard-app/fetching-data
-import { User, UserRole, Project, ProjectType, ProjectStatus, ProjectPriority, Requirement, RequirementStatus, RequirementPriority, RequirementType } from './definitions';
+import { User, UserRole, Project, ProjectType, ProjectStatus, ProjectPriority, Requirement, RequirementStatus, RequirementPriority, RequirementType, Task, Defect } from './definitions';
 
 const users: (User & { role: UserRole })[] = [
   {
@@ -293,6 +293,7 @@ const projects: Project[] = [
 const requirements: Requirement[] = [
   {
     id: 'REQ-001',
+    projectId: 'proj-1',
     title: '用户登录功能优化',
     description: '改进用户登录体验，支持多种登录方式，增加记住密码功能',
     type: 'enhancement',
@@ -308,6 +309,7 @@ const requirements: Requirement[] = [
   },
   {
     id: 'REQ-002',
+    projectId: 'proj-1',
     title: '数据导出功能',
     description: '支持将用户数据导出为Excel和PDF格式，包含筛选和排序功能',
     type: 'feature',
@@ -323,6 +325,7 @@ const requirements: Requirement[] = [
   },
   {
     id: 'REQ-003',
+    projectId: 'proj-1',
     title: '移动端响应式适配',
     description: '优化移动端显示效果，确保在各种屏幕尺寸下的良好体验',
     type: 'enhancement',
@@ -338,6 +341,7 @@ const requirements: Requirement[] = [
   },
   {
     id: 'REQ-004',
+    projectId: 'proj-1',
     title: '性能监控系统',
     description: '建立系统性能监控机制，实时监控系统运行状态和性能指标',
     type: 'feature',
@@ -353,6 +357,7 @@ const requirements: Requirement[] = [
   },
   {
     id: 'REQ-005',
+    projectId: 'proj-1',
     title: '修复文件上传bug',
     description: '解决大文件上传时出现的超时和进度显示错误问题',
     type: 'bugfix',
@@ -368,6 +373,7 @@ const requirements: Requirement[] = [
   },
   {
     id: 'REQ-006',
+    projectId: 'proj-1',
     title: '用户权限管理重构',
     description: '重新设计用户权限管理系统，支持更细粒度的权限控制',
     type: 'feature',
@@ -383,4 +389,150 @@ const requirements: Requirement[] = [
   }
 ];
 
-export { users, customers, invoices, revenue, projects, requirements };
+const tasks: Task[] = [
+  {
+    id: 'task-1',
+    projectId: 'proj-1',
+    title: 'User Login Feature',
+    description: 'Implement user login, registration and password reset',
+    status: 'in_progress',
+    priority: 'high',
+    assignee: 'Zhang San',
+    dueDate: '2024-01-15',
+    estimatedHours: 16,
+    completedHours: 8,
+    tags: ['Frontend', 'Auth'],
+  },
+  {
+    id: 'task-2',
+    projectId: 'proj-1',
+    title: 'API Documentation',
+    description: 'Write complete API documentation with examples',
+    status: 'todo',
+    priority: 'medium',
+    assignee: 'Li Si',
+    dueDate: '2024-01-20',
+    estimatedHours: 12,
+    completedHours: 0,
+    tags: ['Documentation', 'Backend'],
+  },
+  {
+    id: 'task-3',
+    projectId: 'proj-1',
+    title: 'Database Optimization',
+    description: 'Optimize query performance and add indexes',
+    status: 'review',
+    priority: 'high',
+    assignee: 'Wang Wu',
+    dueDate: '2024-01-18',
+    estimatedHours: 20,
+    completedHours: 18,
+    tags: ['Database', 'Performance'],
+  },
+  {
+    id: 'task-4',
+    projectId: 'proj-4',
+    title: 'Mobile Adaptation',
+    description: 'Ensure good experience on mobile devices',
+    status: 'done',
+    priority: 'medium',
+    assignee: 'Zhao Liu',
+    dueDate: '2024-01-10',
+    estimatedHours: 24,
+    completedHours: 24,
+    tags: ['Frontend', 'Mobile'],
+  },
+  {
+    id: 'task-5',
+    projectId: 'proj-1',
+    title: 'Security Fix',
+    description: 'Fix discovered security vulnerabilities',
+    status: 'todo',
+    priority: 'urgent',
+    assignee: 'Qian Qi',
+    dueDate: '2024-01-12',
+    estimatedHours: 8,
+    completedHours: 0,
+    tags: ['Security', 'Fix'],
+  },
+];
+
+const defects: Defect[] = [
+  {
+    id: 'DEF-001',
+    projectId: 'proj-1',
+    title: 'Login page submission issue',
+    description: 'Page unresponsive after clicking login button, network error in console',
+    status: 'open',
+    severity: 'high',
+    type: 'bug',
+    assignee: 'Zhang San',
+    reporter: 'Li Si',
+    createdDate: '2024-01-10',
+    dueDate: '2024-01-15',
+    environment: 'Production',
+    steps: ['Open login page', 'Enter username and password', 'Click login button', 'Observe response'],
+  },
+  {
+    id: 'DEF-002',
+    projectId: 'proj-1',
+    title: 'Slow page loading',
+    description: 'Homepage takes more than 5 seconds to load',
+    status: 'in_progress',
+    severity: 'medium',
+    type: 'performance',
+    assignee: 'Wang Wu',
+    reporter: 'Zhao Liu',
+    createdDate: '2024-01-08',
+    dueDate: '2024-01-20',
+    environment: 'Testing',
+    steps: ['Visit homepage', 'Record load time', 'Analyze bottlenecks'],
+  },
+  {
+    id: 'DEF-003',
+    projectId: 'proj-4',
+    title: 'Mobile layout issue',
+    description: 'Navigation menu displays incorrectly on small screens',
+    status: 'resolved',
+    severity: 'medium',
+    type: 'ui',
+    assignee: 'Qian Qi',
+    reporter: 'Sun Ba',
+    createdDate: '2024-01-05',
+    dueDate: '2024-01-12',
+    environment: 'Mobile',
+    steps: ['Use phone to visit', 'Check navigation', 'Test responsive layout'],
+  },
+  {
+    id: 'DEF-004',
+    projectId: 'proj-1',
+    title: 'Data leakage risk',
+    description: 'API interfaces lack proper authentication',
+    status: 'open',
+    severity: 'critical',
+    type: 'security',
+    assignee: 'Zhou Jiu',
+    reporter: 'Wu Shi',
+    createdDate: '2024-01-12',
+    dueDate: '2024-01-14',
+    environment: 'Production',
+    steps: ['Test API', 'Check authentication', 'Assess risk'],
+  },
+  {
+    id: 'DEF-005',
+    projectId: 'proj-4',
+    title: 'IE browser compatibility',
+    description: 'Some features not working in IE11',
+    status: 'closed',
+    severity: 'low',
+    type: 'compatibility',
+    assignee: 'Zheng Shi Yi',
+    reporter: 'Wang Shi Er',
+    createdDate: '2024-01-01',
+    dueDate: '2024-01-10',
+    environment: 'IE11',
+    steps: ['Open in IE11', 'Test features', 'Record issues'],
+  },
+];
+
+export { users, customers, invoices, revenue, projects, requirements, tasks, defects };
