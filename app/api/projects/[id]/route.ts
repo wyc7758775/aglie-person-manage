@@ -54,7 +54,7 @@ export async function PUT(
 
     if (body.endDate && body.startDate && new Date(body.endDate) < new Date(body.startDate)) {
       return NextResponse.json(
-        { success: false, message: '结束日期不能早于开始日期' },
+        { success: false, message: '截止时间不能早于开始时间' },
         { status: 400 }
       );
     }
@@ -67,11 +67,14 @@ export async function PUT(
       );
     }
 
-    // 获取当前用户（用于积分累加）
-    const currentUser = await getCurrentUser(request);
-    const userId = currentUser?.id;
+    if (body.status && !['normal', 'at_risk', 'out_of_control'].includes(body.status)) {
+      return NextResponse.json(
+        { success: false, message: '无效的项目状态' },
+        { status: 400 }
+      );
+    }
 
-    const project = await updateProject(id, body, userId);
+    const project = await updateProject(id, body);
 
     if (!project) {
       return NextResponse.json(

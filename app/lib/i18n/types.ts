@@ -1,4 +1,4 @@
-export type Locale = 'zh-CN' | 'en-US';
+export type Locale = 'zh-CN' | 'en-US' | 'ja-JP';
 
 export interface LanguagePreferences {
   locale: Locale;

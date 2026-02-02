@@ -13,25 +13,34 @@ export default function ProjectPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeFilter, setActiveFilter] = useState('all');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | undefined>(undefined);
 
-  const filters = ['All', 'Active', 'Completed', 'Paused', 'Planning'];
+  const filterOptions = [
+    { key: 'all', label: t('project.filters.all') },
+    { key: 'normal', label: t('project.filters.normal') },
+    { key: 'at_risk', label: t('project.filters.at_risk') },
+    { key: 'out_of_control', label: t('project.filters.out_of_control') },
+  ];
+  const filters = filterOptions.map(f => f.label);
 
   const getStatusColor = (status: ProjectStatus) => {
     switch (status) {
-      case 'active':
+      case 'normal':
         return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      case 'paused':
+      case 'at_risk':
         return 'bg-yellow-100 text-yellow-800';
-      case 'planning':
-        return 'bg-purple-100 text-purple-800';
+      case 'out_of_control':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   };
 
   const getPriorityColor = (priority: ProjectPriority) => {
@@ -59,7 +68,8 @@ export default function ProjectPage() {
     setLoading(true);
     setError(null);
     try {
-      const queryParams = activeFilter !== 'All' ? `?status=${activeFilter.toLowerCase()}` : '';
+      const statusParam = activeFilter === 'all' ? '' : activeFilter;
+      const queryParams = statusParam ? `?status=${statusParam}` : '';
       const response = await fetch(`/api/projects${queryParams}`);
       const data = await response.json();
 
@@ -152,7 +162,7 @@ export default function ProjectPage() {
           <div className="text-3xl mb-2">{project.avatar || getTypeIcon(project.type)}</div>
           <div>
             <h3 className="font-semibold text-gray-900 mb-1">{project.name}</h3>
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{project.description}</p>
+            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{stripHtml(project.description)}</p>
             <div className="flex items-center gap-2 mb-3">
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
                 {t(`project.status.${project.status}`)}
@@ -203,8 +213,11 @@ export default function ProjectPage() {
         title={t('project.title')}
         badge={projects.length}
         filters={filters}
-        activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
+        activeFilter={filterOptions.find(f => f.key === activeFilter)?.label ?? filters[0]}
+        onFilterChange={(label) => {
+          const opt = filterOptions.find(f => f.label === label);
+          setActiveFilter(opt?.key ?? 'all');
+        }}
         onAddClick={() => handleOpenDrawer()}
         addButtonText={t('project.add')}
       >

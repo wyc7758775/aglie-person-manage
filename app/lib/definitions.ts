@@ -122,7 +122,7 @@ export type InvoiceForm = {
 
 export type ProjectType = 'life' | 'code';
 
-export type ProjectStatus = 'active' | 'completed' | 'paused' | 'planning';
+export type ProjectStatus = 'normal' | 'at_risk' | 'out_of_control';
 
 export type ProjectPriority = 'high' | 'medium' | 'low';
 

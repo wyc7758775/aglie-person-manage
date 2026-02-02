@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       description: description || '',
       type,
       priority: priority || 'medium',
-      status: 'planning',
+      status: 'normal',
       startDate,
       endDate: endDate || null,
       goals: goals || [],

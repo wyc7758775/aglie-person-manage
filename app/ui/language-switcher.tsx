@@ -13,10 +13,11 @@ export default function LanguageSwitcher({ value, onChange }: LanguageSwitcherPr
   const languages = [
     { value: 'zh-CN', label: '中文' },
     { value: 'en-US', label: 'English' },
+    { value: 'ja-JP', label: '日本語' },
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLocale = e.target.value as 'zh-CN' | 'en-US';
+    const newLocale = e.target.value as 'zh-CN' | 'en-US' | 'ja-JP';
     onChange(newLocale);
     setLocale(newLocale);
   };

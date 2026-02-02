@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Project, ProjectCreateRequest, ProjectStatus, ProjectType, ProjectPriority } from '@/app/lib/definitions';
 import { useLanguage } from '@/app/lib/i18n';
 import EditableField from './EditableField';
+import MarkdownEditorField from './MarkdownEditorField';
 import EditableTagList from './EditableTagList';
 import EditableGoalList from './EditableGoalList';
 import SaveStatusIndicator, { SaveStatus } from './SaveStatusIndicator';
@@ -23,7 +24,7 @@ const getDefaultProjectData = (): ProjectCreateRequest => ({
   description: '',
   type: 'code',
   priority: 'medium',
-  status: 'planning',
+  status: 'normal',
   startDate: new Date().toISOString().split('T')[0],
   endDate: null,
   goals: [],
@@ -50,8 +51,6 @@ export default function ProjectDrawer({
   // 提交状态（用于新建项目）
   const [submitting, setSubmitting] = useState(false);
   
-  // 删除对话框
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   // 动画状态
   const [isAnimating, setIsAnimating] = useState(false);
@@ -181,33 +180,6 @@ export default function ProjectDrawer({
     }
   };
 
-  // 删除项目
-  const handleDelete = () => {
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!project || !onDelete) return;
-
-    try {
-      const response = await fetch(`/api/projects/${project.id}`, {
-        method: 'DELETE'
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        onDelete(project.id);
-        setDeleteDialogOpen(false);
-        onClose();
-      } else {
-        alert(data.message || t('project.deleteFailed'));
-      }
-    } catch (err) {
-      console.error('Delete error:', err);
-      alert(t('project.deleteFailedRetry'));
-    }
-  };
-
   if (!isAnimating) return null;
 
   // 类型选项
@@ -225,10 +197,9 @@ export default function ProjectDrawer({
 
   // 状态选项
   const statusOptions = [
-    { value: 'planning', label: t('project.status.planning') },
-    { value: 'active', label: t('project.status.active') },
-    { value: 'paused', label: t('project.status.paused') },
-    { value: 'completed', label: t('project.status.completed') }
+    { value: 'normal', label: t('project.status.normal') },
+    { value: 'at_risk', label: t('project.status.at_risk') },
+    { value: 'out_of_control', label: t('project.status.out_of_control') }
   ];
 
   return (
@@ -287,11 +258,10 @@ export default function ProjectDrawer({
               </div>
 
               {/* 描述 */}
-              <EditableField
+              <MarkdownEditorField
                 value={localProject.description}
                 fieldName="description"
                 label={t('project.form.description')}
-                type="textarea"
                 placeholder={t('project.form.descriptionPlaceholder')}
                 onSave={handleFieldSave}
               />
@@ -334,7 +304,7 @@ export default function ProjectDrawer({
                 <EditableField
                   value={localProject.startDate}
                   fieldName="startDate"
-                  label={t('project.startDate')}
+                  label={t('project.startTime')}
                   type="date"
                   required
                   onSave={handleFieldSave}
@@ -342,7 +312,7 @@ export default function ProjectDrawer({
                 <EditableField
                   value={localProject.endDate}
                   fieldName="endDate"
-                  label={t('project.endDate')}
+                  label={t('project.deadline')}
                   type="date"
                   onSave={handleFieldSave}
                 />
@@ -458,51 +428,8 @@ export default function ProjectDrawer({
           )}
           
           {/* 编辑模式：显示删除按钮 */}
-          {!isCreateMode && project && onDelete && (
-            <button
-              onClick={handleDelete}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium"
-            >
-              {t('project.delete')}
-            </button>
-          )}
-          
-          {/* 编辑模式下的提示文字 */}
-          {!isCreateMode && (
-            <span className="text-sm text-gray-500">
-              {t('project.autoSave')}
-            </span>
-          )}
         </div>
       </div>
-
-      {/* 删除确认对话框 */}
-      {deleteDialogOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold mb-4 text-red-600">
-              {t('project.deleteConfirm.title')}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {t('project.deleteConfirm.message', { name: project?.name || '' })}
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteDialogOpen(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                {t('project.deleteConfirm.cancel')}
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
-                {t('project.deleteConfirm.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

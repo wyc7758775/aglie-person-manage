@@ -42,10 +42,9 @@ export default function ProjectDetailDialog({ open, onClose, project, onEdit, on
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      case 'paused': return 'bg-yellow-100 text-yellow-800';
-      case 'planning': return 'bg-purple-100 text-purple-800';
+      case 'normal': return 'bg-green-100 text-green-800';
+      case 'at_risk': return 'bg-yellow-100 text-yellow-800';
+      case 'out_of_control': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -85,7 +84,7 @@ export default function ProjectDetailDialog({ open, onClose, project, onEdit, on
 
         <div className="p-6 space-y-6">
           <div>
-            <p className="text-gray-600">{project.description}</p>
+            <p className="text-gray-600">{project.description?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || ''}</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -117,14 +116,14 @@ export default function ProjectDetailDialog({ open, onClose, project, onEdit, on
             <div className="flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-gray-400" />
               <div>
-                <div className="text-xs text-gray-500">{t('project.startDate')}</div>
+                <div className="text-xs text-gray-500">{t('project.startTime')}</div>
                 <div className="text-sm font-medium">{project.startDate}</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-gray-400" />
               <div>
-                <div className="text-xs text-gray-500">{t('project.endDate')}</div>
+                <div className="text-xs text-gray-500">{t('project.deadline')}</div>
                 <div className="text-sm font-medium">{project.endDate || '-'}</div>
               </div>
             </div>

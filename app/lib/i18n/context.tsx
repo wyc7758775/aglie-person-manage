@@ -2,11 +2,12 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Locale, LanguageContextType } from './types';
-import { zhCN, enUS } from './dictionary';
+import { zhCN, enUS, jaJP } from './dictionary';
 
 const dictionaries: Record<Locale, Record<string, unknown>> = {
   'zh-CN': zhCN,
   'en-US': enUS,
+  'ja-JP': jaJP,
 };
 
 const STORAGE_KEY = 'user-locale';
@@ -21,7 +22,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (typeof window === 'undefined') return;
 
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored && (stored === 'zh-CN' || stored === 'en-US')) {
+    if (stored && (stored === 'zh-CN' || stored === 'en-US' || stored === 'ja-JP')) {
       setLocaleState(stored as Locale);
     } else {
       const browserLang = navigator.language;
@@ -29,6 +30,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         setLocaleState('zh-CN');
       } else if (browserLang.startsWith('en')) {
         setLocaleState('en-US');
+      } else if (browserLang.startsWith('ja')) {
+        setLocaleState('ja-JP');
       }
       localStorage.setItem(STORAGE_KEY, locale);
     }

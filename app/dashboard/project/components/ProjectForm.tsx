@@ -17,7 +17,7 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
     description: project?.description || '',
     type: project?.type || 'code',
     priority: project?.priority || 'medium',
-    status: project?.status || 'planning',
+    status: project?.status || 'normal',
     startDate: project?.startDate || new Date().toISOString().split('T')[0],
     endDate: project?.endDate || '',
     goals: project?.goals || [],
@@ -40,11 +40,11 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
     }
 
     if (!formData.startDate) {
-      newErrors.startDate = t('project.startDate') + ' ' + t('common.errors.notFound');
+      newErrors.startDate = t('project.startTime') + ' ' + t('common.errors.notFound');
     }
 
     if (formData.endDate && formData.startDate && new Date(formData.endDate) < new Date(formData.startDate)) {
-      newErrors.endDate = t('项目错误');
+      newErrors.endDate = t('project.deadlineBeforeStart');
     }
 
     setErrors(newErrors);
@@ -165,7 +165,7 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t('project.startDate')} *
+            {t('project.startTime')} *
           </label>
           <input
             type="date"
@@ -178,7 +178,7 @@ export default function ProjectForm({ project, onSubmit, onCancel }: ProjectForm
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t('project.endDate')}
+            {t('project.deadline')}
           </label>
           <input
             type="date"

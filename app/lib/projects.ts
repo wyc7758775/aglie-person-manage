@@ -1,6 +1,5 @@
 import { Project, ProjectType, ProjectStatus, ProjectPriority, ProjectCreateRequest, ProjectUpdateRequest } from './definitions';
 import { projects as initialProjects } from './placeholder-data';
-import { updateUserTotalPoints } from './db-memory';
 
 let projects: Project[] = [...initialProjects];
 
@@ -61,22 +60,10 @@ export async function createProject(data: ProjectCreateRequest): Promise<Project
   return newProject;
 }
 
-export async function updateProject(id: string, data: ProjectUpdateRequest, userId?: string): Promise<Project | null> {
+export async function updateProject(id: string, data: ProjectUpdateRequest): Promise<Project | null> {
   const index = projects.findIndex(p => p.id === id);
   if (index === -1) {
     return null;
-  }
-
-  const oldProject = projects[index];
-  const oldStatus = oldProject.status;
-  const newStatus = data.status ?? oldStatus;
-
-  // 如果状态从非 completed 变为 completed，累加积分
-  if (oldStatus !== 'completed' && newStatus === 'completed' && userId) {
-    const pointsToAdd = oldProject.points || 0;
-    if (pointsToAdd > 0) {
-      await updateUserTotalPoints(userId, pointsToAdd);
-    }
   }
 
   projects[index] = {
