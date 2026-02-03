@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Project, Requirement, Task, Defect } from '@/app/lib/definitions';
@@ -11,11 +11,12 @@ import { clsx } from 'clsx';
 
 type TabType = 'requirement' | 'task' | 'defect';
 
-export default function ProjectDetailPage({ params }: { params: { projectId: string } }) {
+export default function ProjectDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const params = useParams();
   const { t } = useLanguage();
-  const projectId = params.projectId;
+  const projectId = params.projectId as string;
 
   const [project, setProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);

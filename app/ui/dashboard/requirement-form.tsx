@@ -5,12 +5,14 @@ import { Requirement, RequirementCreateRequest, RequirementStatus, RequirementPr
 
 interface RequirementFormProps {
   requirement?: Requirement;
+  projectId?: string;
   onSubmit: (data: RequirementCreateRequest) => Promise<void>;
   onCancel: () => void;
 }
 
-export default function RequirementForm({ requirement, onSubmit, onCancel }: RequirementFormProps) {
+export default function RequirementForm({ requirement, projectId = '', onSubmit, onCancel }: RequirementFormProps) {
   const [formData, setFormData] = useState<RequirementCreateRequest>({
+    projectId: projectId || requirement?.projectId || '',
     title: requirement?.title || '',
     description: requirement?.description || '',
     type: requirement?.type || 'feature',
@@ -31,23 +33,27 @@ export default function RequirementForm({ requirement, onSubmit, onCancel }: Req
   const [autoCalculatePoints, setAutoCalculatePoints] = useState(false);
 
   useEffect(() => {
-    if (requirement) {
-      setFormData({
-        title: requirement.title,
-        description: requirement.description,
-        type: requirement.type,
-        status: requirement.status,
-        priority: requirement.priority,
-        assignee: requirement.assignee,
-        reporter: requirement.reporter,
-        createdDate: requirement.createdDate,
-        dueDate: requirement.dueDate,
-        storyPoints: requirement.storyPoints,
-        points: requirement.points || 0,
-        tags: requirement.tags
-      });
+    if (requirement || projectId) {
+      setFormData(prev => ({
+        ...prev,
+        projectId: projectId || requirement?.projectId || prev.projectId,
+        ...(requirement ? {
+          title: requirement.title,
+          description: requirement.description,
+          type: requirement.type,
+          status: requirement.status,
+          priority: requirement.priority,
+          assignee: requirement.assignee,
+          reporter: requirement.reporter,
+          createdDate: requirement.createdDate,
+          dueDate: requirement.dueDate,
+          storyPoints: requirement.storyPoints,
+          points: requirement.points || 0,
+          tags: requirement.tags
+        } : {})
+      }));
     }
-  }, [requirement]);
+  }, [requirement, projectId]);
 
   // 自动计算积分
   useEffect(() => {
