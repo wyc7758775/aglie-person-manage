@@ -10,6 +10,7 @@ interface SectionContainerProps {
   onAddClick?: () => void;
   onClick?: () => void;
   addButtonText?: string;
+  className?: string;
   children: React.ReactNode;
 }
 
@@ -26,11 +27,12 @@ export default function SectionContainer({
   onAddClick,
   onClick,
   addButtonText = `Add a ${title.slice(0, -1)}`,
+  className,
   children
 }: SectionContainerProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md border border-[#EE3F4D]/10">
-      <div className="mb-1 flex items-center justify-between border-b border-[#EE3F4D]/20 pb-2">
+    <div className={clsx('bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md border border-[#EE3F4D]/10 flex flex-col min-h-0', className)}>
+      <div className="mb-1 flex items-center justify-between border-b border-[#EE3F4D]/20 pb-2 flex-shrink-0">
         <div className="flex items-center space-x-2">
           <h2 className="text-xl font-bold text-[#333]">{title}</h2>
           {badge !== undefined && (
@@ -60,7 +62,7 @@ export default function SectionContainer({
         )}
       </div>
       
-      <div>
+      <div className="flex-1 min-h-0 flex flex-col">
         {/* 添加按钮 */}
         {onAddClick && (
           <button

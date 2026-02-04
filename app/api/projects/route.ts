@@ -5,25 +5,25 @@ import { getCurrentUser } from '@/app/lib/auth-utils';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: '请先登录' },
+        { status: 401 }
+      );
+    }
 
+    const searchParams = request.nextUrl.searchParams;
     const filters: {
       status?: ProjectStatus;
       type?: ProjectType;
       priority?: ProjectPriority;
     } = {};
+    if (searchParams.get('status')) filters.status = searchParams.get('status') as ProjectStatus;
+    if (searchParams.get('type')) filters.type = searchParams.get('type') as ProjectType;
+    if (searchParams.get('priority')) filters.priority = searchParams.get('priority') as ProjectPriority;
 
-    if (searchParams.get('status')) {
-      filters.status = searchParams.get('status') as ProjectStatus;
-    }
-    if (searchParams.get('type')) {
-      filters.type = searchParams.get('type') as ProjectType;
-    }
-    if (searchParams.get('priority')) {
-      filters.priority = searchParams.get('priority') as ProjectPriority;
-    }
-
-    const projects = await getProjects(filters);
+    const projects = await getProjects(filters, user.id);
 
     return NextResponse.json(
       { success: true, projects },
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { name, description, type, priority, startDate, endDate, goals, tags, points, autoCalculatePoints } = body;
+    const { name, description, type, priority, startDate, endDate, goals, tags, points, autoCalculatePoints, coverImageUrl } = body;
 
     if (!name || name.trim().length === 0) {
       return NextResponse.json(
@@ -93,18 +93,30 @@ export async function POST(request: NextRequest) {
       finalPoints = calculateProjectPoints(priority);
     }
 
-    const project = await createProject({
-      name: name.trim(),
-      description: description || '',
-      type,
-      priority: priority || 'medium',
-      status: 'normal',
-      startDate,
-      endDate: endDate || null,
-      goals: goals || [],
-      tags: tags || [],
-      points: finalPoints
-    });
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: '请先登录' },
+        { status: 401 }
+      );
+    }
+
+    const project = await createProject(
+      {
+        name: name.trim(),
+        description: description || '',
+        type,
+        priority: priority || 'medium',
+        status: 'normal',
+        startDate,
+        endDate: endDate || null,
+        goals: goals || [],
+        tags: tags || [],
+        points: finalPoints,
+        coverImageUrl: coverImageUrl || undefined,
+      },
+      user.id
+    );
 
     return NextResponse.json(
       { success: true, project },

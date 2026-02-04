@@ -201,6 +201,16 @@ export default function Page() {
     };
   };
 
+  const parseJsonResponse = async (response: Response): Promise<{ success?: boolean; message?: string; user?: { id: string; nickname: string; isAdmin?: boolean } }> => {
+    const text = await response.text();
+    try {
+      return text ? JSON.parse(text) : {};
+    } catch {
+      console.error("Response is not JSON. Status:", response.status, "Body:", text.slice(0, 200));
+      return { success: false, message: "服务器返回异常，请稍后重试" };
+    }
+  };
+
   const loginAction = async () => {
     if (!nickname || !password) {
       showToast(t("login.errors.nicknameRequired"), "error");
@@ -222,12 +232,12 @@ export default function Page() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseJsonResponse(response);
 
       if (data.success) {
         console.log("Login success:", data.user);
         showToast(
-          t("login.success.welcomeBack", { nickname: data.user.nickname }),
+          t("login.success.welcomeBack", { nickname: data.user!.nickname }),
           "success",
         );
 
@@ -258,7 +268,7 @@ export default function Page() {
       } else {
         console.error("Login failed:", data.message);
         showToast(
-          t("login.errors.loginFailed", { message: data.message }),
+          t("login.errors.loginFailed", { message: data.message ?? "" }),
           "error",
         );
       }
@@ -308,12 +318,12 @@ export default function Page() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseJsonResponse(response);
 
       if (data.success) {
         console.log("Registration success:", data.user);
         showToast(
-          t("login.success.registerSuccess", { nickname: data.user.nickname }),
+          t("login.success.registerSuccess", { nickname: data.user!.nickname }),
           "success",
         );
 
@@ -336,7 +346,7 @@ export default function Page() {
       } else {
         console.error("Registration failed:", data.message);
         showToast(
-          t("login.errors.registerFailed", { message: data.message }),
+          t("login.errors.registerFailed", { message: data.message ?? "" }),
           "error",
         );
       }

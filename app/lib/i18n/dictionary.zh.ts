@@ -232,6 +232,7 @@ export const zhCN = {
       name: '项目名称',
       namePlaceholder: '输入项目名称',
       description: '描述',
+      coverImage: '背景图',
       descriptionPlaceholder: '支持 Markdown 格式',
       type: '项目类型',
       priority: '优先级',
@@ -246,6 +247,10 @@ export const zhCN = {
     avatar: {
       title: '选择头像',
       placeholder: '选择一个表情作为项目头像',
+    },
+    coverImage: {
+      uploadHint: '点击或拖拽文件到此处上传',
+      uploadHintSecondary: '支持单文件或批量上传；严禁上传公司数据或其他禁止文件。',
     },
     filters: {
       all: '全部',

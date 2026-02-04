@@ -41,6 +41,10 @@ export default function ProjectDetailPage() {
       try {
         const res = await fetch(`/api/projects/${projectId}`);
         const data = await res.json();
+        if (res.status === 401) {
+          router.push(`/?next=${encodeURIComponent(`/dashboard/project/${projectId}`)}`);
+          return;
+        }
         if (data.success && data.project) {
           setProject(data.project);
         } else {
@@ -60,6 +64,10 @@ export default function ProjectDetailPage() {
       try {
         const res = await fetch('/api/projects');
         const data = await res.json();
+        if (res.status === 401) {
+          router.push(`/?next=${encodeURIComponent(`/dashboard/project/${projectId}`)}`);
+          return;
+        }
         if (data.success && Array.isArray(data.projects)) {
           setProjects(data.projects);
         }

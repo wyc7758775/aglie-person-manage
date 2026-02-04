@@ -213,6 +213,10 @@ export const jaJP = {
     add: 'プロジェクト追加',
     edit: 'プロジェクト編集',
     delete: 'プロジェクト削除',
+    coverImage: {
+      uploadHint: 'クリックまたはファイルをここにドラッグしてアップロード',
+      uploadHintSecondary: '単一または一括アップロードに対応。会社データや禁止ファイルのアップロードは固く禁じます。',
+    },
     deleteConfirm: 'このプロジェクトを削除してもよろしいですか？',
     startDate: '開始日',
     endDate: '終了日',
@@ -232,6 +236,7 @@ export const jaJP = {
       name: 'プロジェクト名',
       namePlaceholder: 'プロジェクト名を入力',
       description: '説明',
+      coverImage: '背景画像',
       descriptionPlaceholder: 'Markdown 対応',
       type: 'プロジェクトタイプ',
       priority: '優先度',

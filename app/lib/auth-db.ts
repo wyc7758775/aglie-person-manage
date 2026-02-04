@@ -1,26 +1,41 @@
 import { User, UserRole } from "./definitions";
-import {
-  findUserByNickname as dbFindUserByNickname,
-  findUserById as dbFindUserById,
-  createUser as dbCreateUser,
-  verifyUserPassword as dbVerifyUserPassword,
-  getSafeUserInfo as dbGetSafeUserInfo,
-} from "./db-memory";
+import { getUserBackend, isConnectionError, forceMemoryBackend } from "./db-backend";
 
 /**
- * 根据昵称查找用户
+ * 根据昵称查找用户（数据源：POSTGRES_URL 存在时为 PostgreSQL，否则为内存）
+ * 若 PostgreSQL 连不上会自动切到内存并重试，供 getCurrentUser / 项目接口等使用
  */
 export async function findUserByNickname(
   nickname: string
 ): Promise<(User & { role: UserRole }) | null> {
-  return await dbFindUserByNickname(nickname) as (User & { role: UserRole }) | null;
+  try {
+    const backend = await getUserBackend();
+    return (await backend.findUserByNickname(nickname)) as (User & { role: UserRole }) | null;
+  } catch (error) {
+    if (isConnectionError(error)) {
+      forceMemoryBackend();
+      const backend = await getUserBackend();
+      return (await backend.findUserByNickname(nickname)) as (User & { role: UserRole }) | null;
+    }
+    throw error;
+  }
 }
 
 /**
- * 根据ID查找用户
+ * 根据ID查找用户（连接失败时自动回退到内存）
  */
 export async function findUserById(id: string): Promise<(User & { role: UserRole }) | null> {
-  return await dbFindUserById(id) as (User & { role: UserRole }) | null;
+  try {
+    const backend = await getUserBackend();
+    return (await backend.findUserById(id)) as (User & { role: UserRole }) | null;
+  } catch (error) {
+    if (isConnectionError(error)) {
+      forceMemoryBackend();
+      const backend = await getUserBackend();
+      return (await backend.findUserById(id)) as (User & { role: UserRole }) | null;
+    }
+    throw error;
+  }
 }
 
 /**
@@ -30,14 +45,19 @@ export async function verifyUserPassword(
   user: User & { role: UserRole },
   password: string
 ): Promise<boolean> {
-  return await dbVerifyUserPassword(user, password);
+  const backend = await getUserBackend();
+  return backend.verifyUserPassword(user, password);
 }
 
 /**
- * 获取安全的用户信息（不包含密码）
+ * 获取安全的用户信息（不包含密码，含 isAdmin）
  */
 export function getSafeUserInfo(user: User & { role: UserRole }) {
-  return dbGetSafeUserInfo(user);
+  return {
+    id: user.id,
+    nickname: user.nickname,
+    isAdmin: user.role === 'superadmin',
+  };
 }
 
 /**
@@ -123,7 +143,6 @@ export async function registerUser(
   }
 
   try {
-    // 检查用户是否已存在
     const existingUser = await findUserByNickname(nickname);
     if (existingUser) {
       return {
@@ -132,8 +151,8 @@ export async function registerUser(
       };
     }
 
-    // 创建新用户
-    const newUser = await dbCreateUser(nickname, password);
+    const backend = await getUserBackend();
+    const newUser = await backend.createUser(nickname, password);
 
     return {
       success: true,

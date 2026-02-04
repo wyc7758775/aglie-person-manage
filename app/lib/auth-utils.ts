@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { findUserByNickname } from './db-memory';
+import { findUserByNickname } from './auth-db';
 import { User } from './definitions';
 
 /**

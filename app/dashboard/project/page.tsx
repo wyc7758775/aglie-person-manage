@@ -9,6 +9,40 @@ import { useLanguage } from '@/app/lib/i18n';
 import ProjectDrawer from './components/ProjectDrawer';
 import { ProjectListSkeleton } from './components/ProjectCardSkeleton';
 
+/** 即将截止阈值（天数） */
+const DEADLINE_SOON_DAYS = 7;
+
+export type DeadlineStatus = 'expired' | 'soon' | 'normal';
+
+/**
+ * 根据 endDate 与当前日期计算截止时间状态。
+ * endDate 支持 YYYY-MM-DD 或 ISO 字符串，取日期部分按本地日期比较。
+ */
+function getDeadlineStatus(endDate: string | null, today: Date = new Date()): DeadlineStatus {
+  if (!endDate || !endDate.trim()) return 'normal';
+  const dateStr = endDate.includes('T') ? endDate.slice(0, 10) : endDate;
+  const end = new Date(dateStr + 'T00:00:00');
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (end < todayStart) return 'expired';
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysLeft = Math.ceil((end.getTime() - todayStart.getTime()) / msPerDay);
+  if (daysLeft <= DEADLINE_SOON_DAYS) return 'soon';
+  return 'normal';
+}
+
+/**
+ * 剩余天数（仅当未过期时有效），用于颜色深浅。
+ */
+function getDaysLeft(endDate: string | null, today: Date = new Date()): number | null {
+  if (!endDate || !endDate.trim()) return null;
+  const dateStr = endDate.includes('T') ? endDate.slice(0, 10) : endDate;
+  const end = new Date(dateStr + 'T00:00:00');
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (end < todayStart) return null;
+  const msPerDay = 24 * 60 * 60 * 1000;
+  return Math.ceil((end.getTime() - todayStart.getTime()) / msPerDay);
+}
+
 export default function ProjectPage() {
   const router = useRouter();
   const { t } = useLanguage();
@@ -74,8 +108,11 @@ export default function ProjectPage() {
       const queryParams = statusParam ? `?status=${statusParam}` : '';
       const response = await fetch(`/api/projects${queryParams}`);
       const data = await response.json();
-
-        if (data.success && Array.isArray(data.projects)) {
+      if (response.status === 401) {
+        router.push('/?next=/dashboard/project');
+        return;
+      }
+      if (data.success && Array.isArray(data.projects)) {
         setProjects(data.projects);
       } else {
         setError(data.message || t('project.loadFailed'));
@@ -96,11 +133,12 @@ export default function ProjectPage() {
   const handleDelete = async (id: string) => {
     setSelectedProject(undefined);
     try {
-      const response = await fetch(`/api/projects/${id}`, {
-        method: 'DELETE'
-      });
+      const response = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
       const data = await response.json();
-
+      if (response.status === 401) {
+        router.push('/?next=/dashboard/project');
+        return;
+      }
       if (data.success) {
         fetchProjects();
       } else {
@@ -118,13 +156,17 @@ export default function ProjectPage() {
 
   function ProjectCard({ project }: { project: Project }) {
     const [showMenu, setShowMenu] = useState(false);
+    const hasCover = !!project.coverImageUrl;
+    const bgClass = hasCover ? '' : getTypeBgColor(project.type);
 
     return (
         <div
-          className={`project-card group ${getTypeBgColor(project.type)} rounded-lg border border-gray-200 p-4 relative cursor-pointer hover:shadow-md transition-shadow`}
+          className={`project-card group rounded-lg border border-gray-200 p-3 relative cursor-pointer hover:shadow-md transition-shadow overflow-hidden ${bgClass}`}
+          style={hasCover ? { backgroundImage: `url(${project.coverImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
           onClick={() => router.push(`/dashboard/project/${project.id}`)}
         >
-        <div className="absolute top-4 right-4 z-10">
+        {hasCover && <div className="absolute inset-0 bg-black/30 z-0" aria-hidden />}
+        <div className="absolute top-3 right-3 z-10">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -132,7 +174,7 @@ export default function ProjectPage() {
             }}
             className="text-gray-400 hover:text-gray-600"
           >
-            <EllipsisVerticalIcon className="w-5 h-5" />
+            <EllipsisVerticalIcon className="w-4 h-4" />
           </button>
           {showMenu && (
             <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-md shadow-lg z-10 w-32">
@@ -160,58 +202,70 @@ export default function ProjectPage() {
           )}
         </div>
 
-        <div className="mb-4 pr-10">
-          <div className="text-3xl mb-2">{project.avatar || getTypeIcon(project.type)}</div>
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-1">{project.name}</h3>
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{stripHtml(project.description)}</p>
-            <div className="flex items-center gap-2 mb-3">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+        <div className="mb-2 pr-8 relative z-[1] min-w-0 text-left">
+          <div className="text-2xl mb-1">{project.avatar || getTypeIcon(project.type)}</div>
+          <div className="min-w-0">
+            <h3 className={`text-base font-semibold mb-1 text-left ${hasCover ? 'text-white drop-shadow' : 'text-gray-900'}`}>{project.name}</h3>
+            <p className={`text-sm mb-2 line-clamp-2 break-words min-h-[2.5rem] ${hasCover ? 'text-white/90 drop-shadow' : 'text-gray-600'}`}>{stripHtml(project.description)}</p>
+            <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
                 {t(`project.status.${project.status}`)}
               </span>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(project.priority)}`}>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(project.priority)}`}>
                 {t(`project.priority.${project.priority}`)}
               </span>
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${hasCover ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'}`}>
                 {project.points || 0} 积分
               </span>
             </div>
           </div>
 
-          <div className="mb-3">
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
+          <div className="mb-2 text-left">
+            <div className={`flex justify-between text-sm mb-1 ${hasCover ? 'text-white/90' : 'text-gray-600'}`}>
               <span>{t('project.progress')}</span>
               <span>{project.progress}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${project.progress}%` }}
               ></div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <CalendarIcon className="w-4 h-4" />
-              <span>{project.endDate || '-'}</span>
-            </div>
-          </div>
+          {(() => {
+            const deadlineStatus = getDeadlineStatus(project.endDate);
+            const daysLeft = getDaysLeft(project.endDate);
+            const isUrgentSoon = deadlineStatus === 'soon' && daysLeft !== null && daysLeft <= 2 && project.progress < 50;
+            let deadlineLabel = project.endDate || '-';
+            let deadlineClass = hasCover ? 'text-white/90' : 'text-gray-600';
+            let emoji = '';
+            if (deadlineStatus === 'expired') {
+              deadlineClass = 'text-red-600';
+              if (hasCover) deadlineClass = 'text-red-400';
+              emoji = '⏰ ';
+            } else if (deadlineStatus === 'soon') {
+              deadlineClass = isUrgentSoon ? 'text-amber-700' : 'text-amber-600';
+              if (hasCover) deadlineClass = isUrgentSoon ? 'text-amber-300' : 'text-amber-400';
+            }
+            return (
+              <div className={`flex items-center gap-4 text-sm ${deadlineClass}`}>
+                <div className="flex items-center gap-1">
+                  <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+                  <span>{emoji}{deadlineLabel}</span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t('project.title')}</h1>
-        <p className="mt-2 text-gray-600">
-          {t('project.subtitle')}
-        </p>
-      </div>
-
+    <div className="w-full h-full">
       <SectionContainer
+        className="h-full flex flex-col min-h-0"
         title={t('project.title')}
         badge={projects.length}
         filters={filters}
@@ -223,21 +277,23 @@ export default function ProjectPage() {
         onAddClick={() => handleOpenDrawer()}
         addButtonText={t('project.add')}
       >
-        {loading ? (
-          <ProjectListSkeleton />
-        ) : error ? (
-          <div className="text-center py-8 text-red-500">{error}</div>
-        ) : projects.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">{t('project.empty')}</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        )}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {loading ? (
+            <ProjectListSkeleton />
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">{error}</div>
+          ) : projects.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">{t('project.empty')}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {projects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          )}
+        </div>
       </SectionContainer>
 
       <ProjectDrawer

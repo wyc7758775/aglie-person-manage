@@ -8,6 +8,7 @@ import MarkdownEditorField from './MarkdownEditorField';
 import EditableTagList from './EditableTagList';
 import EditableGoalList from './EditableGoalList';
 import SaveStatusIndicator, { SaveStatus } from './SaveStatusIndicator';
+import CoverImageUpload from './CoverImageUpload';
 import './animations.css';
 
 interface ProjectDrawerProps {
@@ -29,7 +30,8 @@ const getDefaultProjectData = (): ProjectCreateRequest => ({
   endDate: null,
   goals: [],
   tags: [],
-  points: 0
+  points: 0,
+  coverImageUrl: undefined
 });
 
 export default function ProjectDrawer({ 
@@ -76,7 +78,8 @@ export default function ProjectDrawer({
         endDate: project.endDate,
         goals: project.goals || [],
         tags: project.tags || [],
-        points: project.points || 0
+        points: project.points || 0,
+        coverImageUrl: project.coverImageUrl
       });
     } else {
       setLocalProject(getDefaultProjectData());
@@ -119,17 +122,14 @@ export default function ProjectDrawer({
       });
 
       const result = await response.json();
-
+      if (response.status === 401) {
+        window.location.href = `/?next=${encodeURIComponent(window.location.pathname)}`;
+        return;
+      }
       if (result.success) {
         setGlobalSaveStatus('saved');
-        // 通知父组件更新
-        if (onSave && result.project) {
-          onSave(result.project);
-        }
-        
-        setTimeout(() => {
-          setGlobalSaveStatus('idle');
-        }, 2000);
+        if (onSave && result.project) onSave(result.project);
+        setTimeout(() => setGlobalSaveStatus('idle'), 2000);
       } else {
         throw new Error(result.message || t('project.saveFailed'));
       }
@@ -162,7 +162,10 @@ export default function ProjectDrawer({
       });
 
       const result = await response.json();
-
+      if (response.status === 401) {
+        window.location.href = `/?next=${encodeURIComponent(window.location.pathname)}`;
+        return;
+      }
       if (result.success) {
         setGlobalSaveStatus('saved');
         if (onSave && result.project) {
@@ -265,6 +268,22 @@ export default function ProjectDrawer({
                 placeholder={t('project.form.descriptionPlaceholder')}
                 onSave={handleFieldSave}
               />
+
+              {/* 背景图 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('project.form.coverImage')}
+                </label>
+                <CoverImageUpload
+                  value={localProject.coverImageUrl}
+                  onChange={(url) => {
+                    setLocalProject(prev => prev ? { ...prev, coverImageUrl: url } : prev);
+                    if (!isCreateMode && project) {
+                      handleFieldSave('coverImageUrl', url ?? null);
+                    }
+                  }}
+                />
+              </div>
 
               {/* 类型和优先级 */}
               <div className="grid grid-cols-2 gap-4">

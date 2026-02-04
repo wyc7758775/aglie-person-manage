@@ -7,12 +7,19 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: '请先登录' },
+        { status: 401 }
+      );
+    }
     const { id } = await params;
-    const project = await getProjectById(id);
+    const project = await getProjectById(id, user.id);
 
     if (!project) {
       return NextResponse.json(
-        { success: false, message: '项目不存在' },
+        { success: false, message: '项目不存在或无权访问' },
         { status: 404 }
       );
     }
@@ -35,6 +42,13 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: '请先登录' },
+        { status: 401 }
+      );
+    }
     const { id } = await params;
     const body = await request.json();
 
@@ -74,11 +88,11 @@ export async function PUT(
       );
     }
 
-    const project = await updateProject(id, body);
+    const project = await updateProject(id, body, user.id);
 
     if (!project) {
       return NextResponse.json(
-        { success: false, message: '项目不存在' },
+        { success: false, message: '项目不存在或无权访问' },
         { status: 404 }
       );
     }
@@ -101,12 +115,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: '请先登录' },
+        { status: 401 }
+      );
+    }
     const { id } = await params;
-    const success = await deleteProject(id);
+    const success = await deleteProject(id, user.id);
 
     if (!success) {
       return NextResponse.json(
-        { success: false, message: '项目不存在' },
+        { success: false, message: '项目不存在或无权访问' },
         { status: 404 }
       );
     }

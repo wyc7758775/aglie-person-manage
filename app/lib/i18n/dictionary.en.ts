@@ -210,6 +210,10 @@ export const enUS = {
     add: 'Add Project',
     edit: 'Edit Project',
     delete: 'Delete Project',
+    coverImage: {
+      uploadHint: 'Click or drag file to this area to upload',
+      uploadHintSecondary: 'Support for a single or bulk upload. Strictly prohibited from uploading company data or other banned files.',
+    },
     deleteConfirm: 'Are you sure you want to delete this project?',
     startDate: 'Start Date',
     endDate: 'End Date',
@@ -229,6 +233,7 @@ export const enUS = {
       name: 'Project Name',
       namePlaceholder: 'Enter project name',
       description: 'Description',
+      coverImage: 'Cover Image',
       descriptionPlaceholder: 'Supports Markdown',
       type: 'Project Type',
       priority: 'Priority',

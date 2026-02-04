@@ -140,6 +140,7 @@ export type Project = {
   progress: number;
   points: number;
   avatar?: string;
+  coverImageUrl?: string;
   createdAt: string;
   updatedAt: string;
 };
