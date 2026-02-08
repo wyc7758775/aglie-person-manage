@@ -42,23 +42,37 @@ This file contains guidelines for AI agents working in this repository.
 
 ## Build & Development Commands
 
+本仓库为 **pnpm workspace** 的 monorepo：主应用在 `apps/web`，产品设计文档站在 `apps/docs`，产品设计内容在 `packages/product-designs`。
+
 ```bash
-# Development
-pnpm dev          # Start development server with Turbopack
-pnpm build        # Build for production
-pnpm start        # Start production server
+# 在仓库根目录
+pnpm install      # 安装所有 workspace 依赖
+pnpm dev          # 启动主应用开发服务器（委托到 apps/web）
+pnpm build        # 构建主应用
+pnpm start        # 启动主应用生产服务
+
+pnpm dev:docs     # 启动产品设计文档站（VitePress）
+pnpm build:docs   # 构建产品设计文档站
+
+# 仅主应用
+pnpm --filter web dev
+pnpm --filter web build
+pnpm --filter web test:e2e  # E2E 仅测 web
 
 # Testing
-node test-api.js  # Run API integration tests (manual test script)
+node test-api.js  # API 手动测试（需在 apps/web 或根目录配置）
 ```
 
 ## Project Structure
 
-- **Framework**: Next.js 15 with App Router
+- **apps/web**：Next.js 15 主应用（App Router），业务代码与 E2E 测试（`e2e/`）在此。
+- **apps/docs**：VitePress 产品设计文档站，消费 `packages/product-designs`，可 Docker 部署（如 NAS）。
+- **packages/product-designs**：PRD、i18n 等 Markdown 内容，目录约定 `{需求名}-{YYYYMMDD}`。
+- **Framework**: Next.js 15 with App Router（主应用）
 - **Language**: TypeScript (strict mode enabled)
 - **Styling**: Tailwind CSS with custom theme
-- **Package Manager**: pnpm
-- **Database**: PostgreSQL；需配置 `POSTGRES_URL`，所有业务数据（用户、项目、任务、需求、缺陷）持久化于数据库（见 `app/lib/db.ts`）
+- **Package Manager**: pnpm (workspace)
+- **Database**: PostgreSQL；需配置 `POSTGRES_URL`，所有业务数据持久化于数据库（见 `apps/web/app/lib/db.ts`）
 
 ## Code Style Guidelines
 
@@ -74,7 +88,7 @@ node test-api.js  # Run API integration tests (manual test script)
 import { NextRequest, NextResponse } from 'next/server';
 import Link from 'next/link';
 
-// Internal imports with @ alias
+// Internal imports with @ alias（主应用在 apps/web 内，@ 指向 apps/web 根）
 import { User } from '@/app/lib/definitions';
 import { findUserByNickname } from '@/app/lib/auth-db';
 ```

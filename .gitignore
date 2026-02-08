@@ -36,3 +36,13 @@ yarn-error.log*
 next-env.d.ts
 
 *.tar.gz
+.pnpm-store/
+
+.next/
+*.next/
+**/.next/
+apps/docs/node_modules/
+apps/docs/.vitepress/cache/
+apps/web/node_modules/
+apps/web/.next/
+apps/web/test-results/

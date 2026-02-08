@@ -28,3 +28,5 @@ product-designs/
 ## 使用方式
 
 在 Cursor 中可调用「产品需求文档指导」技能，以资深产品经理身份协助完成 PRD 的撰写与迭代。PRD 涉及界面文案时，可一并生成 i18n 翻译文档。
+
+本包内容由 **apps/docs**（VitePress）渲染为静态文档站，可通过 `pnpm dev:docs` 本地预览，或通过 Docker 部署（如 NAS）后通过浏览器访问。

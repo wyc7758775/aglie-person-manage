@@ -2,6 +2,12 @@
 
 个人敏捷管理系统，帮助你管理生活、代码项目、任务与习惯。
 
+本仓库为 **pnpm workspace** 的 monorepo：
+
+- **apps/web**：Next.js 主应用（业务与 E2E 在此）
+- **apps/docs**：VitePress 产品设计文档站（PRD/i18n），支持 Docker 部署（如 NAS）
+- **packages/product-designs**：产品设计 Markdown 内容
+
 ## 🚀 快速开始 (Getting Started)
 
 ### 1. 环境准备 (Prerequisites)
@@ -19,10 +25,8 @@
 git clone <repository-url>
 cd agile-person-manage
 
-# 安装依赖
+# 在仓库根目录安装所有 workspace 依赖
 pnpm install
-# 或者
-npm install
 ```
 
 ### 3. 数据库配置 (Database Configuration)
@@ -146,13 +150,12 @@ pg_isready -h localhost -p 5432
 
 ### 4. 启动与初始化 (Run & Initialize)
 
-1.  **启动开发服务器**：
+1.  **启动开发服务器**（在仓库根目录）：
 
     ```bash
     pnpm dev
-    # 或者
-    npm run dev
     ```
+    根目录的 `pnpm dev` 会委托到主应用 `apps/web`。也可直接：`pnpm --filter web dev`。
 
 2.  **初始化数据库 (仅首次运行)**：
     服务器启动后，打开浏览器访问 [http://localhost:3000/seed](http://localhost:3000/seed) 以创建表结构和初始数据。
@@ -166,6 +169,25 @@ pg_isready -h localhost -p 5432
 
 3.  **开始使用**：
     初始化完成后，直接访问 [http://localhost:3000](http://localhost:3000) 即可进入应用首页。
+
+### 5. 产品设计文档站（可选）
+
+- **本地开发**：`pnpm dev:docs` 或 `pnpm --filter docs dev`，访问 VitePress 文档站。
+- **构建**：`pnpm build:docs`。
+- **Docker 部署（如 NAS）**：从仓库根执行  
+  `docker build -f apps/docs/Dockerfile -t agile-docs .`  
+  运行：`docker run -p 8080:80 agile-docs`，通过 `http://<nas>:8080` 访问。  
+  也可使用 `docker compose -f apps/docs/docker-compose.docs.yml up -d`。
+
+### 6. 主应用 Docker 构建
+
+主应用镜像使用 `apps/web/Dockerfile`，在仓库根执行：
+
+```bash
+docker build -f apps/web/Dockerfile -t agile-web .
+```
+
+或使用项目提供的脚本（会构建并可选上传到 NAS）：`./plugins/docker-build.sh latest`。
 
 ---
 

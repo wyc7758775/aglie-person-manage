@@ -19,12 +19,14 @@ ARCH="${ARCH:-amd64}"
 NODE_IMAGE="${NODE_IMAGE:-docker.m.daocloud.io/library/node:20-alpine}"
 FORCE_REBUILD="${FORCE_REBUILD:-0}"
 
-# 从 manifest.json 读取 name/version，失败则回退到 package.json
+# 从 manifest 或 apps/web 的 package 读取 name/version
 NAME=$(node -e 'try{console.log(require("./manifest.json").name||"")}catch(e){process.exit(1)}' 2>/dev/null || true)
 VERSION=$(node -e 'try{console.log(require("./manifest.json").version||"")}catch(e){process.exit(1)}' 2>/dev/null || true)
-
 if [[ -z "$NAME" ]]; then
-  NAME=$(node -e 'try{console.log(require("./package.json").name||"")}catch(e){process.exit(1)}' 2>/dev/null || true)
+  NAME=$(node -e 'try{console.log(require("./apps/web/package.json").name||"")}catch(e){process.exit(1)}' 2>/dev/null || true)
+fi
+if [[ -z "$VERSION" ]]; then
+  VERSION=$(node -e 'try{console.log(require("./apps/web/package.json").version||"")}catch(e){process.exit(1)}' 2>/dev/null || true)
 fi
 if [[ -z "$VERSION" ]]; then
   VERSION=$(node -e 'try{console.log(require("./package.json").version||"")}catch(e){process.exit(1)}' 2>/dev/null || true)
@@ -64,6 +66,7 @@ else
     --platform "linux/${ARCH}" \
     -t "${IMAGE_NAME}:${TAG}" \
     --build-arg "NODE_IMAGE=${NODE_IMAGE}" \
+    -f "$ROOT_DIR/apps/web/Dockerfile" \
     --load \
     "$ROOT_DIR"
 

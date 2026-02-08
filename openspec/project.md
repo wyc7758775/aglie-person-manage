@@ -26,7 +26,8 @@
 - **错误处理**：统一格式 `{ success: boolean; message: string }`
 
 ### 架构模式
-- **App Router**：Next.js App Router 使用 `app/` 目录结构
+- **Monorepo**：pnpm workspace；主应用 `apps/web`，产品设计文档站 `apps/docs`（VitePress），产品设计内容 `packages/product-designs`；各应用 Dockerfile 位于对应 app 目录（如 `apps/web/Dockerfile`），文档站支持 Docker 部署（如 NAS）。
+- **App Router**：Next.js App Router 使用 `app/` 目录结构（主应用在 `apps/web/app/`）
 - **API 路由**：RESTful 风格，位于 `app/api/[resource]/route.ts`
 - **组件组织**：公共组件在 `app/ui/`，仪表盘组件在 `app/ui/dashboard/`
 - **数据层**：工具函数在 `app/lib/`，类型定义在 `app/lib/definitions.ts`

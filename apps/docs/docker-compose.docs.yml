@@ -1,0 +1,12 @@
+# 可选：在 NAS 或本机单独运行产品设计文档站
+# 用法：docker compose -f apps/docs/docker-compose.docs.yml up -d
+# 访问：http://localhost:8080
+
+services:
+  docs:
+    build:
+      context: ../..
+      dockerfile: apps/docs/Dockerfile
+    ports:
+      - "8080:80"
+    container_name: agile-docs
