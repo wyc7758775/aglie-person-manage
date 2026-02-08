@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { RegisterRequest, RegisterResponse } from '@/app/lib/definitions';
 import { registerUser, getSafeUserInfo } from '@/app/lib/auth-db';
 import { User } from '@/app/lib/definitions';
-import { getUserBackend, isConnectionError, forceMemoryBackend } from '@/app/lib/db-backend';
+import { getUserBackend, isConnectionError } from '@/app/lib/db-backend';
 import { getApiMessage } from '@/app/lib/i18n/api-messages';
 
 export async function POST(request: NextRequest) {
@@ -42,23 +42,11 @@ export async function POST(request: NextRequest) {
     await backend.initializeDatabase();
     return await doRegister();
   } catch (error) {
-    if (isConnectionError(error)) {
-      console.warn('PostgreSQL 不可用，已自动切换为内存模式');
-      forceMemoryBackend();
-      try {
-        const backend = await getUserBackend();
-        await backend.initializeDatabase();
-        return await doRegister();
-      } catch (retryError) {
-        console.error('注册接口错误（内存模式）:', retryError);
-        return NextResponse.json(
-          { success: false, message: getApiMessage('zh-CN', 'serverError') ?? '服务器内部错误' } as RegisterResponse,
-          { status: 500 }
-        );
-      }
-    }
     console.error('注册接口错误:', error);
-    let message = getApiMessage('zh-CN', 'serverError') ?? '服务器内部错误';
-    return NextResponse.json({ success: false, message } as RegisterResponse, { status: 500 });
+    const message =
+      isConnectionError(error) || (error instanceof Error && error.message?.includes('POSTGRES_URL'))
+        ? '数据库不可用，请确认已配置 POSTGRES_URL 且 PostgreSQL 已启动'
+        : (error instanceof Error ? error.message : getApiMessage('zh-CN', 'serverError') ?? '服务器内部错误');
+    return NextResponse.json({ success: false, message } as RegisterResponse, { status: 503 });
   }
 }

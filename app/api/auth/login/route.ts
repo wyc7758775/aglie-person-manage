@@ -7,7 +7,7 @@ import {
   validateNickname,
   validatePassword,
 } from "@/app/lib/auth-db";
-import { getUserBackend, isConnectionError, forceMemoryBackend } from "@/app/lib/db-backend";
+import { getUserBackend, isConnectionError } from "@/app/lib/db-backend";
 import { getApiMessage } from "@/app/lib/i18n/api-messages";
 
 const LOGIN_FAIL_MESSAGE = "昵称或密码错误";
@@ -73,34 +73,14 @@ export async function POST(request: NextRequest) {
     if (response.success && body.nickname) setLoginCookie(res, body.nickname);
     return res;
   } catch (error) {
-    if (isConnectionError(error)) {
-      console.warn("PostgreSQL 不可用，已自动切换为内存模式");
-      forceMemoryBackend();
-      try {
-        const backend = await getUserBackend();
-        await backend.initializeDatabase();
-        const { response, status } = await doLogin(body);
-        const res = NextResponse.json(response, { status });
-        if (response.success && body.nickname) setLoginCookie(res, body.nickname);
-        return res;
-      } catch (retryError) {
-        console.error("登录接口错误（内存模式）:", retryError);
-        return NextResponse.json(
-          { success: false, message: getApiMessage("zh-CN", "serverError") ?? "服务器内部错误" } as LoginResponse,
-          { status: 500 }
-        );
-      }
-    }
     console.error("登录接口错误:", error);
-    let message = "服务器内部错误";
-    try {
-      message = getApiMessage("zh-CN", "serverError") ?? message;
-    } catch {
-      // 使用默认文案
-    }
+    const message =
+      isConnectionError(error) || (error instanceof Error && error.message?.includes("POSTGRES_URL"))
+        ? "数据库不可用，请确认已配置 POSTGRES_URL 且 PostgreSQL 已启动"
+        : (error instanceof Error ? error.message : getApiMessage("zh-CN", "serverError") ?? "服务器内部错误");
     return NextResponse.json(
       { success: false, message } as LoginResponse,
-      { status: 500 }
+      { status: 503 }
     );
   }
 }

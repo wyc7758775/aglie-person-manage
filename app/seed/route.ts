@@ -1,116 +1,43 @@
-import bcrypt from 'bcrypt';
-import postgres from 'postgres';
-import { invoices, customers, revenue, users } from '../lib/placeholder-data';
+import { NextResponse } from 'next/server';
+import { getUserBackend } from '@/app/lib/db-backend';
+import type { UserRole } from '@/app/lib/definitions';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
-
-async function seedUsers() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-  await sql`
-    CREATE TABLE IF NOT EXISTS users (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      nickname VARCHAR(255) NOT NULL,
-      password TEXT NOT NULL
-    );
-  `;
-
-  const insertedUsers = await Promise.all(
-    users.map(async (user) => {
-      const hashedPassword = await bcrypt.hash(user.password, 10);
-      return sql`
-        INSERT INTO users (id, nickname, password)
-        VALUES (${user.id}, ${user.nickname}, ${hashedPassword})
-        ON CONFLICT (id) DO NOTHING;
-      `;
-    }),
-  );
-
-  return insertedUsers;
-}
-
-async function seedInvoices() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS invoices (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      customer_id UUID NOT NULL,
-      amount INT NOT NULL,
-      status VARCHAR(255) NOT NULL,
-      date DATE NOT NULL
-    );
-  `;
-
-  const insertedInvoices = await Promise.all(
-    invoices.map(
-      (invoice) => sql`
-        INSERT INTO invoices (customer_id, amount, status, date)
-        VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
-        ON CONFLICT (id) DO NOTHING;
-      `,
-    ),
-  );
-
-  return insertedInvoices;
-}
-
-async function seedCustomers() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS customers (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL,
-      image_url VARCHAR(255) NOT NULL
-    );
-  `;
-
-  const insertedCustomers = await Promise.all(
-    customers.map(
-      (customer) => sql`
-        INSERT INTO customers (id, name, email, image_url)
-        VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
-        ON CONFLICT (id) DO NOTHING;
-      `,
-    ),
-  );
-
-  return insertedCustomers;
-}
-
-async function seedRevenue() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS revenue (
-      month VARCHAR(4) NOT NULL UNIQUE,
-      revenue INT NOT NULL
-    );
-  `;
-
-  const insertedRevenue = await Promise.all(
-    revenue.map(
-      (rev) => sql`
-        INSERT INTO revenue (month, revenue)
-        VALUES (${rev.month}, ${rev.revenue})
-        ON CONFLICT (month) DO NOTHING;
-      `,
-    ),
-  );
-
-  return insertedRevenue;
-}
+const defaultUsers: { nickname: string; password: string; role: UserRole }[] = [
+  { nickname: 'admin', password: '123456', role: 'user' },
+  { nickname: 'testuser', password: 'password123', role: 'user' },
+  { nickname: '敏捷小助手', password: 'agile2024', role: 'user' },
+  { nickname: 'developer', password: 'dev123', role: 'user' },
+  { nickname: 'wuyucun', password: 'wyc7758775', role: 'superadmin' },
+];
 
 export async function GET() {
   try {
-    const result = await sql.begin((sql) => [
-      seedUsers(),
-      seedCustomers(),
-      seedInvoices(),
-      seedRevenue(),
-    ]);
-
-    return Response.json({ message: 'Database seeded successfully' });
+    const backend = await getUserBackend();
+    await backend.initializeDatabase();
+    let created = 0;
+    for (const u of defaultUsers) {
+      try {
+        await backend.createUser(u.nickname, u.password, u.role);
+        created++;
+      } catch {
+        // 用户已存在则跳过
+      }
+    }
+    return NextResponse.json({
+      success: true,
+      message: 'Seed 完成',
+      data: { usersCreated: created },
+    });
   } catch (error) {
-    return Response.json({ error }, { status: 500 });
+    console.error('Seed 失败:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: msg.includes('POSTGRES_URL') ? '未配置 POSTGRES_URL' : 'Seed 失败',
+        error: msg,
+      },
+      { status: msg.includes('POSTGRES_URL') ? 400 : 500 }
+    );
   }
 }

@@ -1,8 +1,11 @@
-import { Requirement, RequirementStatus, RequirementPriority, RequirementType, RequirementCreateRequest, RequirementUpdateRequest } from './definitions';
-import { requirements as initialRequirements } from './placeholder-data';
-import { updateUserTotalPoints } from './db-memory';
-
-let requirements: Requirement[] = [...initialRequirements];
+import {
+  Requirement,
+  RequirementStatus,
+  RequirementPriority,
+  RequirementType,
+  RequirementCreateRequest,
+  RequirementUpdateRequest,
+} from './definitions';
 
 /**
  * 根据优先级自动计算需求积分
@@ -28,74 +31,46 @@ export async function getRequirements(filters?: {
   priority?: RequirementPriority;
   type?: RequirementType;
 }): Promise<Requirement[]> {
-  let filteredRequirements = [...requirements];
-
-  if (filters) {
-    if (filters.projectId) {
-      filteredRequirements = filteredRequirements.filter(r => r.projectId === filters.projectId);
-    }
-    if (filters.status) {
-      filteredRequirements = filteredRequirements.filter(r => r.status === filters.status);
-    }
-    if (filters.priority) {
-      filteredRequirements = filteredRequirements.filter(r => r.priority === filters.priority);
-    }
-    if (filters.type) {
-      filteredRequirements = filteredRequirements.filter(r => r.type === filters.type);
-    }
-  }
-
-  return filteredRequirements;
+  const db = await import('./db');
+  return db.getRequirements(filters);
 }
 
 export async function getRequirementById(id: string): Promise<Requirement | null> {
-  const requirement = requirements.find(r => r.id === id);
-  return requirement || null;
+  const db = await import('./db');
+  return db.getRequirementById(id);
 }
 
 export async function createRequirement(data: RequirementCreateRequest): Promise<Requirement> {
-  const newRequirement: Requirement = {
-    id: `REQ-${String(Date.now()).slice(-6)}`,
-    ...data,
-    points: data.points ?? 0,
-  };
-
-  requirements.push(newRequirement);
-  return newRequirement;
+  const db = await import('./db');
+  return db.createRequirement(data);
 }
 
-export async function updateRequirement(id: string, data: RequirementUpdateRequest, userId?: string): Promise<Requirement | null> {
-  const index = requirements.findIndex(r => r.id === id);
-  if (index === -1) {
-    return null;
-  }
+export async function updateRequirement(
+  id: string,
+  data: RequirementUpdateRequest,
+  userId?: string
+): Promise<Requirement | null> {
+  const db = await import('./db');
+  const oldRequirement = await db.getRequirementById(id);
+  if (!oldRequirement) return null;
 
-  const oldRequirement = requirements[index];
   const oldStatus = oldRequirement.status;
   const newStatus = data.status ?? oldStatus;
 
-  // 如果状态从非 completed 变为 completed，累加积分
+  const updated = await db.updateRequirement(id, data);
+  if (!updated) return null;
+
   if (oldStatus !== 'completed' && newStatus === 'completed' && userId) {
     const pointsToAdd = oldRequirement.points || 0;
     if (pointsToAdd > 0) {
-      await updateUserTotalPoints(userId, pointsToAdd);
+      await db.updateUserTotalPoints(userId, pointsToAdd);
     }
   }
 
-  requirements[index] = {
-    ...requirements[index],
-    ...data,
-  };
-
-  return requirements[index];
+  return updated;
 }
 
 export async function deleteRequirement(id: string): Promise<boolean> {
-  const index = requirements.findIndex(r => r.id === id);
-  if (index === -1) {
-    return false;
-  }
-
-  requirements.splice(index, 1);
-  return true;
+  const db = await import('./db');
+  return db.deleteRequirement(id);
 }

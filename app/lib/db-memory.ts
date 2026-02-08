@@ -1,3 +1,6 @@
+/**
+ * @deprecated 生产环境已不再使用内存后端，仅保留供无 DB 的本地测试或兼容。请配置 POSTGRES_URL 并使用 db.ts。
+ */
 import bcrypt from 'bcrypt';
 import { User, UserRole } from './definitions';
 import { users as placeholderUsers } from './placeholder-data';

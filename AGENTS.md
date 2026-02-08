@@ -58,7 +58,7 @@ node test-api.js  # Run API integration tests (manual test script)
 - **Language**: TypeScript (strict mode enabled)
 - **Styling**: Tailwind CSS with custom theme
 - **Package Manager**: pnpm
-- **Database**: In-memory placeholder data (see `app/lib/placeholder-data.ts`)
+- **Database**: PostgreSQL；需配置 `POSTGRES_URL`，所有业务数据（用户、项目、任务、需求、缺陷）持久化于数据库（见 `app/lib/db.ts`）
 
 ## Code Style Guidelines
 
@@ -76,7 +76,7 @@ import Link from 'next/link';
 
 // Internal imports with @ alias
 import { User } from '@/app/lib/definitions';
-import { findUserByNickname } from '@/app/lib/auth';
+import { findUserByNickname } from '@/app/lib/auth-db';
 ```
 
 ### File Naming
@@ -122,16 +122,14 @@ export async function POST(request: NextRequest) {
 - Use semantic HTML elements
 
 ### Database & Data
-- Current implementation uses in-memory data
-- Data structures defined in `definitions.ts`
-- Use placeholder data for development
-- Database operations in `app/lib/` directory
+- All business data (users, projects, tasks, requirements, defects, user points) persisted in PostgreSQL; configure `POSTGRES_URL` in `.env`
+- Data structures defined in `definitions.ts`; database operations in `app/lib/db.ts`
+- No in-memory fallback; unconfigured or unavailable DB returns explicit errors (e.g. 503)
 
 ### Authentication
 - Custom auth implementation (not NextAuth)
-- User validation in `app/lib/auth.ts`
-- Password handling (currently plaintext - should be hashed in production)
-- Session management via tokens/cookies
+- User lookup and registration in `app/lib/auth-db.ts` (database); pure helpers in `app/lib/auth.ts`
+- Passwords hashed with bcrypt; session via tokens/cookies
 
 ## Language & Localization
 - Chinese language support in UI and error messages
@@ -164,7 +162,6 @@ export async function POST(request: NextRequest) {
 5. Deploy and verify in production
 
 ## Important Notes
-- This is a development/demo application
-- Database is in-memory and resets on restart
-- Authentication is simplified for demo purposes
+- Requires PostgreSQL; set `POSTGRES_URL` before running (e.g. via docker-compose)
+- Run `/api/init-db` or seed to create tables and optional default users
 - Production deployment requires security hardening

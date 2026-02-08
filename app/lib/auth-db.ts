@@ -1,41 +1,22 @@
-import { User, UserRole } from "./definitions";
-import { getUserBackend, isConnectionError, forceMemoryBackend } from "./db-backend";
+import { User, UserRole } from './definitions';
+import { getUserBackend } from './db-backend';
 
 /**
- * 根据昵称查找用户（数据源：POSTGRES_URL 存在时为 PostgreSQL，否则为内存）
- * 若 PostgreSQL 连不上会自动切到内存并重试，供 getCurrentUser / 项目接口等使用
+ * 根据昵称查找用户（仅 PostgreSQL，无内存回退）
  */
 export async function findUserByNickname(
   nickname: string
 ): Promise<(User & { role: UserRole }) | null> {
-  try {
-    const backend = await getUserBackend();
-    return (await backend.findUserByNickname(nickname)) as (User & { role: UserRole }) | null;
-  } catch (error) {
-    if (isConnectionError(error)) {
-      forceMemoryBackend();
-      const backend = await getUserBackend();
-      return (await backend.findUserByNickname(nickname)) as (User & { role: UserRole }) | null;
-    }
-    throw error;
-  }
+  const backend = await getUserBackend();
+  return (await backend.findUserByNickname(nickname)) as (User & { role: UserRole }) | null;
 }
 
 /**
- * 根据ID查找用户（连接失败时自动回退到内存）
+ * 根据ID查找用户（仅 PostgreSQL）
  */
 export async function findUserById(id: string): Promise<(User & { role: UserRole }) | null> {
-  try {
-    const backend = await getUserBackend();
-    return (await backend.findUserById(id)) as (User & { role: UserRole }) | null;
-  } catch (error) {
-    if (isConnectionError(error)) {
-      forceMemoryBackend();
-      const backend = await getUserBackend();
-      return (await backend.findUserById(id)) as (User & { role: UserRole }) | null;
-    }
-    throw error;
-  }
+  const backend = await getUserBackend();
+  return (await backend.findUserById(id)) as (User & { role: UserRole }) | null;
 }
 
 /**
@@ -68,23 +49,22 @@ export function validateNickname(nickname: string): {
   message?: string;
 } {
   if (!nickname) {
-    return { valid: false, message: "用户昵称不能为空" };
+    return { valid: false, message: '用户昵称不能为空' };
   }
 
   if (nickname.length < 2) {
-    return { valid: false, message: "用户昵称至少需要2个字符" };
+    return { valid: false, message: '用户昵称至少需要2个字符' };
   }
 
   if (nickname.length > 50) {
-    return { valid: false, message: "用户昵称不能超过50个字符" };
+    return { valid: false, message: '用户昵称不能超过50个字符' };
   }
 
-  // 检查是否包含特殊字符（只允许字母、数字、中文、下划线）
   const validPattern = /^[a-zA-Z0-9\u4e00-\u9fa5_]+$/;
   if (!validPattern.test(nickname)) {
     return {
       valid: false,
-      message: "用户昵称只能包含字母、数字、中文和下划线",
+      message: '用户昵称只能包含字母、数字、中文和下划线',
     };
   }
 
@@ -99,15 +79,15 @@ export function validatePassword(password: string): {
   message?: string;
 } {
   if (!password) {
-    return { valid: false, message: "密码不能为空" };
+    return { valid: false, message: '密码不能为空' };
   }
 
   if (password.length < 6) {
-    return { valid: false, message: "密码至少需要6个字符" };
+    return { valid: false, message: '密码至少需要6个字符' };
   }
 
   if (password.length > 100) {
-    return { valid: false, message: "密码不能超过100个字符" };
+    return { valid: false, message: '密码不能超过100个字符' };
   }
 
   return { valid: true };
@@ -124,21 +104,19 @@ export async function registerUser(
   message: string;
   user?: User;
 }> {
-  // 验证昵称格式
   const nicknameValidation = validateNickname(nickname);
   if (!nicknameValidation.valid) {
     return {
       success: false,
-      message: nicknameValidation.message || "昵称格式不正确",
+      message: nicknameValidation.message || '昵称格式不正确',
     };
   }
 
-  // 验证密码格式
   const passwordValidation = validatePassword(password);
   if (!passwordValidation.valid) {
     return {
       success: false,
-      message: passwordValidation.message || "密码格式不正确",
+      message: passwordValidation.message || '密码格式不正确',
     };
   }
 
@@ -147,7 +125,7 @@ export async function registerUser(
     if (existingUser) {
       return {
         success: false,
-        message: "用户昵称已存在",
+        message: '用户昵称已存在',
       };
     }
 
@@ -156,14 +134,14 @@ export async function registerUser(
 
     return {
       success: true,
-      message: "注册成功",
+      message: '注册成功',
       user: newUser,
     };
   } catch (error) {
-    console.error("注册用户失败:", error);
+    console.error('注册用户失败:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "注册失败，请稍后重试",
+      message: error instanceof Error ? error.message : '注册失败，请稍后重试',
     };
   }
 }

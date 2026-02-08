@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { users } from '@/app/lib/placeholder-data';
+import { findUserById } from '@/app/lib/auth-db';
 
-// 根据ID获取用户信息
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -11,31 +10,26 @@ export async function GET(
 
     if (!id) {
       return NextResponse.json(
-        {
-          success: false,
-          message: '用户ID不能为空',
-        },
+        { success: false, message: '用户ID不能为空' },
         { status: 400 }
       );
     }
 
-    const user = users.find(u => u.id === id);
+    const user = await findUserById(id);
     if (!user) {
       return NextResponse.json(
-        {
-          success: false,
-          message: '用户不存在',
-        },
+        { success: false, message: '用户不存在' },
         { status: 404 }
       );
     }
 
-    // 返回用户信息（不包含密码）
     return NextResponse.json({
       success: true,
       data: {
         id: user.id,
         nickname: user.nickname,
+        role: user.role,
+        totalPoints: user.totalPoints ?? 0,
       },
     });
   } catch (error) {
@@ -43,9 +37,17 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        message: '服务器内部错误',
+        message:
+          error instanceof Error && error.message?.includes('POSTGRES_URL')
+            ? '数据库未配置'
+            : '服务器内部错误',
       },
-      { status: 500 }
+      {
+        status:
+          error instanceof Error && error.message?.includes('POSTGRES_URL')
+            ? 503
+            : 500,
+      }
     );
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUserBackend, getShouldUseMemoryBackend } from '@/app/lib/db-backend';
+import { getUserBackend } from '@/app/lib/db-backend';
 import { UserRole } from '@/app/lib/definitions';
 
 // 默认用户数据（含超级管理员）
@@ -36,32 +36,36 @@ async function runInitDb() {
       }
     }
 
-  const usingMemory = getShouldUseMemoryBackend();
   return NextResponse.json({
     success: true,
     message: '数据库初始化完成',
     data: {
-      backend: usingMemory ? 'memory' : 'postgres',
+      backend: 'postgres',
       usersCreated: createdUsers.length,
       users: createdUsers,
     },
-    ...(usingMemory && { hint: '当前使用内存后端。如需持久化，请在 .env 中配置 POSTGRES_URL 并重启后再次访问 init-db。' }),
   });
+}
+
+function handleInitDbError(error: unknown) {
+  console.error('数据库初始化失败:', error);
+  const msg = error instanceof Error ? error.message : '未知错误';
+  const isNoDb = msg.includes('POSTGRES_URL') || msg.includes('未配置');
+  return NextResponse.json(
+    {
+      success: false,
+      message: isNoDb ? '未配置数据库，请在 .env 中设置 POSTGRES_URL' : '数据库初始化失败',
+      error: msg,
+    },
+    { status: isNoDb ? 400 : 500 }
+  );
 }
 
 export async function GET() {
   try {
     return await runInitDb();
   } catch (error) {
-    console.error('数据库初始化失败:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: '数据库初始化失败',
-        error: error instanceof Error ? error.message : '未知错误',
-      },
-      { status: 500 }
-    );
+    return handleInitDbError(error);
   }
 }
 
@@ -69,14 +73,6 @@ export async function POST() {
   try {
     return await runInitDb();
   } catch (error) {
-    console.error('数据库初始化失败:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: '数据库初始化失败',
-        error: error instanceof Error ? error.message : '未知错误',
-      },
-      { status: 500 }
-    );
+    return handleInitDbError(error);
   }
 }

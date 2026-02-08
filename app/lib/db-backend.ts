@@ -1,6 +1,5 @@
 /**
- * 统一数据层入口：当 POSTGRES_URL 存在时使用 PostgreSQL（db.ts），否则使用内存（db-memory.ts）。
- * 仅在有 POSTGRES_URL 时才会加载 db.ts，避免未配置时连接失败。
+ * 统一数据层入口：仅使用 PostgreSQL（db.ts）。未配置 POSTGRES_URL 或连接失败时抛出错误，不再回退到内存。
  */
 type UserWithRole = import('./definitions').User & { role?: import('./definitions').UserRole };
 type UserBackend = {
@@ -14,70 +13,49 @@ type UserBackend = {
 };
 
 let cachedUserBackend: UserBackend | null = null;
-/** 当 PostgreSQL 连接失败时置为 true，后续请求自动使用内存后端 */
-let useMemoryDueToConnectionFailure = false;
 
 export function isConnectionError(error: unknown): boolean {
   const err = error as { code?: string; cause?: { code?: string }; errors?: Array<{ code?: string }> };
   return (
-    err?.code === "ECONNREFUSED" ||
-    err?.code === "ENOTFOUND" ||
-    err?.cause?.code === "ECONNREFUSED" ||
-    err?.errors?.[0]?.code === "ECONNREFUSED"
+    err?.code === 'ECONNREFUSED' ||
+    err?.code === 'ENOTFOUND' ||
+    err?.cause?.code === 'ECONNREFUSED' ||
+    err?.errors?.[0]?.code === 'ECONNREFUSED'
   );
 }
 
-/** 在连接失败时调用，后续将使用内存后端（无需改 .env 或启动 Docker） */
-export function forceMemoryBackend(): void {
-  useMemoryDueToConnectionFailure = true;
-  cachedUserBackend = null;
-}
-
-/** 是否已因连接失败而使用内存（项目层可据此决定用 db 还是内存） */
-export function getShouldUseMemoryBackend(): boolean {
-  return useMemoryDueToConnectionFailure;
-}
-
-const PLACEHOLDER_MSG = 'POSTGRES_URL 仍为占位符';
+const NO_DB_MSG =
+  '未配置数据库。请在 .env 中设置 POSTGRES_URL，例如：\n' +
+  'POSTGRES_URL=postgresql://agile_user:agile_password@localhost:5432/agile_person_manage';
 
 export async function getUserBackend(): Promise<UserBackend> {
   if (cachedUserBackend) return cachedUserBackend;
-  if (process.env.POSTGRES_URL && !useMemoryDueToConnectionFailure) {
-    try {
-      const db = await import('./db');
-      cachedUserBackend = {
-        findUserByNickname: db.findUserByNickname,
-        findUserById: db.findUserById,
-        createUser: db.createUser,
-        verifyUserPassword: db.verifyUserPassword,
-        getSafeUserInfo: (u) => ({ ...db.getSafeUserInfo(u), isAdmin: u.role === 'superadmin' }),
-        initializeDatabase: db.initializeDatabase,
-        checkDatabaseConnection: db.checkDatabaseConnection,
-      };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (msg.includes(PLACEHOLDER_MSG)) {
-        console.warn('[db-backend] POSTGRES_URL 为占位符，已自动切换为内存后端。如需持久化，请在 .env 中配置正确连接串并重启。');
-        useMemoryDueToConnectionFailure = true;
-        cachedUserBackend = null;
-        return getUserBackend();
-      }
-      throw e;
-    }
+  if (!process.env.POSTGRES_URL || !process.env.POSTGRES_URL.trim()) {
+    throw new Error(NO_DB_MSG);
   }
-  if (!cachedUserBackend) {
-    const mem = await import('./db-memory');
-    type UserAndRole = import('./definitions').User & { role: import('./definitions').UserRole };
+  if (/username\s*:/i.test(process.env.POSTGRES_URL)) {
+    throw new Error(
+      'POSTGRES_URL 仍为占位符。请在项目根目录 .env 中改为实际连接串，例如：\n' +
+        'POSTGRES_URL=postgresql://agile_user:agile_password@localhost:5432/agile_person_manage'
+    );
+  }
+  try {
+    const db = await import('./db');
     cachedUserBackend = {
-      findUserByNickname: mem.findUserByNickname as UserBackend['findUserByNickname'],
-      findUserById: mem.findUserById as UserBackend['findUserById'],
-      createUser: mem.createUser,
-      verifyUserPassword: (user: UserWithRole, password: string) =>
-        mem.verifyUserPassword(user as UserAndRole, password),
-      getSafeUserInfo: mem.getSafeUserInfo as UserBackend['getSafeUserInfo'],
-      initializeDatabase: mem.initializeDatabase,
-      checkDatabaseConnection: mem.checkDatabaseConnection,
+      findUserByNickname: db.findUserByNickname,
+      findUserById: db.findUserById,
+      createUser: db.createUser,
+      verifyUserPassword: db.verifyUserPassword,
+      getSafeUserInfo: (u) => ({ ...db.getSafeUserInfo(u), isAdmin: u.role === 'superadmin' }),
+      initializeDatabase: db.initializeDatabase,
+      checkDatabaseConnection: db.checkDatabaseConnection,
     };
+    return cachedUserBackend;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (isConnectionError(e)) {
+      throw new Error('数据库连接失败，请确认 PostgreSQL 已启动且 POSTGRES_URL 正确。' + (msg ? ` ${msg}` : ''));
+    }
+    throw e;
   }
-  return cachedUserBackend;
 }

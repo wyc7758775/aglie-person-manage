@@ -1,26 +1,21 @@
 import { NextResponse } from 'next/server';
-import { users } from '@/app/lib/placeholder-data';
+import { getUsers } from '@/app/lib/db';
 
-// 获取所有用户（不包含密码）
 export async function GET() {
   try {
-    const safeUsers = users.map(user => ({
-      id: user.id,
-      nickname: user.nickname,
-    }));
-
+    const users = await getUsers();
     return NextResponse.json({
       success: true,
-      data: safeUsers,
+      data: users.map((u) => ({ id: u.id, nickname: u.nickname, role: u.role, totalPoints: u.totalPoints })),
     });
   } catch (error) {
     console.error('获取用户列表错误:', error);
     return NextResponse.json(
       {
         success: false,
-        message: '服务器内部错误',
+        message: error instanceof Error && error.message?.includes('POSTGRES_URL') ? '数据库未配置' : '服务器内部错误',
       },
-      { status: 500 }
+      { status: error instanceof Error && error.message?.includes('POSTGRES_URL') ? 503 : 500 }
     );
   }
 }
