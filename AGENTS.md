@@ -157,10 +157,53 @@ export async function POST(request: NextRequest) {
 - Validate all user inputs
 
 ## Testing
-- Manual API testing via `test-api.js`
-- No automated test framework currently set up
-- Test API endpoints before deployment
-- Verify authentication flows
+
+本项目使用 **Vitest** 进行单元测试和集成测试，**Playwright** 进行 E2E 测试。
+
+### 测试命令
+```bash
+# 运行所有测试
+pnpm test
+
+# 只运行单元测试
+pnpm test:unit
+
+# 只运行集成测试
+pnpm test:integration
+
+# 只运行 E2E 测试
+pnpm test:e2e
+
+# 监听模式运行单元测试
+pnpm test:watch
+```
+
+### 测试目录结构
+- **单元测试**: `tests/unit/**/*.test.{ts,tsx}`
+- **集成测试**: `tests/integration/**/*.test.{ts,tsx}`
+- **E2E 测试**: `e2e/**/*.spec.{ts,tsx}`
+
+### 测试规范
+- 所有工具函数需 100% 分支覆盖
+- 组件需测试关键交互路径
+- API 需覆盖成功和失败场景
+- 关键用户流程需 E2E 测试
+
+### 测试配置
+- Vitest 配置: `vitest.config.ts`
+- 测试初始化: `tests/vitest-setup.ts`
+- 测试工具: `tests/utils.tsx`
+- 测试指南: `apps/web/TESTING_GUIDE.md`
+
+### 变更验证
+- 所有变更实施后必须通过测试验证
+- 测试失败时阻止变更标记为完成
+- 失败的测试必须修复代码直至通过
+
+### E2E 浏览器安装
+```bash
+pnpm exec playwright install chromium
+```
 
 ## Performance
 - Use Next.js built-in optimizations
