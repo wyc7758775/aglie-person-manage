@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Project, ProjectCreateRequest } from '@/app/lib/definitions';
 import ProjectForm from './ProjectForm';
 import { useLanguage } from '@/app/lib/i18n';
+import Modal from '@/app/components/ui/modal';
+import ConfirmDialog from '@/app/components/ui/confirm-dialog';
 
 interface ProjectDialogProps {
   open: boolean;
@@ -15,6 +17,8 @@ interface ProjectDialogProps {
 export default function ProjectDialog({ open, onClose, project, onSuccess }: ProjectDialogProps) {
   const { t } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const handleSubmit = async (data: ProjectCreateRequest) => {
     setSubmitting(true);
@@ -25,7 +29,7 @@ export default function ProjectDialog({ open, onClose, project, onSuccess }: Pro
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
@@ -44,31 +48,50 @@ export default function ProjectDialog({ open, onClose, project, onSuccess }: Pro
     }
   };
 
-  if (!open) return null;
+  const handleClose = () => {
+    if (isDirty) {
+      setShowConfirmDialog(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmClose = () => {
+    setShowConfirmDialog(false);
+    onClose();
+  };
+
+  const handleCancelClose = () => {
+    setShowConfirmDialog(false);
+  };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-semibold">
-            {project ? t('project.edit') : t('project.add')}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            ✕
-          </button>
-        </div>
+    <>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        title={project ? t('modal.project.editTitle') : t('modal.project.createTitle')}
+        maxWidth="max-w-2xl"
+        closeOnEsc={!isDirty}
+      >
+        <ProjectForm
+          project={project}
+          onSubmit={handleSubmit}
+          onCancel={handleClose}
+          onDirtyChange={setIsDirty}
+        />
+      </Modal>
 
-        <div className="p-4">
-          <ProjectForm
-            project={project}
-            onSubmit={handleSubmit}
-            onCancel={onClose}
-          />
-        </div>
-      </div>
-    </div>
+      <ConfirmDialog
+        open={showConfirmDialog}
+        onClose={handleCancelClose}
+        onConfirm={handleConfirmClose}
+        title={t('confirm.unsavedChanges.title')}
+        message={t('confirm.unsavedChanges.message')}
+        confirmText={t('confirm.unsavedChanges.confirm')}
+        cancelText={t('confirm.unsavedChanges.cancel')}
+        type="warning"
+      />
+    </>
   );
 }

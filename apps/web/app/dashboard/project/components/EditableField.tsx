@@ -157,16 +157,16 @@ export default function EditableField({
     return localValue || placeholder || '-';
   };
 
-  // 基础样式
+  // 基础样式 - 移除了编辑态动画
   const baseInputClass = `
-    w-full px-3 py-2 border rounded-md transition-all duration-200
+    w-full px-3 py-2 border rounded-md
     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
     ${status === 'error' ? 'border-red-500' : 'border-gray-300'}
     ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
   `;
 
   const displayClass = `
-    px-3 py-2 rounded-md cursor-pointer transition-all duration-200
+    px-3 py-2 rounded-md cursor-pointer
     hover:bg-gray-100 group
     ${disabled ? 'cursor-not-allowed opacity-60' : ''}
   `;
@@ -283,7 +283,7 @@ export default function EditableField({
               {renderStatusIcon()}
               {!disabled && (
                 <svg 
-                  className="h-4 w-4 text-gray-400 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" 
+                  className="h-4 w-4 text-gray-400 ml-2 opacity-0 group-hover:opacity-100" 
                   xmlns="http://www.w3.org/2000/svg" 
                   viewBox="0 0 20 20" 
                   fill="currentColor"

@@ -197,6 +197,8 @@ export const zhCN = {
     type: {
       life: '生活',
       code: '代码',
+      sprint: '⚡ 冲刺项目',
+      slow: '🌱 长期项目',
     },
     status: {
       normal: '正常',
@@ -371,6 +373,49 @@ export const zhCN = {
   component: {
     section: {
       add: 'Add a',
+    },
+  },
+  modal: {
+    project: {
+      createTitle: '创建项目',
+      editTitle: '编辑项目',
+      name: '项目名称',
+      type: '项目类型',
+      points: '积分',
+      pointsAutoCalculate: '自动计算',
+      pointsTooltip: '根据项目优先级自动计算积分值',
+      priority: '优先级',
+      startTime: '开始时间',
+      endTime: '截止时间',
+      description: '项目描述',
+      status: '项目状态',
+      createButton: '创建项目',
+      saveButton: '保存',
+      cancelButton: '取消',
+    },
+  },
+  confirm: {
+    unsavedChanges: {
+      title: '确认关闭',
+      message: '确定放弃添加的内容吗？',
+      confirm: '确定',
+      cancel: '取消',
+    },
+  },
+  validation: {
+    project: {
+      nameRequired: '请输入项目名称',
+      nameMaxLength: '名称不能超过 200 个字符',
+      typeRequired: '请选择项目类型',
+      pointsRequired: '请输入积分值',
+      pointsPositive: '积分必须为正整数',
+      timeInvalid: '截止时间不能早于开始时间',
+    },
+  },
+  help: {
+    project: {
+      typeSprint: '短期、高强度、快速迭代的项目',
+      typeSlow: '长期、持续、稳步推进的项目',
     },
   },
 };

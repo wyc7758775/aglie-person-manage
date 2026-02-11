@@ -120,7 +120,7 @@ export type InvoiceForm = {
   status: 'pending' | 'paid';
 };
 
-export type ProjectType = 'life' | 'code';
+export type ProjectType = 'sprint-project' | 'slow-project';
 
 export type ProjectStatus = 'normal' | 'at_risk' | 'out_of_control';
 

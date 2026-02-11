@@ -197,6 +197,8 @@ export const jaJP = {
     type: {
       life: '生活',
       code: 'コード',
+      sprint: '⚡ スプリントプロジェクト',
+      slow: '🌱 長期プロジェクト',
     },
     status: {
       normal: '正常',
@@ -371,6 +373,49 @@ export const jaJP = {
   component: {
     section: {
       add: '追加',
+    },
+  },
+  modal: {
+    project: {
+      createTitle: 'プロジェクトを作成',
+      editTitle: 'プロジェクトを編集',
+      name: 'プロジェクト名',
+      type: 'プロジェクトタイプ',
+      points: 'ポイント',
+      pointsAutoCalculate: '自動計算',
+      pointsTooltip: 'プロジェクトの優先度に基づいてポイントを自動計算',
+      priority: '優先度',
+      startTime: '開始日時',
+      endTime: '終了期限',
+      description: 'プロジェクト説明',
+      status: 'ステータス',
+      createButton: 'プロジェクトを作成',
+      saveButton: '保存',
+      cancelButton: 'キャンセル',
+    },
+  },
+  confirm: {
+    unsavedChanges: {
+      title: '閉じる確認',
+      message: '追加した内容を破棄してもよろしいですか？',
+      confirm: '確認',
+      cancel: 'キャンセル',
+    },
+  },
+  validation: {
+    project: {
+      nameRequired: 'プロジェクト名を入力してください',
+      nameMaxLength: '名前は200文字以内で入力してください',
+      typeRequired: 'プロジェクトタイプを選択してください',
+      pointsRequired: 'ポイント値を入力してください',
+      pointsPositive: 'ポイントは正の整数である必要があります',
+      timeInvalid: '終了期限は開始日時より早く設定できません',
+    },
+  },
+  help: {
+    project: {
+      typeSprint: '短期的、高強度、高速イテレーションのプロジェクト',
+      typeSlow: '長期的、継続的、着実に進めるプロジェクト',
     },
   },
 };

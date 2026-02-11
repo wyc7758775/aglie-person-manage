@@ -82,3 +82,63 @@ TBD - created by archiving change add-superadmin-account. Update Purpose after a
 - **THEN** 系统正常显示页面内容
 - **AND** 不进行重定向
 
+### Requirement: Tab 键导航支持
+系统 SHALL 支持用户使用 Tab 键在登录和注册表单的输入框及按钮之间按正确顺序切换。
+
+#### Scenario: 登录表单 Tab 导航
+- **WHEN** 用户在登录页面按 Tab 键
+- **THEN** 焦点按以下顺序切换：账号输入框 → 密码输入框 → 登录按钮
+- **AND** 焦点循环后回到账号输入框
+
+#### Scenario: 注册表单 Tab 导航
+- **WHEN** 用户在注册页面按 Tab 键
+- **THEN** 焦点按以下顺序切换：账号输入框 → 邮箱输入框 → 密码输入框 → 确认密码输入框 → 注册按钮
+- **AND** 焦点循环后回到账号输入框
+
+---
+
+### Requirement: 带校验的回车键提交
+系统 SHALL 仅在表单校验通过时才允许通过回车键提交登录或注册请求。
+
+#### Scenario: 登录表单校验失败时回车键不提交
+- **WHEN** 用户在登录表单中输入无效数据（如账号为空或密码少于6位）
+- **AND** 用户按回车键
+- **THEN** 系统不触发登录操作
+- **AND** 显示相应的验证错误提示
+
+#### Scenario: 登录表单校验通过时回车键提交
+- **WHEN** 用户在登录表单中输入有效凭据
+- **AND** 用户按回车键
+- **THEN** 系统触发登录操作
+
+#### Scenario: 注册表单校验失败时回车键不提交
+- **WHEN** 用户在注册表单中输入无效数据
+- **AND** 用户按回车键
+- **THEN** 系统不触发注册操作
+- **AND** 显示相应的验证错误提示
+
+#### Scenario: 注册表单校验通过时回车键提交
+- **WHEN** 用户在注册表单中输入有效数据
+- **AND** 用户按回车键
+- **THEN** 系统触发注册操作
+
+### Requirement: 用户退出登录
+系统 SHALL 提供退出登录功能，用户可以安全退出系统。
+
+#### Scenario: 点击退出图标执行退出
+- **GIVEN** 用户已登录并访问Dashboard页面
+- **WHEN** 用户点击导航栏底部的退出图标
+- **THEN** 系统清除localStorage中的认证信息（`lastLoginNickname` 和 `lastLoginPassword`）
+- **AND** 系统重定向用户到登录页面
+
+#### Scenario: 退出后访问受保护页面
+- **GIVEN** 用户已执行退出登录
+- **WHEN** 用户尝试直接访问 `/dashboard/overview`
+- **THEN** 系统将用户重定向到登录页面
+
+#### Scenario: 退出API响应
+- **WHEN** 调用 `/api/auth/logout` 接口
+- **THEN** 接口返回 `{ success: true, message: "退出成功" }`
+
+---
+

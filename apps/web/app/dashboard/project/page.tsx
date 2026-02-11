@@ -93,11 +93,11 @@ export default function ProjectPage() {
   };
 
   const getTypeIcon = (type: string) => {
-    return type === 'code' ? '💻' : '🏠';
+    return type === 'sprint-project' ? '⚡' : '🌱';
   };
 
   const getTypeBgColor = (type: string) => {
-    return type === 'code' ? 'bg-blue-100' : 'bg-green-100';
+    return type === 'sprint-project' ? 'bg-orange-100' : 'bg-green-100';
   };
 
   const fetchProjects = async () => {

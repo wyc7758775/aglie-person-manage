@@ -194,6 +194,8 @@ export const enUS = {
     type: {
       life: 'Life',
       code: 'Code',
+      sprint: '⚡ Sprint Project',
+      slow: '🌱 Long-term Project',
     },
     status: {
       normal: 'Normal',
@@ -368,6 +370,49 @@ export const enUS = {
   component: {
     section: {
       add: 'Add a',
+    },
+  },
+  modal: {
+    project: {
+      createTitle: 'Create Project',
+      editTitle: 'Edit Project',
+      name: 'Project Name',
+      type: 'Project Type',
+      points: 'Points',
+      pointsAutoCalculate: 'Auto-calculate',
+      pointsTooltip: 'Calculate points automatically based on project priority',
+      priority: 'Priority',
+      startTime: 'Start Time',
+      endTime: 'End Time',
+      description: 'Description',
+      status: 'Status',
+      createButton: 'Create Project',
+      saveButton: 'Save',
+      cancelButton: 'Cancel',
+    },
+  },
+  confirm: {
+    unsavedChanges: {
+      title: 'Confirm Close',
+      message: 'Are you sure you want to discard the added content?',
+      confirm: 'Confirm',
+      cancel: 'Cancel',
+    },
+  },
+  validation: {
+    project: {
+      nameRequired: 'Please enter project name',
+      nameMaxLength: 'Name cannot exceed 200 characters',
+      typeRequired: 'Please select project type',
+      pointsRequired: 'Please enter points value',
+      pointsPositive: 'Points must be a positive integer',
+      timeInvalid: 'End time cannot be earlier than start time',
+    },
+  },
+  help: {
+    project: {
+      typeSprint: 'Short-term, high-intensity, fast-iteration projects',
+      typeSlow: 'Long-term, continuous, steadily-progressing projects',
     },
   },
 };

@@ -132,7 +132,7 @@ export default function CoverImageUpload({ value, onChange, disabled }: CoverIma
   const showPlaceholder = !previewUrl;
 
   return (
-    <div className="space-y-3">
+    <div className="h-full flex flex-col">
       <input
         ref={inputRef}
         type="file"
@@ -149,7 +149,7 @@ export default function CoverImageUpload({ value, onChange, disabled }: CoverIma
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         className={`
-          rounded-lg border-2 border-dashed min-h-[160px] flex flex-col items-center justify-center
+          flex-1 rounded-lg border-2 border-dashed flex flex-col items-center justify-center
           transition-colors cursor-pointer
           ${showPlaceholder ? 'bg-gray-100 border-gray-300 hover:border-blue-400 hover:bg-gray-50' : 'border-gray-300 bg-gray-50'}
           ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
@@ -170,7 +170,7 @@ export default function CoverImageUpload({ value, onChange, disabled }: CoverIma
             </p>
           </>
         ) : (
-          <div className="relative w-full h-full min-h-[160px] rounded-lg overflow-hidden">
+          <div className="relative w-full h-full rounded-lg overflow-hidden">
             <img
               src={previewUrl}
               alt=""
@@ -180,50 +180,23 @@ export default function CoverImageUpload({ value, onChange, disabled }: CoverIma
         )}
       </div>
 
-      {/* 下方文件列表 */}
-      {fileList.length > 0 && (
-        <div className="border-t border-gray-200 pt-3 space-y-3">
-          {fileList.map((item) => (
-            <div key={item.id}>
-              <div className="flex items-center gap-2 text-sm">
-                {item.status === 'error' ? (
-                  <span className="text-red-500 flex-shrink-0">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                    </svg>
-                  </span>
-                ) : null}
-                <span
-                  className={
-                    item.status === 'error' ? 'text-red-600 flex-1 truncate' : 'text-gray-700 flex-1 truncate'
-                  }
-                >
-                  {item.name}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeFile(item.id)}
-                  className={`flex-shrink-0 p-1 rounded ${item.status === 'error' ? 'text-red-500 hover:bg-red-50' : 'text-gray-400 hover:bg-gray-100'}`}
-                  aria-label={t('common.buttons.delete')}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-              {item.status === 'uploading' && (
-                <div className="mt-1 w-full">
-                  <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                      style={{ width: `${item.progress}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+      {/* 图片删除按钮 - 浮动在右上角 */}
+      {previewUrl && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setPreviewUrl(undefined);
+            onChange(undefined);
+            setFileList([]);
+          }}
+          className="absolute top-2 right-2 p-2 bg-white/80 hover:bg-white rounded-full shadow-md transition-colors z-10"
+          aria-label={t('common.buttons.delete')}
+        >
+          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       )}
     </div>
   );

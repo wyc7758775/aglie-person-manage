@@ -114,7 +114,7 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const showDefectTab = project.type === 'code';
+  const showDefectTab = project.type === 'sprint-project';
 
   return (
     <div className="w-full">

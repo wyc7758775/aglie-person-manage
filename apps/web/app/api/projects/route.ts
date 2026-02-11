@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!type || (type !== 'life' && type !== 'code')) {
+    if (!type || (type !== 'sprint-project' && type !== 'slow-project' && type !== 'life' && type !== 'code')) {
       return NextResponse.json(
         { success: false, message: '无效的项目类型' },
         { status: 400 }
