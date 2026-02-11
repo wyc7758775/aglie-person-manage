@@ -54,6 +54,16 @@
 - **WHEN** 用户执行核心操作（创建任务、项目）
 - **THEN** E2E 测试验证数据持久化和 UI 反馈
 
+#### Scenario: E2E 测试工作区独立
+- **WHEN** E2E 测试位于 `apps/e2e/` 工作区
+- **THEN** 可通过 `pnpm --filter e2e test` 运行
+- **AND** E2E 测试与 web 应用代码分离
+
+#### Scenario: 多应用测试支持
+- **WHEN** E2E 测试配置多个应用
+- **THEN** 可分别测试 web (`web`) 和 docs (`docs`) 应用
+- **AND** 使用 `projects` 配置区分测试目标
+
 ---
 
 ### Requirement: 测试验证门禁
@@ -76,6 +86,18 @@
 ### Requirement: 测试运行命令
 系统 SHALL 提供统一的测试运行命令。
 
+#### Scenario: E2E 测试运行（独立工作区）
+- **WHEN** 运行 `pnpm --filter e2e test`
+- **THEN** 执行 `apps/e2e/tests/` 目录下所有 Playwright 测试
+
+#### Scenario: E2E Web 应用测试
+- **WHEN** 运行 `pnpm --filter e2e test:web`
+- **THEN** 使用 web 项目配置测试 web 应用
+
+#### Scenario: E2E Docs 应用测试
+- **WHEN** 运行 `pnpm --filter e2e test:docs`
+- **THEN** 使用 docs 项目配置测试文档站
+
 #### Scenario: 单元测试运行
 - **WHEN** 运行 `pnpm test:unit`
 - **THEN** 执行 `tests/unit/` 目录下所有测试
@@ -83,10 +105,6 @@
 #### Scenario: 集成测试运行
 - **WHEN** 运行 `pnpm test:integration`
 - **THEN** 执行 `tests/integration/` 目录下所有测试
-
-#### Scenario: E2E 测试运行
-- **WHEN** 运行 `pnpm test:e2e`
-- **THEN** 执行 `e2e/` 目录下所有 Playwright 测试
 
 #### Scenario: 全部测试运行
 - **WHEN** 运行 `pnpm test` 或 `pnpm test:all`
@@ -118,8 +136,8 @@
 | 工具函数 | 100% 分支 | 单元测试 | `tests/unit/**/*.test.ts` |
 | 组件交互 | 关键路径 | 单元测试 | `tests/unit/**/*.test.tsx` |
 | API 路由 | 成功/失败场景 | 集成测试 | `tests/integration/**/*.test.ts` |
-| 认证流程 | 全路径 | E2E 测试 | `e2e/**/*.spec.ts` |
-| 关键用户路径 | 端到端验证 | E2E 测试 | `e2e/**/*.spec.ts` |
+| 认证流程 | 全路径 | E2E 测试 | `apps/e2e/tests/**/*.spec.ts` |
+| 关键用户路径 | 端到端验证 | E2E 测试 | `apps/e2e/tests/**/*.spec.ts` |
 
 ## Best Practices
 

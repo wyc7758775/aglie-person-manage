@@ -162,26 +162,24 @@ export async function POST(request: NextRequest) {
 
 ### 测试命令
 ```bash
-# 运行所有测试
-pnpm test
+# E2E 测试（独立工作区）
+pnpm --filter e2e test          # 运行所有 E2E 测试
+pnpm --filter e2e test:web      # 只测试 web 应用
+pnpm --filter e2e test:docs     # 只测试 docs 应用
 
-# 只运行单元测试
-pnpm test:unit
+# 单元测试（web 应用）
+pnpm test:unit                  # 运行所有单元测试
+pnpm test:watch                 # 监听模式运行单元测试
+pnpm test:integration           # 运行集成测试
 
-# 只运行集成测试
-pnpm test:integration
-
-# 只运行 E2E 测试
-pnpm test:e2e
-
-# 监听模式运行单元测试
-pnpm test:watch
+# 全部测试
+pnpm test                       # 运行所有测试（单元+集成）
 ```
 
 ### 测试目录结构
-- **单元测试**: `tests/unit/**/*.test.{ts,tsx}`
-- **集成测试**: `tests/integration/**/*.test.{ts,tsx}`
-- **E2E 测试**: `e2e/**/*.spec.{ts,tsx}`
+- **单元测试**: `apps/web/tests/unit/**/*.test.{ts,tsx}`
+- **集成测试**: `apps/web/tests/integration/**/*.test.{ts,tsx}`
+- **E2E 测试**: `apps/e2e/tests/**/*.spec.{ts,tsx}`
 
 ### 测试规范
 - 所有工具函数需 100% 分支覆盖
