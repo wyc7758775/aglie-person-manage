@@ -46,3 +46,4 @@ apps/docs/.vitepress/cache/
 apps/web/node_modules/
 apps/web/.next/
 apps/web/test-results/
+apps/e2e/node_modules/

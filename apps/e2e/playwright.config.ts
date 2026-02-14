@@ -13,10 +13,34 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'web',
-      use: {
-        ...devices['Desktop Chrome'],
-      },
+      name: 'functional',
+      testMatch: /tests\/functional\/.+\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'performance',
+      testMatch: /tests\/performance\/.+\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'security',
+      testMatch: /tests\/security\/.+\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'accessibility',
+      testMatch: /tests\/accessibility\/.+\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'contract',
+      testMatch: /tests\/contract\/.+\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'chaos',
+      testMatch: /tests\/chaos\/.+\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
   webServer: {
