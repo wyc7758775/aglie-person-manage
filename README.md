@@ -108,10 +108,9 @@ apps/
 ├── apps/
 │   ├── web/              # Next.js 15 主应用（App Router）
 │   │   ├── app/          # 业务代码（页面、API、组件）
-│   │   ├── tests/        # Vitest 单元/集成测试
-│   │   └── e2e/          # Playwright E2E 测试
-│   ├── docs/             # VitePress 产品设计文档站
-│   └── e2e/              # 独立 E2E 测试工作区
+│   │   └── tests/        # Vitest 单元/集成测试
+│   ├── docs/             # VitePress 产品设计文档站（PRD/i18n）
+│   └── e2e/              # 六维契约测试工作区（Playwright）
 ├── packages/
 │   └── product-designs/  # PRD、i18n 等产品设计 Markdown 内容
 ├── openspec/             # 产品需求与变更管理（OpenSpec）
