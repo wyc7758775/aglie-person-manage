@@ -14,16 +14,19 @@
 
 ```mermaid
 flowchart TB
-    subgraph Input["📥 输入契约 (Input Contract)"]
-        docs["📄 docs<br/>OpenSpec 需求文档<br/>PRD/i18n 产品设计"]
+    subgraph Input["📥 输入契约"]
+        A["📄 docs - OpenSpec 需求文档"]
+        B["📋 PRD/i18n - 产品设计"]
     end
     
-    subgraph Impl["🔄 实现层 (Implementation)"]
-        ai["🤖 AI 生成代码<br/>可被替换 · 可被重构"]
+    subgraph Impl["🔄 实现层"]
+        C["🤖 AI 生成代码"]
+        D["🔧 可被替换 / 可被重构"]
     end
     
-    subgraph Output["📤 输出契约 (Output Contract)"]
-        e2e["🧪 E2E 六维契约测试<br/>功能/性能/安全/混沌<br/>✅ 通过即部署"]
+    subgraph Output["📤 输出契约"]
+        E["🧪 E2E 六维契约测试"]
+        F["✅ 通过即部署"]
     end
     
     Input --> Impl --> Output
@@ -40,34 +43,14 @@ flowchart TB
 
 ### 六维 E2E 契约体系
 
-```mermaid
-mindmap
-  root((E2E 契约测试))
-    功能契约
-      用户场景
-      业务流程
-      端到端验证
-    性能契约
-      响应时间
-      并发能力
-      资源消耗
-    安全契约
-      SQL注入防护
-      XSS防护
-      认证安全
-    无障碍契约
-      WCAG标准
-      键盘导航
-      屏幕阅读器
-    API契约
-      Schema验证
-      类型检查
-      接口一致性
-    混沌契约
-      故障注入
-      网络抖动
-      容错恢复
-```
+| 维度 | 测试内容 | 验证目标 |
+|:---:|:---|:---|
+| 🎯 | **functional** - 用户场景、业务流程、端到端功能 | 功能行为符合需求 |
+| ⚡ | **performance** - 响应时间、并发能力、资源消耗 | 性能指标达标 |
+| 🔒 | **security** - SQL 注入、XSS、认证安全、输入验证 | 安全漏洞防护 |
+| ♿ | **accessibility** - WCAG 标准、键盘导航、屏幕阅读器 | 残障用户可用 |
+| 📋 | **contract** - API Schema、类型验证、接口一致性 | 前后端契约一致 |
+| 💥 | **chaos** - 故障注入、网络抖动、资源限制、容错恢复 | 系统韧性保障 |
 
 ### 为什么这样设计？
 
@@ -367,13 +350,13 @@ pnpm exec playwright install chromium
 #### 契约验证工作流
 
 ```mermaid
-flowchart TD
-    A[1. 需求变更 OpenSpec] --> B[2. 更新契约测试 E2E]
-    B --> C[3. AI 生成/修改代码]
-    C --> D[4. 运行全部契约测试]
-    D --> E{测试结果}
-    E -->|✅ 通过| F[允许部署]
-    E -->|❌ 失败| G[修复实现或调整契约]
+flowchart LR
+    A[需求变更] --> B[更新E2E测试]
+    B --> C[AI生成代码]
+    C --> D[运行契约测试]
+    D --> E{结果}
+    E -->|通过| F[部署]
+    E -->|失败| G[修复]
     G --> D
 ```
 
@@ -433,30 +416,13 @@ docker build -f apps/web/Dockerfile -t agile-web .
 
 ### 🏗️ 奖励结构
 
-```mermaid
-mindmap
-  root((🏆 激励体系))
-    积分 💎
-      成长值
-      完成任务累计
-      核心货币
-    连续打卡 🔥
-      Streak机制
-      7天徽章
-      30天徽章
-    徽章 🎖️
-      里程碑授予
-      周完成率
-      版本发布
-    等级 ⭐
-      段位晋升
-      解锁奖励
-      专属特权
-    兑换 🎁
-      奖赏清单
-      周上限
-      冷却机制
-```
+| 组件 | 名称 | 说明 |
+|:---:|:---|:---|
+| 💎 | **积分** | 成长值，完成任务与番茄钟累计，核心货币 |
+| 🔥 | **连续打卡** | Streak 机制，7/14/30 天关键节点触发加成与徽章 |
+| 🎖️ | **徽章** | 里程碑授予，周完成率、阻碍关闭、版本发布获得 |
+| ⭐ | **等级** | 段位晋升，积分累积提升，解锁更高价值奖励 |
+| 🎁 | **兑换** | 奖赏清单，用积分兑换自我奖赏，设周上限与冷却 |
 
 ### 📋 积分规则
 
