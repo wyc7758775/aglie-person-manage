@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Project, ProjectCreateRequest, ProjectStatus, ProjectType, ProjectPriority } from '@/app/lib/definitions';
+import { Project, ProjectCreateRequest, ProjectStatus, ProjectType, ProjectPriority, ProjectIndicator } from '@/app/lib/definitions';
 import { useLanguage } from '@/app/lib/i18n';
 import EditableField from './EditableField';
 import MarkdownEditorField from './MarkdownEditorField';
@@ -58,6 +58,9 @@ export default function ProjectDrawer({
   // Tooltip 显示状态
   const [showPointsTooltip, setShowPointsTooltip] = useState(false);
 
+  // 指标管理状态
+  const [indicators, setIndicators] = useState<ProjectIndicator[]>([]);
+
   // 是否是新建模式
   const isCreateMode = !project;
 
@@ -77,8 +80,10 @@ export default function ProjectDrawer({
         points: project.points || 0,
         coverImageUrl: project.coverImageUrl
       });
+      setIndicators(project.indicators || []);
     } else {
       setLocalProject(getDefaultProjectData());
+      setIndicators([]);
     }
   }, [project]);
 
@@ -123,6 +128,61 @@ export default function ProjectDrawer({
     }
   }, [isCreateMode, project, onSave]);
 
+  // 项目类型切换处理（需同步更新 endDate 和 indicators）
+  const handleTypeChange = useCallback(async (_fieldName: string, value: string | string[] | null) => {
+    const newType = value as ProjectType;
+
+    // 更新本地状态：类型 + endDate
+    setLocalProject(prev => prev ? {
+      ...prev,
+      type: newType,
+      endDate: newType === 'slow-burn' ? null : prev.endDate,
+    } : prev);
+
+    // 切换到 slow-burn 且没有指标时，自动添加一个默认指标
+    if (newType === 'slow-burn') {
+      setIndicators(prev => prev.length === 0 ? [{
+        id: crypto.randomUUID(),
+        name: '',
+        value: 0,
+        target: 100,
+        weight: 0,
+      }] : prev);
+    }
+
+    // 编辑模式：保存到服务端
+    if (!isCreateMode && project) {
+      setGlobalSaveStatus('saving');
+      setGlobalErrorMessage(null);
+      try {
+        const updateBody: Record<string, unknown> = { type: newType };
+        if (newType === 'slow-burn') {
+          updateBody.endDate = null;
+        }
+        const response = await fetch(`/api/projects/${project.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updateBody)
+        });
+        const result = await response.json();
+        if (response.status === 401) {
+          window.location.href = `/?next=${encodeURIComponent(window.location.pathname)}`;
+          return;
+        }
+        if (result.success) {
+          setGlobalSaveStatus('saved');
+          if (onSave && result.project) onSave(result.project);
+          setTimeout(() => setGlobalSaveStatus('idle'), 2000);
+        } else {
+          throw new Error(result.message || t('project.saveFailed'));
+        }
+      } catch (error) {
+        setGlobalSaveStatus('error');
+        setGlobalErrorMessage(error instanceof Error ? error.message : t('project.saveFailed'));
+      }
+    }
+  }, [isCreateMode, project, onSave, t]);
+
   // 创建新项目
   const handleCreate = async () => {
     if (!localProject || !localProject.name.trim()) {
@@ -141,7 +201,8 @@ export default function ProjectDrawer({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...localProject,
-          autoCalculatePoints: autoCalculatePoints
+          autoCalculatePoints: autoCalculatePoints,
+          ...(localProject.type === 'slow-burn' ? { indicators } : {}),
         })
       });
 
@@ -167,12 +228,49 @@ export default function ProjectDrawer({
     }
   };
 
+  // 计算总权重
+  const totalWeight = indicators.reduce((sum, ind) => sum + (ind.weight || 0), 0);
+
+  // 计算指标进度
+  const calculateProgress = (): number => {
+    if (indicators.length === 0) return 0;
+    let total = 0;
+    for (const ind of indicators) {
+      const { value = 0, target = 0, weight = 0 } = ind;
+      const progress = target > 0 ? Math.min(100, (value / target) * 100) : 0;
+      total += progress * weight;
+    }
+    return Math.round(total / 100);
+  };
+
+  const addIndicator = () => {
+    if (indicators.length >= 10) return;
+    setIndicators([...indicators, {
+      id: crypto.randomUUID(),
+      name: '',
+      value: 0,
+      target: 100,
+      weight: 0,
+    }]);
+  };
+
+  const updateIndicator = (index: number, field: keyof ProjectIndicator, value: string | number) => {
+    const updated = [...indicators];
+    updated[index] = { ...updated[index], [field]: value };
+    setIndicators(updated);
+  };
+
+  const removeIndicator = (index: number) => {
+    if (indicators.length <= 1) return;
+    setIndicators(indicators.filter((_, i) => i !== index));
+  };
+
   if (!open) return null;
 
   // 类型选项
   const typeOptions = [
     { value: 'sprint-project', label: t('project.type.sprint') },
-    { value: 'slow-project', label: t('project.type.slow') }
+    { value: 'slow-burn', label: t('project.type.slowBurn') }
   ];
 
   // 优先级选项
@@ -221,7 +319,7 @@ export default function ProjectDrawer({
         </div>
 
         {/* 主体内容 - 移除编辑态动画 */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 [scrollbar-gutter:stable]">
           {localProject && (
             <div className="space-y-6">
               {/* 1. 背景图 - 高度 190px，独立卡片样式 */}
@@ -240,7 +338,7 @@ export default function ProjectDrawer({
               {/* 2. 项目名称 */}
               <div className="flex items-start gap-4">
                 <div className="text-4xl">
-                  {project?.avatar || (localProject.type === 'sprint-project' ? '⚡' : '🌱')}
+                  {localProject.type === 'sprint-project' ? '⚡' : '🌱'}
                 </div>
                 <div className="flex-1">
                   <EditableField
@@ -264,7 +362,7 @@ export default function ProjectDrawer({
                   type="select"
                   options={typeOptions}
                   required
-                  onSave={handleFieldSave}
+                  onSave={handleTypeChange}
                 />
                 <EditableField
                   value={localProject.priority}
@@ -364,8 +462,8 @@ export default function ProjectDrawer({
                 />
               </div>
 
-              {/* 6. 开始时间 & 7. 结束时间 */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* 6. 开始时间 & 7. 结束时间（slow-burn 不显示结束时间） */}
+              <div className={`grid gap-4 ${localProject.type !== 'slow-burn' ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <EditableField
                   value={localProject.startDate}
                   fieldName="startDate"
@@ -374,16 +472,129 @@ export default function ProjectDrawer({
                   required
                   onSave={handleFieldSave}
                 />
-                <EditableField
-                  value={localProject.endDate}
-                  fieldName="endDate"
-                  label={t('project.deadline')}
-                  type="date"
-                  onSave={handleFieldSave}
-                />
+                {localProject.type !== 'slow-burn' && (
+                  <EditableField
+                    value={localProject.endDate}
+                    fieldName="endDate"
+                    label={t('project.deadline')}
+                    type="date"
+                    onSave={handleFieldSave}
+                  />
+                )}
               </div>
 
-              {/* 8. 描述 */}
+              {/* 8. 积累指标区域 - 仅 slow-burn 项目显示 */}
+              {localProject.type === 'slow-burn' && (
+                <div className="border border-gray-200 rounded-md p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      {t('modal.project.indicators')}
+                    </label>
+                    <span className={`text-sm ${totalWeight === 100 ? 'text-green-500' : 'text-red-500'}`}>
+                      {t('modal.project.indicatorsTotalWeight')}: {totalWeight}%
+                      {totalWeight === 100 && ' ✓'}
+                    </span>
+                  </div>
+
+                  {/* 指标表头 */}
+                  <div className="grid grid-cols-4 gap-2 mb-2 text-xs text-gray-500">
+                    <div>{t('modal.project.indicatorName')}</div>
+                    <div>{t('modal.project.indicatorValue')}</div>
+                    <div>{t('modal.project.indicatorTarget')}</div>
+                    <div>{t('modal.project.indicatorWeight')}</div>
+                  </div>
+
+                  {/* 指标列表 */}
+                  <div className="space-y-3 mb-3">
+                    {indicators.map((indicator, index) => (
+                      <div key={indicator.id} className="grid grid-cols-4 gap-2 items-center">
+                        <div>
+                          <input
+                            type="text"
+                            value={indicator.name}
+                            onChange={(e) => updateIndicator(index, 'name', e.target.value)}
+                            placeholder={t('modal.project.indicatorName')}
+                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="number"
+                            value={indicator.value}
+                            onChange={(e) => updateIndicator(index, 'value', parseInt(e.target.value) || 0)}
+                            placeholder={t('modal.project.indicatorValue')}
+                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="number"
+                            value={indicator.target}
+                            onChange={(e) => updateIndicator(index, 'target', parseInt(e.target.value) || 0)}
+                            placeholder={t('modal.project.indicatorTarget')}
+                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 relative">
+                            <input
+                              type="number"
+                              value={indicator.weight}
+                              onChange={(e) => updateIndicator(index, 'weight', parseInt(e.target.value) || 0)}
+                              placeholder={t('modal.project.indicatorWeight')}
+                              className="w-full px-2 py-1.5 pr-6 border border-gray-300 rounded text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
+                          </div>
+                          {indicators.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeIndicator(index)}
+                              className="text-red-500 hover:text-red-700 flex-shrink-0"
+                              title={t('common.buttons.delete')}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 添加指标按钮 */}
+                  {indicators.length < 10 && (
+                    <button
+                      type="button"
+                      onClick={addIndicator}
+                      className="text-orange-500 hover:text-orange-700 text-sm"
+                    >
+                      + {t('modal.project.addIndicator')}
+                    </button>
+                  )}
+
+                  {/* 进度预览 */}
+                  <div className="mt-4 pt-3 border-t border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-500">
+                        {t('modal.project.indicatorsProgress')}: {calculateProgress()}%
+                      </span>
+                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            calculateProgress() >= 70 ? 'bg-green-500' :
+                            calculateProgress() >= 30 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${calculateProgress()}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 9. 描述 */}
               <MarkdownEditorField
                 value={localProject.description}
                 fieldName="description"

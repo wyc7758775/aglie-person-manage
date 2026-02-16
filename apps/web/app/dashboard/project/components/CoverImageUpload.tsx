@@ -170,11 +170,18 @@ export default function CoverImageUpload({ value, onChange, disabled }: CoverIma
             </p>
           </>
         ) : (
-          <div className="relative w-full h-full rounded-lg overflow-hidden">
+          <div className="relative w-full h-full rounded-lg overflow-hidden bg-gray-100">
+            {/* 背景模糊层 */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center blur-xl scale-110 opacity-60"
+              style={{ backgroundImage: `url(${previewUrl})` }}
+              aria-hidden
+            />
+            {/* 主图 */}
             <img
               src={previewUrl}
               alt=""
-              className="w-full h-full object-cover object-center"
+              className="relative z-10 w-full h-full object-contain object-center"
             />
           </div>
         )}

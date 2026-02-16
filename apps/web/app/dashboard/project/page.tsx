@@ -159,13 +159,44 @@ export default function ProjectPage() {
     const hasCover = !!project.coverImageUrl;
     const bgClass = hasCover ? '' : getTypeBgColor(project.type);
 
+    // 格式化日期为 YYYY-MM-DD
+    const formatDate = (dateStr: string | null): string => {
+      if (!dateStr) return '-';
+      try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      } catch {
+        return dateStr;
+      }
+    };
+
     return (
         <div
           className={`project-card group rounded-lg border border-gray-200 p-3 relative cursor-pointer hover:shadow-md transition-shadow overflow-hidden ${bgClass}`}
-          style={hasCover ? { backgroundImage: `url(${project.coverImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
           onClick={() => router.push(`/dashboard/project/${project.id}`)}
         >
-        {hasCover && <div className="absolute inset-0 bg-black/30 z-0" aria-hidden />}
+        {hasCover && (
+          <>
+            {/* 背景模糊层 */}
+            <div 
+              className="absolute inset-0 z-0 bg-cover bg-center blur-lg scale-110 opacity-50"
+              style={{ backgroundImage: `url(${project.coverImageUrl})` }}
+              aria-hidden
+            />
+            {/* 主图容器 */}
+            <div 
+              className="absolute inset-0 z-[1] bg-contain bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${project.coverImageUrl})` }}
+              aria-hidden
+            />
+            {/* 遮罩层 */}
+            <div className="absolute inset-0 bg-black/30 z-[2]" aria-hidden />
+          </>
+        )}
         <div className="absolute top-3 right-3 z-10">
           <button
             onClick={(e) => {
@@ -237,7 +268,7 @@ export default function ProjectPage() {
             const deadlineStatus = getDeadlineStatus(project.endDate);
             const daysLeft = getDaysLeft(project.endDate);
             const isUrgentSoon = deadlineStatus === 'soon' && daysLeft !== null && daysLeft <= 2 && project.progress < 50;
-            let deadlineLabel = project.endDate || '-';
+            let deadlineLabel = formatDate(project.endDate);
             let deadlineClass = hasCover ? 'text-white/90' : 'text-gray-600';
             let emoji = '';
             if (deadlineStatus === 'expired') {

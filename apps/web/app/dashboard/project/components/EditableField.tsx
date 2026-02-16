@@ -143,6 +143,30 @@ export default function EditableField({
     }
   };
 
+  // 格式化日期为年月日
+  const formatDate = (value: string | null): string => {
+    if (!value) return placeholder || '-';
+    
+    // 如果值已经是 YYYY-MM-DD 格式，直接返回
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+    
+    // 尝试解析日期字符串
+    try {
+      const date = new Date(value);
+      if (isNaN(date.getTime())) {
+        return value;
+      }
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch {
+      return value;
+    }
+  };
+
   // 获取显示值
   const getDisplayValue = () => {
     if (displayFormatter) {
@@ -152,6 +176,10 @@ export default function EditableField({
     if (type === 'select' && options.length > 0) {
       const option = options.find(opt => opt.value === localValue);
       return option?.label || localValue || placeholder || '-';
+    }
+    
+    if (type === 'date') {
+      return formatDate(localValue);
     }
     
     return localValue || placeholder || '-';

@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProjects, createProject, calculateProjectPoints } from '@/app/lib/projects';
-import { ProjectType, ProjectStatus, ProjectPriority } from '@/app/lib/definitions';
+import { ProjectType, ProjectStatus, ProjectPriority, ProjectIndicator } from '@/app/lib/definitions';
 import { getCurrentUser } from '@/app/lib/auth-utils';
+
+function calculateProgress(indicators: ProjectIndicator[]): number {
+  if (!indicators || indicators.length === 0) return 0;
+
+  let totalProgress = 0;
+  for (const ind of indicators) {
+    const { value = 0, target = 0, weight = 0 } = ind;
+    // 单个指标完成度上限 100%
+    const indicatorProgress = target > 0 ? Math.min(100, (value / target) * 100) : 0;
+    totalProgress += indicatorProgress * weight;
+  }
+
+  // 除以 100 得到最终进度
+  return Math.round(totalProgress / 100);
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -58,11 +73,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!type || (type !== 'sprint-project' && type !== 'slow-project' && type !== 'life' && type !== 'code')) {
+    if (!type || (type !== 'sprint-project' && type !== 'slow-burn')) {
       return NextResponse.json(
         { success: false, message: '无效的项目类型' },
         { status: 400 }
       );
+    }
+
+    // slow-burn 项目必须有指标
+    if (type === 'slow-burn') {
+      const indicators = body.indicators as ProjectIndicator[] | undefined;
+      if (!indicators || !Array.isArray(indicators) || indicators.length === 0) {
+        return NextResponse.json(
+          { success: false, message: '慢燃项目至少需要设置一个积累指标' },
+          { status: 400 }
+        );
+      }
+
+      // 验证指标权重总和为 100
+      const totalWeight = indicators.reduce((sum: number, ind: ProjectIndicator) => sum + (ind.weight || 0), 0);
+      if (totalWeight !== 100) {
+        return NextResponse.json(
+          { success: false, message: '所有指标权重之和必须等于 100%' },
+          { status: 400 }
+        );
+      }
     }
 
     if (!startDate) {
@@ -72,12 +107,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (endDate && new Date(endDate) < new Date(startDate)) {
+    // sprint-project 项目验证结束日期
+    if (type === 'sprint-project' && endDate && new Date(endDate) < new Date(startDate)) {
       return NextResponse.json(
         { success: false, message: '结束日期不能早于开始日期' },
         { status: 400 }
       );
     }
+
+    // slow-burn 项目：endDate 设为 null
+    const finalEndDate = type === 'slow-burn' ? null : (endDate || null);
 
     // 积分验证
     let finalPoints = points ?? 0;
@@ -91,6 +130,20 @@ export async function POST(request: NextRequest) {
     // 自动计算积分
     if (autoCalculatePoints && priority) {
       finalPoints = calculateProjectPoints(priority);
+    }
+
+    // 处理指标和进度
+    const indicators = body.indicators as ProjectIndicator[] | undefined;
+    let finalProgress = 0;
+    let finalIndicators: ProjectIndicator[] | undefined;
+
+    if (type === 'slow-burn' && indicators && indicators.length > 0) {
+      finalIndicators = indicators.map((ind: ProjectIndicator) => ({
+        ...ind,
+        id: ind.id || crypto.randomUUID(),
+      }));
+      // 计算进度
+      finalProgress = calculateProgress(finalIndicators);
     }
 
     const user = await getCurrentUser(request);
@@ -109,10 +162,12 @@ export async function POST(request: NextRequest) {
         priority: priority || 'medium',
         status: 'normal',
         startDate,
-        endDate: endDate || null,
+        endDate: finalEndDate,
         goals: goals || [],
         tags: tags || [],
         points: finalPoints,
+        progress: finalProgress,
+        indicators: finalIndicators,
         coverImageUrl: coverImageUrl || undefined,
       },
       user.id

@@ -9,6 +9,7 @@ import {
   ProjectStatus,
   ProjectType,
   ProjectPriority,
+  ProjectIndicator,
   Task,
   TaskStatus,
   TaskPriority,
@@ -330,11 +331,22 @@ export function getSafeUserInfo(user: User & { role?: UserRole }) {
 // ---------- 项目 CRUD（按 user_id 维度） ----------
 
 function rowToProject(row: Record<string, unknown>): Project {
+  let indicators: ProjectIndicator[] | undefined;
+  if (row.indicators) {
+    try {
+      indicators = typeof row.indicators === 'string' 
+        ? JSON.parse(row.indicators as string) 
+        : (row.indicators as ProjectIndicator[]);
+    } catch {
+      indicators = undefined;
+    }
+  }
+
   return {
     id: String(row.id),
     name: String(row.name),
     description: String(row.description ?? ''),
-    type: (row.type as ProjectType) || 'life',
+    type: (row.type as ProjectType) || 'sprint-project',
     status: (row.status as ProjectStatus) || 'normal',
     priority: (row.priority as ProjectPriority) || 'medium',
     goals: Array.isArray(row.goals) ? (row.goals as string[]) : [],
@@ -344,6 +356,7 @@ function rowToProject(row: Record<string, unknown>): Project {
     progress: Number(row.progress) || 0,
     points: Number(row.points) || 0,
     coverImageUrl: row.cover_image_url != null ? String(row.cover_image_url) : undefined,
+    indicators,
     createdAt: row.created_at != null ? new Date(row.created_at as string).toISOString() : new Date().toISOString(),
     updatedAt: row.updated_at != null ? new Date(row.updated_at as string).toISOString() : new Date().toISOString(),
   };
@@ -382,7 +395,7 @@ export async function getProjectById(id: string, userId: string): Promise<Projec
 export async function createProject(data: ProjectCreateRequest, userId: string): Promise<Project> {
   try {
     const result = await getSql()`
-      INSERT INTO projects (user_id, name, description, type, status, priority, goals, tags, start_date, end_date, progress, points, cover_image_url)
+      INSERT INTO projects (user_id, name, description, type, status, priority, goals, tags, start_date, end_date, progress, points, cover_image_url, indicators)
       VALUES (
         ${userId},
         ${data.name},
@@ -394,9 +407,10 @@ export async function createProject(data: ProjectCreateRequest, userId: string):
         ${JSON.stringify(data.tags ?? [])},
         ${data.startDate},
         ${data.endDate ?? null},
-        0,
+        ${data.progress ?? 0},
         ${data.points ?? 0},
-        ${data.coverImageUrl ?? null}
+        ${data.coverImageUrl ?? null},
+        ${data.indicators ? JSON.stringify(data.indicators) : null}
       )
       RETURNING *
     `;
@@ -427,6 +441,9 @@ export async function updateProject(id: string, data: ProjectUpdateRequest, user
     const coverImageUrl: string | null = data.coverImageUrl !== undefined
       ? (data.coverImageUrl ?? null)
       : (row.cover_image_url != null ? String(row.cover_image_url) : null);
+    const indicatorsJson = data.indicators !== undefined 
+      ? (data.indicators ? JSON.stringify(data.indicators) : null)
+      : (row.indicators != null ? String(row.indicators) : null);
     const result = await getSql()`
       UPDATE projects SET
         name = ${name},
@@ -441,6 +458,7 @@ export async function updateProject(id: string, data: ProjectUpdateRequest, user
         progress = ${progress},
         points = ${points},
         cover_image_url = ${coverImageUrl},
+        indicators = ${indicatorsJson},
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id} AND user_id = ${userId}
       RETURNING *

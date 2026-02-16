@@ -120,11 +120,19 @@ export type InvoiceForm = {
   status: 'pending' | 'paid';
 };
 
-export type ProjectType = 'sprint-project' | 'slow-project';
+export type ProjectType = 'sprint-project' | 'slow-burn';
 
 export type ProjectStatus = 'normal' | 'at_risk' | 'out_of_control';
 
 export type ProjectPriority = 'high' | 'medium' | 'low';
+
+export interface ProjectIndicator {
+  id: string;
+  name: string;
+  value: number;
+  target: number;
+  weight: number;
+}
 
 export type Project = {
   id: string;
@@ -141,11 +149,14 @@ export type Project = {
   points: number;
   avatar?: string;
   coverImageUrl?: string;
+  indicators?: ProjectIndicator[];
   createdAt: string;
   updatedAt: string;
 };
 
-export type ProjectCreateRequest = Omit<Project, 'id' | 'progress' | 'createdAt' | 'updatedAt' | 'avatar'>;
+export type ProjectCreateRequest = Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'avatar' | 'progress'> & {
+  progress?: number;
+};
 
 export type ProjectUpdateRequest = Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>;
 
