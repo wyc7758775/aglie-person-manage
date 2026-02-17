@@ -423,6 +423,28 @@ export default function MarkdownEditorField({
           margin: 0.5rem 0;
           color: #6b7280;
         }
+        
+        /* 无序列表样式 */
+        .tiptap ul {
+          list-style-type: disc;
+          padding-left: 1.5rem;
+          margin: 0.5rem 0;
+        }
+        
+        .tiptap ul li {
+          margin: 0.25rem 0;
+        }
+        
+        /* 有序列表样式 */
+        .tiptap ol {
+          list-style-type: decimal;
+          padding-left: 1.5rem;
+          margin: 0.5rem 0;
+        }
+        
+        .tiptap ol li {
+          margin: 0.25rem 0;
+        }
       `}</style>
     </div>
   );

@@ -322,8 +322,11 @@ export default function ProjectDrawer({
         <div className="flex-1 overflow-y-auto p-6 [scrollbar-gutter:stable]">
           {localProject && (
             <div className="space-y-6">
-              {/* 1. 背景图 - 高度 190px，独立卡片样式 */}
-              <div className="h-[190px] rounded-xl overflow-hidden shadow-sm border border-gray-200">
+              {/* 1. 背景图 - 有图片时保持宽高比，无图片时高度自适应 */}
+              <div 
+                className="w-full rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-100 relative"
+                style={localProject.coverImageUrl ? { aspectRatio: '1.4677' } : undefined}
+              >
                 <CoverImageUpload
                   value={localProject.coverImageUrl}
                   onChange={(url) => {

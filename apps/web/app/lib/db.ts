@@ -98,9 +98,17 @@ export async function initializeDatabase() {
         progress INT NOT NULL DEFAULT 0,
         points INT NOT NULL DEFAULT 0,
         cover_image_url TEXT,
+        indicators JSONB DEFAULT '[]',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'projects' AND column_name = 'indicators') THEN
+          ALTER TABLE projects ADD COLUMN indicators JSONB DEFAULT '[]';
+        END IF;
+      END $$;
     `;
 
     await getSql()`

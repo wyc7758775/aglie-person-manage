@@ -132,7 +132,7 @@ export default function CoverImageUpload({ value, onChange, disabled }: CoverIma
   const showPlaceholder = !previewUrl;
 
   return (
-    <div className="h-full flex flex-col">
+    <div className={`flex flex-col ${showPlaceholder ? '' : 'h-full'}`}>
       <input
         ref={inputRef}
         type="file"
@@ -149,9 +149,9 @@ export default function CoverImageUpload({ value, onChange, disabled }: CoverIma
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         className={`
-          flex-1 rounded-lg border-2 border-dashed flex flex-col items-center justify-center
+          rounded-lg border-2 border-dashed flex flex-col items-center justify-center
           transition-colors cursor-pointer
-          ${showPlaceholder ? 'bg-gray-100 border-gray-300 hover:border-blue-400 hover:bg-gray-50' : 'border-gray-300 bg-gray-50'}
+          ${showPlaceholder ? 'h-[190px] bg-gray-100 border-gray-300 hover:border-blue-400 hover:bg-gray-50' : 'h-full border-gray-300 bg-gray-50'}
           ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
         `}
       >
@@ -177,11 +177,11 @@ export default function CoverImageUpload({ value, onChange, disabled }: CoverIma
               style={{ backgroundImage: `url(${previewUrl})` }}
               aria-hidden
             />
-            {/* 主图 */}
-            <img
-              src={previewUrl}
-              alt=""
-              className="relative z-10 w-full h-full object-contain object-center"
+            {/* 主图 - 使用背景图方式确保完整显示 */}
+            <div 
+              className="absolute inset-0 z-10 bg-contain bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${previewUrl})` }}
+              aria-hidden
             />
           </div>
         )}
