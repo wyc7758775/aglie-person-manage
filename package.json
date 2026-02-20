@@ -2,12 +2,19 @@
   "private": true,
   "scripts": {
     "build": "pnpm --filter web build",
-    "dev": "pnpm --filter web dev",
+    "dev": "NODE_OPTIONS='--max-old-space-size=4096' pnpm --filter web dev",
     "dev:turbo": "pnpm --filter web dev:turbo",
     "start": "pnpm --filter web start",
     "build:docs": "pnpm --filter docs build",
     "dev:docs": "pnpm --filter docs dev",
-    "docker-build": "./plugins/docker-build.sh"
+    "docker-build": "./plugins/docker-build.sh",
+    "devtools": "chrome-devtools-mcp",
+    "dev:all": "concurrently \"pnpm dev\" \"pnpm devtools\"",
+    "docs:reorganize": "node .opencode/skills/reorganize-prd/reorganize.js"
+  },
+  "devDependencies": {
+    "chrome-devtools-mcp": "^0.17.1",
+    "concurrently": "^8.2.2"
   },
   "pnpm": {
     "onlyBuiltDependencies": ["bcrypt", "sharp"]

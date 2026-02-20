@@ -126,17 +126,95 @@ export default function SideNav() {
       <div className="flex flex-col items-center">
         {/* Logo */}
         <div className="mb-6">
-          <Link href="/dashboard" className="flex flex-col items-center">
-            <div className="w-8 h-8 bg-black rounded-sm flex items-center justify-center mb-1">
-              <svg
-                className="w-5 h-5 text-white"
-                viewBox="0 0 24 24"
-                fill="currentColor"
+          <Link href="/dashboard" className="flex flex-col items-center group">
+            {/* 复古徽章 Logo */}
+            <div className="relative w-10 h-10 mb-1.5">
+              {/* 外圈 - 古铜色齿轮纹理 */}
+              <svg 
+                className="w-full h-full" 
+                viewBox="0 0 40 40"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <path d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z" />
+                <defs>
+                  {/* 复古渐变 */}
+                  <linearGradient id="bronzeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#d4a574" />
+                    <stop offset="30%" stopColor="#b8956a" />
+                    <stop offset="60%" stopColor="#8b6914" />
+                    <stop offset="100%" stopColor="#654321" />
+                  </linearGradient>
+                  
+                  {/* 噪点纹理 */}
+                  <filter id="vintageNoise">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" />
+                    <feColorMatrix type="saturate" values="0" />
+                    <feComponentTransfer>
+                      <feFuncA type="linear" slope="0.15" />
+                    </feComponentTransfer>
+                  </filter>
+                </defs>
+                
+                {/* 主圆形徽章 */}
+                <circle 
+                  cx="20" 
+                  cy="20" 
+                  r="18" 
+                  fill="url(#bronzeGradient)" 
+                  stroke="#5d4e37" 
+                  strokeWidth="1"
+                />
+                
+                {/* 内圈装饰线 */}
+                <circle 
+                  cx="20" 
+                  cy="20" 
+                  r="15" 
+                  fill="none" 
+                  stroke="#f5f5dc" 
+                  strokeWidth="0.5"
+                  opacity="0.6"
+                />
+                
+                {/* 中心 "B" 字母 - 打字机风格 */}
+                <text
+                  x="20"
+                  y="24"
+                  textAnchor="middle"
+                  fontFamily="Courier New, Courier, monospace"
+                  fontSize="14"
+                  fontWeight="bold"
+                  fill="#3d2914"
+                  style={{ letterSpacing: '-1px' }}
+                >
+                  B
+                </text>
+                
+                {/* 小圆点（代表"运行"状态） */}
+                <circle cx="20" cy="12" r="2" fill="#e8b923" opacity="0.9" />
+                
+                {/* 复古噪点纹理覆盖 */}
+                <rect 
+                  x="0" 
+                  y="0" 
+                  width="40" 
+                  height="40" 
+                  fill="transparent"
+                  filter="url(#vintageNoise)"
+                  opacity="0.3"
+                />
               </svg>
             </div>
-            <span className="text-[9px] font-medium text-gray-800">Be.run</span>
+            
+            {/* 品牌文字 */}
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-bold tracking-widest text-gray-700" 
+                    style={{ fontFamily: 'Courier New, Courier, monospace' }}>
+                BE.RUN
+              </span>
+              <span className="text-[6px] tracking-[0.15em] text-gray-500 mt-0.5 uppercase">
+                Agile Life
+              </span>
+            </div>
           </Link>
         </div>
         {/* 导航容器 - 使用统一的指示器 */}

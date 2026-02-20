@@ -36,7 +36,7 @@ function ToolbarButton({ onClick, isActive, title, children }: ToolbarButtonProp
       type="button"
       onClick={onClick}
       title={title}
-      className={`p-1.5 rounded hover:bg-gray-200 transition-colors ${
+      className={`p-1 rounded hover:bg-gray-200 transition-colors ${
         isActive ? 'bg-gray-200 text-orange-600' : 'text-gray-600'
       }`}
     >
@@ -169,7 +169,7 @@ export default function MarkdownEditorField({
       <div className="border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-orange-500">
         {/* 工具栏 */}
         {showToolbar && (
-          <div className="flex items-center gap-1 px-2 py-1.5 border-b border-gray-200 bg-gray-50 flex-wrap">
+          <div className="flex items-center gap-1 px-2 py-1 border-b border-gray-200 bg-gray-50 flex-wrap">
             {/* 文本样式 */}
             <div className="flex items-center gap-0.5">
               <ToolbarButton

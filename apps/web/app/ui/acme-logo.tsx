@@ -1,132 +1,95 @@
-import { lusitana } from "@/app/ui/fonts";
-
 export default function HabiticaLogo() {
   return (
-    <div
-      className={`${lusitana.className} flex flex-row items-center justify-center leading-none text-white`}
-    >
-      {/* 抽象太阳Logo - 基于登录界面的橙色圆形元素 */}
-      <svg
-        className="h-7 w-7"
-        viewBox="0 0 100 100"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* 定义渐变 */}
-        <defs>
-          <radialGradient id="sunGradient" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#fed7aa" />
-            <stop offset="50%" stopColor="#fb923c" />
-            <stop offset="100%" stopColor="#ea580c" />
-          </radialGradient>
-          <radialGradient id="coreGradient" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#fef3c7" />
-            <stop offset="100%" stopColor="#f59e0b" />
-          </radialGradient>
-        </defs>
-
-        {/* 外层光芒 - 8个方向的光线 */}
-        <g opacity="0.6">
-          {/* 主要方向光芒 */}
-          <line
-            x1="50"
-            y1="8"
-            x2="50"
-            y2="18"
-            stroke="#fb923c"
-            strokeWidth="2"
-            strokeLinecap="round"
+    <div className="flex flex-col items-center">
+      {/* 复古徽章 Logo */}
+      <div className="relative w-12 h-12 mb-2">
+        <svg 
+          className="w-full h-full" 
+          viewBox="0 0 40 40"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            {/* 复古渐变 */}
+            <linearGradient id="bronzeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#d4a574" />
+              <stop offset="30%" stopColor="#b8956a" />
+              <stop offset="60%" stopColor="#8b6914" />
+              <stop offset="100%" stopColor="#654321" />
+            </linearGradient>
+            
+            {/* 噪点纹理 */}
+            <filter id="vintageNoise">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" />
+              <feColorMatrix type="saturate" values="0" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.15" />
+              </feComponentTransfer>
+            </filter>
+          </defs>
+          
+          {/* 主圆形徽章 */}
+          <circle 
+            cx="20" 
+            cy="20" 
+            r="18" 
+            fill="url(#bronzeGradient)" 
+            stroke="#5d4e37" 
+            strokeWidth="1"
           />
-          <line
-            x1="50"
-            y1="82"
-            x2="50"
-            y2="92"
-            stroke="#fb923c"
-            strokeWidth="2"
-            strokeLinecap="round"
+          
+          {/* 内圈装饰线 */}
+          <circle 
+            cx="20" 
+            cy="20" 
+            r="15" 
+            fill="none" 
+            stroke="#f5f5dc" 
+            strokeWidth="0.5"
+            opacity="0.6"
           />
-          <line
-            x1="8"
-            y1="50"
-            x2="18"
-            y2="50"
-            stroke="#fb923c"
-            strokeWidth="2"
-            strokeLinecap="round"
+          
+          {/* 中心 "B" 字母 - 打字机风格 */}
+          <text
+            x="20"
+            y="24"
+            textAnchor="middle"
+            fontFamily="Courier New, Courier, monospace"
+            fontSize="14"
+            fontWeight="bold"
+            fill="#3d2914"
+            style={{ letterSpacing: '-1px' }}
+          >
+            B
+          </text>
+          
+          {/* 小圆点（代表"运行"状态） */}
+          <circle cx="20" cy="12" r="2" fill="#e8b923" opacity="0.9" />
+          
+          {/* 复古噪点纹理覆盖 */}
+          <rect 
+            x="0" 
+            y="0" 
+            width="40" 
+            height="40" 
+            fill="transparent"
+            filter="url(#vintageNoise)"
+            opacity="0.3"
           />
-          <line
-            x1="82"
-            y1="50"
-            x2="92"
-            y2="50"
-            stroke="#fb923c"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-
-          {/* 对角线光芒 */}
-          <line
-            x1="21.5"
-            y1="21.5"
-            x2="28.5"
-            y2="28.5"
-            stroke="#fb923c"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-          <line
-            x1="78.5"
-            y1="21.5"
-            x2="71.5"
-            y2="28.5"
-            stroke="#fb923c"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-          <line
-            x1="21.5"
-            y1="78.5"
-            x2="28.5"
-            y2="71.5"
-            stroke="#fb923c"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-          <line
-            x1="78.5"
-            y1="78.5"
-            x2="71.5"
-            y2="71.5"
-            stroke="#fb923c"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </g>
-
-        {/* 主体太阳圆形 */}
-        <circle
-          cx="50"
-          cy="50"
-          r="22"
-          fill="url(#sunGradient)"
-          className="drop-shadow-sm"
-        />
-
-        {/* 内部核心 */}
-        <circle
-          cx="50"
-          cy="50"
-          r="12"
-          fill="url(#coreGradient)"
-          opacity="0.8"
-        />
-
-        {/* 内部装饰点 - 模仿登录界面的小圆点 */}
-        <circle cx="58" cy="42" r="3" fill="#fef3c7" opacity="0.7" />
-
-        {/* 微小的高光点 */}
-        <circle cx="46" cy="44" r="1.5" fill="#ffffff" opacity="0.9" />
-      </svg>
+        </svg>
+      </div>
+      
+      {/* 品牌文字 */}
+      <div className="flex flex-col items-center">
+        <span 
+          className="text-xs font-bold tracking-widest text-white" 
+          style={{ fontFamily: 'Courier New, Courier, monospace' }}
+        >
+          BE.RUN
+        </span>
+        <span className="text-[8px] tracking-[0.15em] text-white/70 mt-1 uppercase">
+          Agile Life
+        </span>
+      </div>
     </div>
   );
 }

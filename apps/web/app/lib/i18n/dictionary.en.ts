@@ -223,6 +223,8 @@ export const enUS = {
     startTime: 'Start Time',
     deadline: 'Deadline',
     deadlineBeforeStart: 'Deadline cannot be earlier than start time',
+    statusLabel: 'Status',
+    typeLabel: 'Type',
     drawer: {
       viewMode: 'View',
       editMode: 'Edit',

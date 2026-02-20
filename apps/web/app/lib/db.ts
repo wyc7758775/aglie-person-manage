@@ -338,6 +338,19 @@ export function getSafeUserInfo(user: User & { role?: UserRole }) {
 
 // ---------- 项目 CRUD（按 user_id 维度） ----------
 
+function parseJsonField(field: unknown, defaultValue: string[] = []): string[] {
+  if (Array.isArray(field)) return field as string[];
+  if (typeof field === 'string') {
+    try {
+      const parsed = JSON.parse(field);
+      return Array.isArray(parsed) ? parsed as string[] : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  }
+  return defaultValue;
+}
+
 function rowToProject(row: Record<string, unknown>): Project {
   let indicators: ProjectIndicator[] | undefined;
   if (row.indicators) {
@@ -357,8 +370,8 @@ function rowToProject(row: Record<string, unknown>): Project {
     type: (row.type as ProjectType) || 'sprint-project',
     status: (row.status as ProjectStatus) || 'normal',
     priority: (row.priority as ProjectPriority) || 'medium',
-    goals: Array.isArray(row.goals) ? (row.goals as string[]) : [],
-    tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
+    goals: parseJsonField(row.goals),
+    tags: parseJsonField(row.tags),
     startDate: row.start_date != null ? String(row.start_date) : '',
     endDate: row.end_date != null ? String(row.end_date) : null,
     progress: Number(row.progress) || 0,
@@ -439,8 +452,8 @@ export async function updateProject(id: string, data: ProjectUpdateRequest, user
     const type = String(data.type ?? row.type);
     const status = String(data.status ?? row.status);
     const priority = String(data.priority ?? row.priority);
-    const goalsJson = JSON.stringify(data.goals ?? (row.goals as string[]) ?? []);
-    const tagsJson = JSON.stringify(data.tags ?? (row.tags as string[]) ?? []);
+    const goalsJson = JSON.stringify(data.goals ?? parseJsonField(row.goals));
+    const tagsJson = JSON.stringify(data.tags ?? parseJsonField(row.tags));
     const startDate = String(data.startDate ?? row.start_date ?? '');
     const endDateVal = data.endDate !== undefined ? data.endDate : row.end_date;
     const endDate = endDateVal != null ? String(endDateVal) : null;
@@ -451,7 +464,7 @@ export async function updateProject(id: string, data: ProjectUpdateRequest, user
       : (row.cover_image_url != null ? String(row.cover_image_url) : null);
     const indicatorsJson = data.indicators !== undefined 
       ? (data.indicators ? JSON.stringify(data.indicators) : null)
-      : (row.indicators != null ? String(row.indicators) : null);
+      : (row.indicators != null ? JSON.stringify(parseJsonField(row.indicators)) : null);
     const result = await getSql()`
       UPDATE projects SET
         name = ${name},
@@ -502,7 +515,7 @@ function rowToTask(row: Record<string, unknown>): Task {
     dueDate: row.due_date != null ? String(row.due_date) : '',
     estimatedHours: Number(row.estimated_hours) || 0,
     completedHours: Number(row.completed_hours) || 0,
-    tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
+    tags: parseJsonField(row.tags),
   };
 }
 
@@ -577,7 +590,7 @@ export async function updateTask(id: string, data: TaskUpdateRequest): Promise<T
     const dueDate = (data.dueDate !== undefined ? data.dueDate : row.due_date) as string;
     const estimatedHours = Number(data.estimatedHours !== undefined ? data.estimatedHours : row.estimated_hours);
     const completedHours = Number(data.completedHours !== undefined ? data.completedHours : row.completed_hours);
-    const tagsJson = JSON.stringify(data.tags !== undefined ? data.tags : (row.tags as string[]) ?? []);
+    const tagsJson = JSON.stringify(data.tags !== undefined ? data.tags : parseJsonField(row.tags));
     const result = await getSql()`
       UPDATE tasks SET
         title = ${title},
@@ -628,7 +641,7 @@ function rowToRequirement(row: Record<string, unknown>): Requirement {
     dueDate: row.due_date != null ? String(row.due_date) : '',
     storyPoints: Number(row.story_points) || 0,
     points: Number(row.points) || 0,
-    tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
+    tags: parseJsonField(row.tags),
   };
 }
 
@@ -714,7 +727,7 @@ export async function updateRequirement(id: string, data: RequirementUpdateReque
     const dueDate = String(data.dueDate !== undefined ? data.dueDate : row.due_date ?? '');
     const storyPoints = Number(data.storyPoints !== undefined ? data.storyPoints : row.story_points ?? 0);
     const points = Number(data.points !== undefined ? data.points : row.points ?? 0);
-    const tagsJson = JSON.stringify(data.tags !== undefined ? data.tags : (row.tags as string[]) ?? []);
+    const tagsJson = JSON.stringify(data.tags !== undefined ? data.tags : parseJsonField(row.tags));
     await getSql()`
       UPDATE requirements SET
         title = ${title},
@@ -765,7 +778,7 @@ function rowToDefect(row: Record<string, unknown>): Defect {
     createdDate: row.created_date != null ? String(row.created_date) : '',
     dueDate: row.due_date != null ? String(row.due_date) : '',
     environment: String(row.environment ?? ''),
-    steps: Array.isArray(row.steps) ? (row.steps as string[]) : [],
+    steps: parseJsonField(row.steps),
   };
 }
 
@@ -849,7 +862,7 @@ export async function updateDefect(id: string, data: DefectUpdateRequest): Promi
     const createdDate = String(data.createdDate !== undefined ? data.createdDate : row.created_date ?? '');
     const dueDate = String(data.dueDate !== undefined ? data.dueDate : row.due_date ?? '');
     const environment = String(data.environment !== undefined ? data.environment : row.environment ?? '');
-    const stepsJson = JSON.stringify(data.steps !== undefined ? data.steps : (row.steps as string[]) ?? []);
+    const stepsJson = JSON.stringify(data.steps !== undefined ? data.steps : parseJsonField(row.steps));
     await getSql()`
       UPDATE defects SET
         title = ${title},

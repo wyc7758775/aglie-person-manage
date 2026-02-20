@@ -222,6 +222,8 @@ export const zhCN = {
     startTime: '开始时间',
     deadline: '截止时间',
     deadlineBeforeStart: '截止时间不能早于开始时间',
+    statusLabel: '状态',
+    typeLabel: '类型',
     drawer: {
       viewMode: '查看',
       editMode: '编辑',
