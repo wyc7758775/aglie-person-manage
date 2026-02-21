@@ -280,6 +280,8 @@ export const jaJP = {
       backToProjectList: 'プロジェクト一覧に戻る',
       switchProject: 'プロジェクトを切り替え',
       noProjects: '他のプロジェクトはありません',
+      currentProject: '現在のプロジェクト',
+      otherProjects: '他のプロジェクト',
     },
   },
   requirement: {

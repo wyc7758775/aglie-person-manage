@@ -2,6 +2,11 @@
 const shimmer =
   'before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent';
 
+/**
+ * 项目卡片骨架屏
+ * 用于项目列表加载状态的占位显示
+ * 布局与 ProjectCard 组件保持一致
+ */
 export function ProjectCardSkeleton() {
   return (
     <div
@@ -78,9 +83,13 @@ export function ProjectCardSkeleton() {
   );
 }
 
+/**
+ * 项目列表骨架屏
+ * 显示多个项目卡片占位符
+ */
 export function ProjectListSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 p-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 p-2" data-testid="project-skeleton">
       <ProjectCardSkeleton />
       <ProjectCardSkeleton />
       <ProjectCardSkeleton />
@@ -92,3 +101,5 @@ export function ProjectListSkeleton() {
     </div>
   );
 }
+
+export default ProjectCardSkeleton;

@@ -250,6 +250,7 @@ export default function EditableField({
               placeholder={placeholder}
               disabled={disabled}
               className={baseInputClass}
+              data-testid={`project-${fieldName}-input`}
             />
           )}
           
@@ -276,6 +277,7 @@ export default function EditableField({
               onKeyDown={handleKeyDown}
               disabled={disabled}
               className={baseInputClass}
+              data-testid={`project-${fieldName}-select`}
             >
               {options.map(option => (
                 <option key={option.value} value={option.value}>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B9D" />
+      <stop offset="50%" stop-color="#C084FC" />
+      <stop offset="100%" stop-color="#60A5FA" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景圆形 -->
+  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
+  
+  <!-- 简化的流动线条 -->
+  <path d="M 8 22 Q 16 14 24 8" stroke="white" stroke-width="3" stroke-linecap="round" fill="none"/>
+  
+  <!-- 三个圆点 -->
+  <circle cx="8" cy="22" r="3" fill="white"/>
+  <circle cx="16" cy="15" r="3" fill="white"/>
+  <circle cx="24" cy="8" r="3" fill="white"/>
+</svg>

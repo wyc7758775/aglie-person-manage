@@ -119,6 +119,7 @@ This document maps all Chinese text to their corresponding i18n keys for the tra
 | project.title | 项目管理 |
 | project.subtitle | 管理和跟踪您的项目进度，协调团队协作 |
 | project.empty | 没有找到符合条件的项目 |
+| project.emptyHint | 尝试调整筛选条件或创建一个新项目 |
 | project.progress | 进度 |
 
 ## 需求管理页面

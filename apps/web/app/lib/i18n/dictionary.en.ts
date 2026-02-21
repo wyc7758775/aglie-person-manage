@@ -178,6 +178,7 @@ export const enUS = {
     title: 'Projects',
     subtitle: 'Manage and track your project progress, coordinate team collaboration',
     empty: 'No projects found matching your criteria',
+    emptyHint: 'Try adjusting filters or create a new project',
     progress: 'Progress',
     loading: 'Loading...',
     create: 'Create Project',
@@ -279,6 +280,8 @@ export const enUS = {
       backToProjectList: 'Back to Project List',
       switchProject: 'Switch Project',
       noProjects: 'No other projects',
+      currentProject: 'Current Project',
+      otherProjects: 'Other Projects',
     },
   },
   requirement: {

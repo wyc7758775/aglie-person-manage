@@ -2,12 +2,11 @@
 
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { Project, Requirement, Task, Defect } from '@/app/lib/definitions';
 import { useLanguage } from '@/app/lib/i18n';
-import { FolderIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import RequirementKanban from '@/app/ui/dashboard/requirement-kanban';
-import { clsx } from 'clsx';
+import BreadcrumbNav from '@/app/ui/dashboard/breadcrumb-nav';
+import ProjectTabMenu from '@/app/ui/dashboard/project-tab-menu';
 
 type TabType = 'requirement' | 'task' | 'defect';
 
@@ -25,7 +24,6 @@ export default function ProjectDetailPage() {
   const [defects, setDefects] = useState<Defect[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const tab = (searchParams.get('tab') as TabType) || 'requirement';
   const validTabs: TabType[] = ['requirement', 'task', 'defect'];
@@ -118,97 +116,21 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="w-full">
-      {/* 顶部栏 */}
+      {/* 顶部栏 - 新设计 */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard/project"
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            title={t('projectDetail.folderIconTitle')}
-          >
-            <FolderIcon className="w-5 h-5 text-gray-600" />
-          </Link>
-          <span className="text-gray-400">&gt;</span>
-          <div className="relative">
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <span className="font-semibold text-gray-900">{project.name}</span>
-              <ChevronDownIcon className="w-4 h-4 text-gray-500" />
-            </button>
-            {dropdownOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setDropdownOpen(false)}
-                />
-                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[200px] py-1">
-                  {projects
-                    .filter((p) => p.id !== projectId)
-                    .slice(0, 10)
-                    .map((p) => (
-                      <Link
-                        key={p.id}
-                        href={`/dashboard/project/${p.id}?tab=${tab}`}
-                        className="block px-4 py-2 text-sm hover:bg-gray-100"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        {p.name}
-                      </Link>
-                    ))}
-                  <div className="border-t border-gray-100 mt-1 pt-1">
-                    <Link
-                      href="/dashboard/project"
-                      className="block px-4 py-2 text-sm hover:bg-gray-100 text-blue-600"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      {t('projectDetail.dropdown.backToProjectList')}
-                    </Link>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-gray-300 mx-2">|</span>
-          <button
-            onClick={() => setTab('requirement')}
-            className={clsx(
-              'px-4 py-2 text-sm font-medium rounded-t transition-colors',
-              tab === 'requirement'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            )}
-          >
-            {t('dashboard.nav.requirement')}
-          </button>
-          <button
-            onClick={() => setTab('task')}
-            className={clsx(
-              'px-4 py-2 text-sm font-medium rounded-t transition-colors',
-              tab === 'task'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            )}
-          >
-            {t('dashboard.nav.task')}
-          </button>
-          {showDefectTab && (
-            <button
-              onClick={() => setTab('defect')}
-              className={clsx(
-                'px-4 py-2 text-sm font-medium rounded-t transition-colors',
-                tab === 'defect'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              )}
-            >
-              {t('dashboard.nav.defect')}
-            </button>
-          )}
-        </div>
+        {/* 面包屑导航 */}
+        <BreadcrumbNav
+          currentProject={project}
+          projects={projects}
+          currentTab={tab}
+        />
+
+        {/* Tab 菜单 */}
+        <ProjectTabMenu
+          activeTab={tab}
+          onTabChange={setTab}
+          showDefectTab={showDefectTab}
+        />
       </div>
 
       {/* Tab 内容 */}

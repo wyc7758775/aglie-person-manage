@@ -11,7 +11,7 @@ export default function DailiesPage() {
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Dailies</h1>
+        <h1 className="text-xl font-bold text-gray-900">Dailies</h1>
         <p className="mt-2 text-gray-600">
           管理你的每日任务，保持规律的生活节奏
         </p>

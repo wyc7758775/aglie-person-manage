@@ -11,7 +11,7 @@ export default function TodosPage() {
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">To Dos</h1>
+        <h1 className="text-xl font-bold text-gray-900">To Dos</h1>
         <p className="mt-2 text-gray-600">
           管理你的待办事项，完成一次性任务
         </p>

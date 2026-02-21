@@ -7,6 +7,7 @@ import EditableField from './EditableField';
 import MarkdownEditorField from './MarkdownEditorField';
 import SaveStatusIndicator, { SaveStatus } from './SaveStatusIndicator';
 import CoverImageUpload from './CoverImageUpload';
+import UnsavedChangesDialog from './UnsavedChangesDialog';
 
 
 interface ProjectDrawerProps {
@@ -64,10 +65,20 @@ export default function ProjectDrawer({
   // 是否是新建模式
   const isCreateMode = !project;
 
-  // 初始化本地数据
+  // 初始数据快照（用于变更检测）
+  const [initialProject, setInitialProject] = useState<ProjectCreateRequest | null>(null);
+  const [initialIndicators, setInitialIndicators] = useState<ProjectIndicator[]>([]);
+
+  // 确认弹窗状态
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+
+  // 初始化本地数据和快照
   useEffect(() => {
+    // 只有在抽屉打开时才初始化
+    if (!open) return;
+    
     if (project) {
-      setLocalProject({
+      const projectData = {
         name: project.name,
         description: project.description || '',
         type: project.type,
@@ -79,13 +90,77 @@ export default function ProjectDrawer({
         tags: project.tags || [],
         points: project.points || 0,
         coverImageUrl: project.coverImageUrl
-      });
-      setIndicators(project.indicators || []);
+      };
+      const projectIndicators = project.indicators || [];
+      
+      setLocalProject(projectData);
+      setInitialProject(projectData);
+      setIndicators(projectIndicators);
+      setInitialIndicators(projectIndicators);
     } else {
-      setLocalProject(getDefaultProjectData());
+      // 创建模式：重置为默认值
+      const defaultData = getDefaultProjectData();
+      setLocalProject(defaultData);
+      setInitialProject(defaultData);
       setIndicators([]);
+      setInitialIndicators([]);
     }
-  }, [project]);
+    
+    // 重置其他状态
+    setGlobalSaveStatus('idle');
+    setGlobalErrorMessage(null);
+    setSubmitting(false);
+    setAutoCalculatePoints(true);
+  }, [open, project]);
+
+  // 检测是否有未保存的更改
+  const hasUnsavedChanges = useCallback(() => {
+    if (!localProject || !initialProject) return false;
+    
+    // 比较项目数据
+    const projectChanged = JSON.stringify(localProject) !== JSON.stringify(initialProject);
+    // 比较指标数据
+    const indicatorsChanged = JSON.stringify(indicators) !== JSON.stringify(initialIndicators);
+    
+    return projectChanged || indicatorsChanged;
+  }, [localProject, initialProject, indicators, initialIndicators]);
+
+  // 处理关闭抽屉
+  const handleClose = useCallback(() => {
+    if (hasUnsavedChanges()) {
+      setShowUnsavedDialog(true);
+    } else {
+      onClose();
+    }
+  }, [hasUnsavedChanges, onClose]);
+
+  // 放弃更改并关闭
+  const handleDiscardAndClose = useCallback(() => {
+    setShowUnsavedDialog(false);
+    onClose();
+  }, [onClose]);
+
+  // 取消关闭
+  const handleCancelClose = useCallback(() => {
+    setShowUnsavedDialog(false);
+  }, []);
+
+  // 监听 ESC 键
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open && !showUnsavedDialog) {
+        handleClose();
+      }
+    };
+
+    if (open) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open, showUnsavedDialog, handleClose]);
 
 
 
@@ -293,16 +368,16 @@ export default function ProjectDrawer({
       <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}>
         <div
           className="absolute inset-0 bg-black bg-opacity-50"
-          onClick={onClose}
+          onClick={handleClose}
         />
       </div>
 
       {/* Drawer 主体 */}
-      <div className={`fixed inset-y-0 right-0 z-50 w-full md:w-[600px] shadow-2xl bg-white flex flex-col transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div data-testid="project-drawer" className={`fixed inset-y-0 right-0 z-50 w-full md:w-[600px] shadow-2xl bg-white flex flex-col transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* 头部 */}
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="flex items-center justify-between px-5 py-3 border-b">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-lg font-semibold">
               {isCreateMode ? t('project.drawer.createTitle') : t('project.drawer.editTitle')}
             </h2>
             <SaveStatusIndicator 
@@ -311,17 +386,18 @@ export default function ProjectDrawer({
             />
           </div>
           <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none p-1"
+            data-testid="drawer-close-button"
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 text-xl leading-none p-1"
           >
             ✕
           </button>
         </div>
 
         {/* 主体内容 - 移除编辑态动画 */}
-        <div className="flex-1 overflow-y-auto p-6 [scrollbar-gutter:stable]">
+        <div className="flex-1 overflow-y-auto p-5 [scrollbar-gutter:stable]">
           {localProject && (
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* 1. 背景图 - 有图片时保持宽高比，无图片时高度自适应 */}
               <div 
                 className="w-full rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-100 relative"
@@ -641,7 +717,7 @@ export default function ProjectDrawer({
 
         {/* 底部操作栏 - 仅新建模式显示 */}
         {isCreateMode && (
-          <div className="flex justify-end items-center px-6 py-4 border-t bg-gray-50">
+          <div className="flex justify-end items-center px-5 py-3 border-t bg-gray-50">
             <button
               onClick={handleCreate}
               disabled={submitting || !localProject?.name?.trim()}
@@ -652,6 +728,13 @@ export default function ProjectDrawer({
           </div>
         )}
       </div>
+
+      {/* 未保存更改确认弹窗 */}
+      <UnsavedChangesDialog
+        isOpen={showUnsavedDialog}
+        onDiscard={handleDiscardAndClose}
+        onCancel={handleCancelClose}
+      />
     </>
   );
 }

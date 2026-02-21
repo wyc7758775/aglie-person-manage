@@ -181,6 +181,7 @@ export const zhCN = {
     title: '项目管理',
     subtitle: '管理和跟踪您的项目进度，协调团队协作',
     empty: '没有找到符合条件的项目',
+    emptyHint: '尝试调整筛选条件或创建一个新项目',
     progress: '进度',
     loading: '加载中...',
     create: '创建项目',
@@ -266,6 +267,11 @@ export const zhCN = {
     list: {
       emptyHint: '暂无项目，点击下方按钮新建',
     },
+    unsavedChanges: {
+      title: '未保存的更改',
+      description: '您有未保存的更改，确定要放弃吗？',
+      discard: '放弃更改',
+    },
   },
   projectDetail: {
     backToProjectList: '返回项目列表',
@@ -282,6 +288,8 @@ export const zhCN = {
       backToProjectList: '返回项目列表',
       switchProject: '切换项目',
       noProjects: '暂无其他项目',
+      currentProject: '当前项目',
+      otherProjects: '其他项目',
     },
   },
   requirement: {

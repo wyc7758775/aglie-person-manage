@@ -40,24 +40,48 @@ export default function SectionContainer({
   children
 }: SectionContainerProps) {
   return (
-    <div className={clsx('bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-lg shadow-slate-200/50 border border-slate-100 flex flex-col min-h-0', className)}>
+    <div className={clsx('bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-lg shadow-slate-200/50 border border-slate-100 flex flex-col min-h-0', className)}>
       {/* 头部区域 */}
-      <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 flex-shrink-0">
+      <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2 flex-shrink-0">
         {/* 左侧：标题和徽章 */}
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold text-slate-800 tracking-tight">{title}</h2>
+          <h2 className="text-lg font-bold text-slate-800 tracking-tight">{title}</h2>
           {badge !== undefined && (
-            <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
+            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
               {badge}
             </span>
           )}
         </div>
 
-        {/* 右侧：过滤标签组 */}
-        {(filters || filterGroups) && (
-          <div className="flex items-center gap-3">
-            {/* 单个筛选器组（向后兼容） */}
-            {filters && (
+        {/* 右侧：过滤标签组 + 添加按钮 */}
+        <div className="flex items-center gap-3">
+          {/* 迷你胶囊添加按钮 */}
+          {onAddClick && (
+            <button
+              onClick={onClick || onAddClick}
+              className={clsx(
+                'flex items-center justify-center gap-1.5',
+                'px-3 py-1.5 rounded-full',
+                'text-xs font-semibold text-white',
+                'bg-gradient-to-r from-indigo-500 to-blue-500',
+                'shadow-lg shadow-indigo-500/25',
+                'transition-all duration-300 ease-out',
+                'hover:from-indigo-600 hover:to-blue-600',
+                'hover:shadow-indigo-500/40 hover:-translate-y-0.5',
+                'hover:scale-105',
+                'active:scale-95 active:translate-y-0',
+                'group'
+              )}
+            >
+              <PlusIcon className="h-3 w-3 transition-transform group-hover:rotate-90" />
+              <span>{addButtonText}</span>
+            </button>
+          )}
+
+          {(filters || filterGroups) && (
+            <>
+              {/* 单个筛选器组（向后兼容） */}
+              {filters && (
               <div className="flex items-center gap-1.5 bg-slate-50/80 p-1 rounded-xl">
                 {filters.map((filter) => {
                   const isActive = filter === activeFilter;
@@ -66,7 +90,7 @@ export default function SectionContainer({
                       key={filter}
                       onClick={() => onFilterChange && onFilterChange(filter)}
                       className={clsx(
-                        'px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200',
+                        'px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200',
                         'focus:outline-none focus:ring-2 focus:ring-indigo-500/20',
                         {
                           // 选中状态：填充色 + 阴影
@@ -95,7 +119,7 @@ export default function SectionContainer({
                         key={filter}
                         onClick={() => group.onFilterChange(filter)}
                         className={clsx(
-                          'px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200',
+                          'px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200',
                           'focus:outline-none focus:ring-2 focus:ring-indigo-500/20',
                           {
                             // 选中状态：填充色 + 阴影
@@ -112,38 +136,12 @@ export default function SectionContainer({
                 </div>
               </div>
             ))}
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col">
-        {/* 添加按钮 - 卡片式样式 */}
-        {onAddClick && (
-          <button
-            onClick={onClick || onAddClick}
-            className={clsx(
-              'mb-4 flex w-full items-center justify-center gap-2',
-              'rounded-xl border-2 border-dashed border-slate-200',
-              'bg-slate-50/50 py-3.5 text-sm font-medium text-slate-500',
-              'transition-all duration-300 ease-out',
-              'hover:border-indigo-300 hover:bg-indigo-50/30 hover:text-indigo-600',
-              'hover:shadow-lg hover:shadow-indigo-500/10 hover:-translate-y-0.5',
-              'active:translate-y-0 active:shadow-none',
-              'group'
-            )}
-          >
-            <div className={clsx(
-              'flex items-center justify-center w-6 h-6 rounded-full',
-              'bg-slate-200 text-slate-500',
-              'transition-all duration-300',
-              'group-hover:bg-indigo-100 group-hover:text-indigo-600'
-            )}>
-              <PlusIcon className="h-3.5 w-3.5" />
-            </div>
-            <span>{addButtonText}</span>
-          </button>
-        )}
-
         {/* 内容区域 */}
         {children}
       </div>

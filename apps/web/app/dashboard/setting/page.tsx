@@ -268,7 +268,7 @@ function SettingSectionCard({ section, onUpdate, t }: { section: SettingSection;
   const Icon = section.icon;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <div className="flex items-center mb-4">
         <div className="flex-shrink-0">
           <Icon className="h-6 w-6 text-blue-600" />
@@ -339,7 +339,7 @@ export default function SettingsPage() {
           />
         ))}
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-medium text-gray-900">{t('setting.dataManagement.title')}</h3>

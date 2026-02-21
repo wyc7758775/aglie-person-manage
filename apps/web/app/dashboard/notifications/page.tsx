@@ -224,7 +224,7 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">通知中心</h1>
+          <h1 className="text-xl font-bold text-gray-900">通知中心</h1>
           <p className="text-gray-600">
             管理您的系统通知和提醒消息
           </p>
