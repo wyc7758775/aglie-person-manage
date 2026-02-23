@@ -54,7 +54,7 @@ export default function SectionContainer({
         </div>
 
         {/* 右侧：过滤标签组 + 添加按钮 */}
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
           {/* 迷你胶囊添加按钮 */}
           {onAddClick && (
             <button
@@ -86,22 +86,22 @@ export default function SectionContainer({
                 {filters.map((filter) => {
                   const isActive = filter === activeFilter;
                   return (
-                      <button
-                        key={filter}
-                        onClick={() => onFilterChange && onFilterChange(filter)}
-                        className={clsx(
-                          'px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200 whitespace-nowrap',
-                          'focus:outline-none focus:ring-2 focus:ring-indigo-500/20',
-                          {
-                            // 选中状态：填充色 + 阴影
-                            'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200': isActive,
-                            // 未选中状态：透明 + hover 效果
-                            'text-slate-500 hover:text-slate-700 hover:bg-slate-100': !isActive,
-                          }
-                        )}
-                      >
-                        {filter}
-                      </button>
+                    <button
+                      key={filter}
+                      onClick={() => onFilterChange && onFilterChange(filter)}
+                      className={clsx(
+                        'px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200',
+                        'focus:outline-none focus:ring-2 focus:ring-indigo-500/20',
+                        {
+                          // 选中状态：填充色 + 阴影
+                          'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200': isActive,
+                          // 未选中状态：透明 + hover 效果
+                          'text-slate-500 hover:text-slate-700 hover:bg-slate-100': !isActive,
+                        }
+                      )}
+                    >
+                      {filter}
+                    </button>
                   );
                 })}
               </div>
@@ -115,22 +115,22 @@ export default function SectionContainer({
                   {group.filters.map((filter) => {
                     const isActive = filter === group.activeFilter;
                     return (
-                    <button
-                      key={filter}
-                      onClick={() => group.onFilterChange(filter)}
-                      className={clsx(
-                        'px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200 whitespace-nowrap',
-                        'focus:outline-none focus:ring-2 focus:ring-indigo-500/20',
-                        {
-                          // 选中状态：填充色 + 阴影
-                          'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200': isActive,
-                          // 未选中状态：透明 + hover 效果
-                          'text-slate-500 hover:text-slate-700 hover:bg-slate-100': !isActive,
-                        }
-                      )}
-                    >
-                      {filter}
-                    </button>
+                      <button
+                        key={filter}
+                        onClick={() => group.onFilterChange(filter)}
+                        className={clsx(
+                          'px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200',
+                          'focus:outline-none focus:ring-2 focus:ring-indigo-500/20',
+                          {
+                            // 选中状态：填充色 + 阴影
+                            'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200': isActive,
+                            // 未选中状态：透明 + hover 效果
+                            'text-slate-500 hover:text-slate-700 hover:bg-slate-100': !isActive,
+                          }
+                        )}
+                      >
+                        {filter}
+                      </button>
                     );
                   })}
                 </div>
