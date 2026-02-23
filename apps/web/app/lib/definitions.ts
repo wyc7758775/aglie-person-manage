@@ -203,32 +203,109 @@ export type RequirementResponse = {
   message?: string;
 };
 
-// 任务管理类型定义
-export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
+// 任务管理类型定义 - 扩展版（支持三种任务类型：习惯/日常任务/待办事项）
+export type TaskType = 'habit' | 'daily' | 'task';
 
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskStatus = 'todo' | 'in_progress' | 'completed' | 'cancelled';
 
-export type Task = {
+export type TaskPriority = 'p0' | 'p1' | 'p2' | 'p3';
+
+export type TaskDifficulty = 'easy' | 'medium' | 'hard';
+
+export type TaskFrequency = 'daily' | 'weekdays' | 'weekly' | 'custom';
+
+export type TaskDirection = 'positive' | 'negative';
+
+export type ResetPeriod = 'daily' | 'weekly' | 'monthly';
+
+// 子任务类型
+export type SubTask = {
   id: string;
-  projectId: string;
+  taskId: string;
   title: string;
-  description: string;
-  status: TaskStatus;
-  priority: TaskPriority;
-  assignee: string;
-  dueDate: string;
-  estimatedHours: number;
-  completedHours: number;
-  tags: string[];
+  completed: boolean;
+  createdAt: string;
 };
 
-export type TaskCreateRequest = Omit<Task, 'id'>;
+// 任务评论类型
+export type TaskComment = {
+  id: string;
+  taskId: string;
+  userId: string;
+  userNickname: string;
+  content: string;
+  createdAt: string;
+};
 
-export type TaskUpdateRequest = Partial<Omit<Task, 'id'>>;
+// 任务历史记录类型
+export type HistoryLog = {
+  id: string;
+  taskId: string;
+  action: 'created' | 'updated' | 'completed' | 'deleted' | 'status_changed';
+  description: string;
+  userId?: string;
+  userNickname?: string;
+  timestamp: string;
+};
+
+// 扩展的 Task 类型
+export type Task = {
+  id: string;
+  title: string;
+  description: string;
+  type: TaskType;
+  status: TaskStatus;
+  priority: TaskPriority;
+  difficulty: TaskDifficulty;
+  projectId: string;
+  assignee: string | null;
+  points: number;
+  goldReward: number;
+  goldPenalty: number;
+  // 习惯类型特有字段
+  streak: number;
+  totalCount: number;
+  direction: TaskDirection;
+  resetPeriod: ResetPeriod;
+  // 频率相关字段
+  frequency: TaskFrequency;
+  repeatDays: number[]; // 0=周日, 1=周一, ..., 6=周六
+  // 日期字段
+  startDate: string | null;
+  dueDate: string | null;
+  // 标签和关联数据
+  tags: string[];
+  subTasks: SubTask[];
+  comments: TaskComment[];
+  history: HistoryLog[];
+  // 时间戳
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TaskCreateRequest = Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'streak' | 'totalCount' | 'subTasks' | 'comments' | 'history'> & {
+  streak?: number;
+  totalCount?: number;
+};
+
+// 任务重置周期选项
+export const resetPeriodOptions: { value: ResetPeriod; label: string }[] = [
+  { value: 'daily', label: '每日' },
+  { value: 'weekly', label: '每周' },
+  { value: 'monthly', label: '每月' },
+];
+
+export type TaskUpdateRequest = Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'subTasks' | 'comments' | 'history'>>;
 
 export type TaskResponse = {
   success: boolean;
   task?: Task;
+  message?: string;
+};
+
+export type TaskListResponse = {
+  success: boolean;
+  tasks?: Task[];
   message?: string;
 };
 

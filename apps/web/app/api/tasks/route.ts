@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTasks, createTask } from '@/app/lib/tasks';
-import { TaskStatus, TaskPriority } from '@/app/lib/definitions';
+import { TaskStatus, TaskPriority, TaskType, TaskDifficulty, TaskFrequency, TaskDirection, ResetPeriod } from '@/app/lib/definitions';
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,18 +8,26 @@ export async function GET(request: NextRequest) {
 
     const filters: {
       projectId?: string;
+      type?: TaskType;
       status?: TaskStatus;
       priority?: TaskPriority;
+      search?: string;
     } = {};
 
     if (searchParams.get('projectId')) {
       filters.projectId = searchParams.get('projectId') as string;
+    }
+    if (searchParams.get('type')) {
+      filters.type = searchParams.get('type') as TaskType;
     }
     if (searchParams.get('status')) {
       filters.status = searchParams.get('status') as TaskStatus;
     }
     if (searchParams.get('priority')) {
       filters.priority = searchParams.get('priority') as TaskPriority;
+    }
+    if (searchParams.get('search')) {
+      filters.search = searchParams.get('search') as string;
     }
 
     const tasks = await getTasks(filters);
@@ -41,7 +49,26 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { projectId, title, description, status, priority, assignee, dueDate, estimatedHours, completedHours, tags } = body;
+    const {
+      projectId,
+      title,
+      description,
+      type,
+      status,
+      priority,
+      difficulty,
+      assignee,
+      points,
+      goldReward,
+      goldPenalty,
+      frequency,
+      repeatDays,
+      startDate,
+      dueDate,
+      tags,
+      direction,
+      resetPeriod,
+    } = body;
 
     if (!projectId || typeof projectId !== 'string' || projectId.trim().length === 0) {
       return NextResponse.json(
@@ -61,13 +88,21 @@ export async function POST(request: NextRequest) {
       projectId: projectId.trim(),
       title: title.trim(),
       description: description || '',
+      type: type || 'task',
       status: status || 'todo',
-      priority: priority || 'medium',
-      assignee: assignee || '',
-      dueDate: dueDate || new Date().toISOString().split('T')[0],
-      estimatedHours: estimatedHours ?? 0,
-      completedHours: completedHours ?? 0,
+      priority: priority || 'p2',
+      difficulty: difficulty || 'medium',
+      assignee: assignee || null,
+      points: points ?? 0,
+      goldReward: goldReward ?? 0,
+      goldPenalty: goldPenalty ?? 0,
+      frequency: frequency || 'daily',
+      repeatDays: repeatDays || [],
+      startDate: startDate || null,
+      dueDate: dueDate || null,
       tags: tags || [],
+      direction: direction || 'positive',
+      resetPeriod: resetPeriod || 'daily',
     });
 
     return NextResponse.json(

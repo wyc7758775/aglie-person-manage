@@ -75,6 +75,7 @@ function useProjectData(projectId: string) {
   const refresh = useCallback(() => {
     if (!project) return;
     
+    // 刷新需求列表
     fetch(`/api/requirements?projectId=${projectId}`)
       .then(res => res.json())
       .then((reqData) => {
@@ -84,6 +85,16 @@ function useProjectData(projectId: string) {
         }
       })
       .catch((err) => console.error('刷新需求列表失败:', err));
+    
+    // 刷新任务列表
+    fetch(`/api/tasks?projectId=${projectId}`)
+      .then(res => res.json())
+      .then((taskData) => {
+        if (taskData.success) {
+          setTasks(taskData.tasks || []);
+        }
+      })
+      .catch((err) => console.error('刷新任务列表失败:', err));
   }, [project, projectId]);
 
   return { project, projects, requirements, setRequirements, tasks, defects, loading, error, refresh };
@@ -240,7 +251,11 @@ export default function ProjectDetailPage() {
 
         {/* 任务 Tab */}
         {!error && !loading && tab === 'task' && (
-          <TaskTabContent tasks={tasks} />
+          <TaskTabContent
+            tasks={tasks}
+            projectId={projectId}
+            onTaskCreated={refresh}
+          />
         )}
 
         {/* 缺陷 Tab */}

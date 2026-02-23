@@ -1,9 +1,11 @@
-import { Task, TaskStatus, TaskPriority, TaskCreateRequest, TaskUpdateRequest } from './definitions';
+import { Task, TaskStatus, TaskPriority, TaskType, TaskCreateRequest, TaskUpdateRequest } from './definitions';
 
 export async function getTasks(filters?: {
   projectId?: string;
+  type?: TaskType;
   status?: TaskStatus;
   priority?: TaskPriority;
+  search?: string;
 }): Promise<Task[]> {
   const db = await import('./db');
   return db.getTasks(filters);
@@ -27,4 +29,9 @@ export async function updateTask(id: string, data: TaskUpdateRequest): Promise<T
 export async function deleteTask(id: string): Promise<boolean> {
   const db = await import('./db');
   return db.deleteTask(id);
+}
+
+export async function completeTask(id: string): Promise<Task | null> {
+  const db = await import('./db');
+  return db.completeTask(id);
 }

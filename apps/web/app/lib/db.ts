@@ -131,13 +131,28 @@ export async function initializeDatabase() {
         project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
         title VARCHAR(500) NOT NULL,
         description TEXT DEFAULT '',
+        type VARCHAR(50) NOT NULL DEFAULT 'task',
         status VARCHAR(50) NOT NULL DEFAULT 'todo',
-        priority VARCHAR(50) NOT NULL DEFAULT 'medium',
+        priority VARCHAR(50) NOT NULL DEFAULT 'p2',
+        difficulty VARCHAR(50) DEFAULT 'medium',
         assignee VARCHAR(255) DEFAULT '',
-        due_date DATE NOT NULL,
+        points INT NOT NULL DEFAULT 0,
+        gold_reward INT NOT NULL DEFAULT 0,
+        gold_penalty INT NOT NULL DEFAULT 0,
+        streak INT NOT NULL DEFAULT 0,
+        total_count INT NOT NULL DEFAULT 0,
+        frequency VARCHAR(50) DEFAULT 'daily',
+        repeat_days JSONB DEFAULT '[]',
+        start_date DATE,
+        due_date DATE,
         estimated_hours INT NOT NULL DEFAULT 0,
         completed_hours INT NOT NULL DEFAULT 0,
         tags JSONB DEFAULT '[]',
+        sub_tasks JSONB DEFAULT '[]',
+        comments JSONB DEFAULT '[]',
+        history JSONB DEFAULT '[]',
+        direction VARCHAR(50) DEFAULT 'positive',
+        reset_period VARCHAR(50) DEFAULT 'daily',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -197,6 +212,152 @@ export async function initializeDatabase() {
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'requirements' AND column_name = 'related_tasks') THEN
           ALTER TABLE requirements ADD COLUMN related_tasks JSONB DEFAULT '[]';
         END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+
+    // 添加 tasks 表缺失的字段
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'type') THEN
+          ALTER TABLE tasks ADD COLUMN type VARCHAR(50) NOT NULL DEFAULT 'task';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'difficulty') THEN
+          ALTER TABLE tasks ADD COLUMN difficulty VARCHAR(50) DEFAULT 'medium';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'points') THEN
+          ALTER TABLE tasks ADD COLUMN points INT NOT NULL DEFAULT 0;
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'gold_reward') THEN
+          ALTER TABLE tasks ADD COLUMN gold_reward INT NOT NULL DEFAULT 0;
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'gold_penalty') THEN
+          ALTER TABLE tasks ADD COLUMN gold_penalty INT NOT NULL DEFAULT 0;
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'streak') THEN
+          ALTER TABLE tasks ADD COLUMN streak INT NOT NULL DEFAULT 0;
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'total_count') THEN
+          ALTER TABLE tasks ADD COLUMN total_count INT NOT NULL DEFAULT 0;
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'frequency') THEN
+          ALTER TABLE tasks ADD COLUMN frequency VARCHAR(50) DEFAULT 'daily';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'repeat_days') THEN
+          ALTER TABLE tasks ADD COLUMN repeat_days JSONB DEFAULT '[]';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'start_date') THEN
+          ALTER TABLE tasks ADD COLUMN start_date DATE;
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'sub_tasks') THEN
+          ALTER TABLE tasks ADD COLUMN sub_tasks JSONB DEFAULT '[]';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'comments') THEN
+          ALTER TABLE tasks ADD COLUMN comments JSONB DEFAULT '[]';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'history') THEN
+          ALTER TABLE tasks ADD COLUMN history JSONB DEFAULT '[]';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'direction') THEN
+          ALTER TABLE tasks ADD COLUMN direction VARCHAR(50) NOT NULL DEFAULT 'positive';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'reset_period') THEN
+          ALTER TABLE tasks ADD COLUMN reset_period VARCHAR(50) NOT NULL DEFAULT 'daily';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+
+    // 修改 due_date 字段允许 NULL
+    await getSql()`
+      DO $$ BEGIN
+        ALTER TABLE tasks ALTER COLUMN due_date DROP NOT NULL;
       EXCEPTION WHEN others THEN
         NULL;
       END $$;
@@ -791,25 +952,47 @@ export async function deleteProject(id: string, userId: string): Promise<boolean
 // ---------- 任务 CRUD ----------
 
 function rowToTask(row: Record<string, unknown>): Task {
+  // 兼容旧数据：将旧的 'hobby' 映射为 'habit'
+  let taskType = (row.type as Task['type']) || 'task';
+  if (taskType === 'hobby') taskType = 'habit';
+  if (taskType === 'desire') taskType = 'task';
+  
   return {
     id: String(row.id),
-    projectId: String(row.project_id),
     title: String(row.title ?? ''),
     description: String(row.description ?? ''),
+    type: taskType,
     status: (row.status as TaskStatus) || 'todo',
-    priority: (row.priority as TaskPriority) || 'medium',
-    assignee: String(row.assignee ?? ''),
-    dueDate: row.due_date != null ? String(row.due_date) : '',
-    estimatedHours: Number(row.estimated_hours) || 0,
-    completedHours: Number(row.completed_hours) || 0,
+    priority: (row.priority as TaskPriority) || 'p2',
+    difficulty: (row.difficulty as Task['difficulty']) || 'medium',
+    projectId: String(row.project_id ?? ''),
+    assignee: row.assignee != null ? String(row.assignee) : null,
+    points: Number(row.points) || 0,
+    goldReward: Number(row.gold_reward) || 0,
+    goldPenalty: Number(row.gold_penalty) || 0,
+    streak: Number(row.streak) || 0,
+    totalCount: Number(row.total_count) || 0,
+    direction: (row.direction as Task['direction']) || 'positive',
+    resetPeriod: (row.reset_period as Task['resetPeriod']) || 'daily',
+    frequency: (row.frequency as Task['frequency']) || 'daily',
+    repeatDays: parseJsonField(row.repeat_days),
+    startDate: row.start_date != null ? String(row.start_date) : null,
+    dueDate: row.due_date != null ? String(row.due_date) : null,
     tags: parseJsonField(row.tags),
+    subTasks: parseJsonField(row.sub_tasks),
+    comments: parseJsonField(row.comments),
+    history: parseJsonField(row.history),
+    createdAt: row.created_at != null ? String(row.created_at) : '',
+    updatedAt: row.updated_at != null ? String(row.updated_at) : '',
   };
 }
 
 export async function getTasks(filters?: {
   projectId?: string;
+  type?: Task['type'];
   status?: TaskStatus;
   priority?: TaskPriority;
+  search?: string;
 }): Promise<Task[]> {
   try {
     let result;
@@ -819,8 +1002,16 @@ export async function getTasks(filters?: {
       result = await getSql()`SELECT * FROM tasks`;
     }
     let list = result as unknown as Record<string, unknown>[];
+    if (filters?.type) list = list.filter((r) => r.type === filters.type);
     if (filters?.status) list = list.filter((r) => r.status === filters.status);
     if (filters?.priority) list = list.filter((r) => r.priority === filters.priority);
+    if (filters?.search) {
+      const searchLower = filters.search.toLowerCase();
+      list = list.filter((r) => 
+        String(r.title).toLowerCase().includes(searchLower) ||
+        String(r.description).toLowerCase().includes(searchLower)
+      );
+    }
     return list.map(rowToTask);
   } catch (error) {
     console.error('获取任务列表失败:', error);
@@ -842,18 +1033,41 @@ export async function getTaskById(id: string): Promise<Task | null> {
 export async function createTask(data: TaskCreateRequest): Promise<Task> {
   try {
     const result = await getSql()`
-      INSERT INTO tasks (project_id, title, description, status, priority, assignee, due_date, estimated_hours, completed_hours, tags)
+      INSERT INTO tasks (
+        project_id, title, description, type, status, priority, difficulty,
+        assignee, points, gold_reward, gold_penalty, streak, total_count,
+        frequency, repeat_days, start_date, due_date, tags, sub_tasks, comments, history, direction,
+        reset_period
+      )
       VALUES (
         ${data.projectId},
         ${data.title ?? ''},
         ${data.description ?? ''},
+        ${data.type ?? 'task'},
         ${data.status ?? 'todo'},
-        ${data.priority ?? 'medium'},
-        ${data.assignee ?? ''},
-        ${data.dueDate ?? ''},
-        ${data.estimatedHours ?? 0},
-        ${data.completedHours ?? 0},
-        ${JSON.stringify(data.tags ?? [])}
+        ${data.priority ?? 'p2'},
+        ${data.difficulty ?? 'medium'},
+        ${data.assignee ?? null},
+        ${data.points ?? 0},
+        ${data.goldReward ?? 0},
+        ${data.goldPenalty ?? 0},
+        ${data.streak ?? 0},
+        ${data.totalCount ?? 0},
+        ${data.frequency ?? 'daily'},
+        ${JSON.stringify(data.repeatDays ?? [])},
+        ${data.startDate ?? null},
+        ${data.dueDate ?? null},
+        ${JSON.stringify(data.tags ?? [])},
+        ${JSON.stringify([])},
+        ${JSON.stringify([])},
+        ${JSON.stringify([{
+          id: `hist-${Date.now()}`,
+          action: 'created',
+          description: '创建任务',
+          timestamp: new Date().toISOString()
+        }])},
+        ${data.direction ?? 'positive'},
+        ${data.resetPeriod ?? 'daily'}
       )
       RETURNING *
     `;
@@ -869,26 +1083,50 @@ export async function updateTask(id: string, data: TaskUpdateRequest): Promise<T
     const existing = await getSql()`SELECT * FROM tasks WHERE id = ${id} LIMIT 1`;
     if (existing.length === 0) return null;
     const row = existing[0] as unknown as Record<string, unknown>;
+    
     const title = (data.title !== undefined ? data.title : row.title) as string;
     const description = (data.description !== undefined ? data.description : row.description) as string;
     const status = (data.status !== undefined ? data.status : row.status) as string;
     const priority = (data.priority !== undefined ? data.priority : row.priority) as string;
-    const assignee = (data.assignee !== undefined ? data.assignee : row.assignee) as string;
-    const dueDate = (data.dueDate !== undefined ? data.dueDate : row.due_date) as string;
-    const estimatedHours = Number(data.estimatedHours !== undefined ? data.estimatedHours : row.estimated_hours);
-    const completedHours = Number(data.completedHours !== undefined ? data.completedHours : row.completed_hours);
+    const difficulty = (data.difficulty !== undefined ? data.difficulty : row.difficulty) as string;
+    const assignee = data.assignee !== undefined ? data.assignee : (row.assignee as string | null);
+    const dueDate = data.dueDate !== undefined ? data.dueDate : row.due_date as string | null;
+    const startDate = data.startDate !== undefined ? data.startDate : row.start_date as string | null;
+    const points = Number(data.points !== undefined ? data.points : row.points);
+    const goldReward = Number(data.goldReward !== undefined ? data.goldReward : row.gold_reward);
+    const frequency = (data.frequency !== undefined ? data.frequency : row.frequency) as string;
+    const repeatDays = JSON.stringify(data.repeatDays !== undefined ? data.repeatDays : parseJsonField(row.repeat_days));
     const tagsJson = JSON.stringify(data.tags !== undefined ? data.tags : parseJsonField(row.tags));
+    const resetPeriod = (data.resetPeriod !== undefined ? data.resetPeriod : row.reset_period) as string;
+    
+    // Update history
+    const existingHistory = parseJsonField(row.history);
+    const newHistoryEntry = {
+      id: `hist-${Date.now()}`,
+      taskId: id,
+      action: 'updated',
+      description: '更新任务信息',
+      timestamp: new Date().toISOString()
+    };
+    const historyJson = JSON.stringify([newHistoryEntry, ...existingHistory]);
+    
     const result = await getSql()`
       UPDATE tasks SET
         title = ${title},
         description = ${description},
         status = ${status},
         priority = ${priority},
+        difficulty = ${difficulty},
         assignee = ${assignee},
+        points = ${points},
+        gold_reward = ${goldReward},
+        frequency = ${frequency},
+        repeat_days = ${repeatDays},
+        start_date = ${startDate},
         due_date = ${dueDate},
-        estimated_hours = ${estimatedHours},
-        completed_hours = ${completedHours},
         tags = ${tagsJson},
+        history = ${historyJson},
+        reset_period = ${resetPeriod},
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
       RETURNING *
@@ -897,6 +1135,49 @@ export async function updateTask(id: string, data: TaskUpdateRequest): Promise<T
     return rowToTask(result[0] as unknown as Record<string, unknown>);
   } catch (error) {
     console.error('更新任务失败:', error);
+    throw error;
+  }
+}
+
+export async function completeTask(id: string): Promise<Task | null> {
+  try {
+    const existing = await getSql()`SELECT * FROM tasks WHERE id = ${id} LIMIT 1`;
+    if (existing.length === 0) return null;
+    const row = existing[0] as unknown as Record<string, unknown>;
+    
+    const currentStreak = Number(row.streak) || 0;
+    const currentTotalCount = Number(row.total_count) || 0;
+    const taskType = row.type as string;
+    
+    // Calculate new streak and count
+    const newStreak = taskType === 'habit' ? currentStreak + 1 : currentStreak;
+    const newTotalCount = currentTotalCount + 1;
+    
+    // Update history
+    const existingHistory = parseJsonField(row.history);
+    const newHistoryEntry = {
+      id: `hist-${Date.now()}`,
+      taskId: id,
+      action: 'completed',
+      description: '标记任务完成',
+      timestamp: new Date().toISOString()
+    };
+    const historyJson = JSON.stringify([newHistoryEntry, ...existingHistory]);
+    
+    const result = await getSql()`
+      UPDATE tasks SET
+        status = 'completed',
+        streak = ${newStreak},
+        total_count = ${newTotalCount},
+        history = ${historyJson},
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    if (result.length === 0) return null;
+    return rowToTask(result[0] as unknown as Record<string, unknown>);
+  } catch (error) {
+    console.error('完成任务失败:', error);
     throw error;
   }
 }

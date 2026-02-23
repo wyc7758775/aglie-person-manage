@@ -1,84 +1,242 @@
 'use client';
 
-import { Task } from '@/app/lib/definitions';
+import { useState, useMemo } from 'react';
+import { Task, TaskType, TaskStatus } from '@/app/lib/definitions';
 import { useLanguage } from '@/app/lib/i18n';
+import TaskTable from '@/app/ui/tasks/TaskTable';
+import CreateTaskDrawer from '@/app/ui/tasks/CreateTaskDrawer';
+import CreateTodoDrawer from '@/app/ui/tasks/CreateTodoDrawer';
+import TaskDetailDrawer from '@/app/ui/tasks/TaskDetailDrawer';
 
 interface TaskTabContentProps {
   tasks: Task[];
+  projectId: string;
+  onTaskCreated?: () => void;
 }
 
-export default function TaskTabContent({ tasks }: TaskTabContentProps) {
+const taskTypes: { value: TaskType | 'all'; label: string }[] = [
+  { value: 'all', label: '全部类型' },
+  { value: 'habit', label: '习惯' },
+  { value: 'daily', label: '日常任务' },
+  { value: 'task', label: '待办事项' },
+];
+
+const taskStatuses: { value: TaskStatus | 'all'; label: string }[] = [
+  { value: 'all', label: '全部' },
+  { value: 'todo', label: '待办' },
+  { value: 'in_progress', label: '进行中' },
+  { value: 'completed', label: '已完成' },
+];
+
+export default function TaskTabContent({ tasks, projectId, onTaskCreated }: TaskTabContentProps) {
   const { t } = useLanguage();
+  const [selectedType, setSelectedType] = useState<TaskType | 'all'>('all');
+  const [selectedStatus, setSelectedStatus] = useState<TaskStatus | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [isCreateTodoDrawerOpen, setIsCreateTodoDrawerOpen] = useState(false);
+
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      const matchesType = selectedType === 'all' || task.type === selectedType;
+      const matchesStatus = selectedStatus === 'all' || task.status === selectedStatus;
+      const matchesSearch = 
+        !searchQuery || 
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesType && matchesStatus && matchesSearch;
+    });
+  }, [tasks, selectedType, selectedStatus, searchQuery]);
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedTask(null);
+  };
+
+  const handleCreateHabitOrDaily = () => {
+    setShowCreateMenu(false);
+    setIsCreateDrawerOpen(true);
+  };
+
+  const handleCreateTodo = () => {
+    setShowCreateMenu(false);
+    setIsCreateTodoDrawerOpen(true);
+  };
 
   return (
-    <div className="flex flex-col h-full">
+    <div 
+      className="flex flex-col h-full bg-white rounded-2xl overflow-hidden"
+      style={{ 
+        boxShadow: '0 4px 20px rgba(26, 29, 46, 0.08)',
+      }}
+    >
+      {/* 工具栏 */}
       <div 
-        className="flex items-center justify-between px-6 py-3 flex-shrink-0"
+        className="flex items-center justify-between px-6 py-4 flex-shrink-0"
         style={{ borderBottom: '1px solid rgba(26, 29, 46, 0.06)' }}
       >
         <div className="flex items-center gap-3">
+          {/* 类型筛选 */}
           <div 
             className="flex items-center gap-1 p-1 rounded-xl"
             style={{ backgroundColor: 'rgba(26, 29, 46, 0.04)' }}
           >
-            {['全部', '待办', '进行中', '已完成'].map((filter, index) => (
+            {taskTypes.map((type) => (
               <button
-                key={filter}
+                key={type.value}
+                onClick={() => setSelectedType(type.value)}
                 className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
                 style={{
-                  backgroundColor: index === 0 ? 'white' : 'transparent',
-                  color: index === 0 ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
-                  boxShadow: index === 0 ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
+                  backgroundColor: selectedType === type.value ? 'white' : 'transparent',
+                  color: selectedType === type.value ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
+                  boxShadow: selectedType === type.value ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
                 }}
               >
-                {filter}
+                {type.label}
               </button>
             ))}
           </div>
 
+          {/* 状态筛选 */}
           <div 
             className="flex items-center gap-1 p-1 rounded-xl"
             style={{ backgroundColor: 'rgba(26, 29, 46, 0.04)' }}
           >
-            {['全部类型', '爱好', '习惯', '任务', '欲望'].slice(0, 3).map((filter, index) => (
+            {taskStatuses.map((status) => (
               <button
-                key={filter}
+                key={status.value}
+                onClick={() => setSelectedStatus(status.value)}
                 className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
                 style={{
-                  backgroundColor: index === 0 ? 'white' : 'transparent',
-                  color: index === 0 ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
-                  boxShadow: index === 0 ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
+                  backgroundColor: selectedStatus === status.value ? 'white' : 'transparent',
+                  color: selectedStatus === status.value ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
+                  boxShadow: selectedStatus === status.value ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
                 }}
               >
-                {filter}
+                {status.label}
               </button>
             ))}
+          </div>
+
+          {/* 搜索框 */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="搜索任务..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-4 py-1.5 text-sm rounded-lg border transition-all focus:outline-none focus:ring-2"
+              style={{
+                borderColor: 'rgba(26, 29, 46, 0.1)',
+                backgroundColor: 'rgba(26, 29, 46, 0.02)',
+              }}
+            />
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              style={{ color: 'rgba(26, 29, 46, 0.4)' }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
         </div>
 
-        <button
-          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white transition-all"
-          style={{ 
-            backgroundColor: '#E8944A',
-            boxShadow: '0 2px 8px rgba(232, 148, 74, 0.3)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#D4843A';
-            e.currentTarget.style.transform = 'translateY(-1px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#E8944A';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          新建任务
-        </button>
+        {/* 新建任务下拉菜单 */}
+        <div className="relative">
+          <button
+            onClick={() => setShowCreateMenu(!showCreateMenu)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white transition-all"
+            style={{ 
+              backgroundColor: '#E8944A',
+              boxShadow: '0 2px 8px rgba(232, 148, 74, 0.3)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#D4843A';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#E8944A';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            新建任务
+            <svg 
+              className="w-3 h-3 ml-1 transition-transform" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+              style={{ transform: showCreateMenu ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* 下拉菜单 */}
+          {showCreateMenu && (
+            <>
+              <div 
+                className="fixed inset-0 z-40"
+                onClick={() => setShowCreateMenu(false)}
+              />
+              <div 
+                className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg z-50 py-1"
+                style={{ 
+                  boxShadow: '0 4px 20px rgba(26, 29, 46, 0.15)',
+                  border: '1px solid rgba(26, 29, 46, 0.08)',
+                }}
+              >
+                <button
+                  onClick={handleCreateHabitOrDaily}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
+                >
+                  <span className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                    style={{ backgroundColor: '#E8944A15', color: '#E8944A' }}
+                  >
+                    🎯
+                  </span>
+                  <div>
+                    <div className="font-medium" style={{ color: '#1A1D2E' }}>习惯/日常任务</div>
+                    <div className="text-xs" style={{ color: 'rgba(26, 29, 46, 0.5)' }}>培养长期习惯</div>
+                  </div>
+                </button>
+                
+                <div 
+                  className="mx-4 my-1" 
+                  style={{ height: '1px', backgroundColor: 'rgba(26, 29, 46, 0.08)' }} 
+                />
+                
+                <button
+                  onClick={handleCreateTodo}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
+                >
+                  <span className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                    style={{ backgroundColor: '#3B82F615', color: '#3B82F6' }}
+                  >
+                    📋
+                  </span>
+                  <div>
+                    <div className="font-medium" style={{ color: '#1A1D2E' }}>待办事项</div>
+                    <div className="text-xs" style={{ color: 'rgba(26, 29, 46, 0.5)' }}>一次性任务</div>
+                  </div>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      {tasks.length === 0 ? (
+      {/* 任务列表 */}
+      {filteredTasks.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center py-16 px-4">
           <div className="relative mb-8 group">
             <svg
@@ -118,21 +276,38 @@ export default function TaskTabContent({ tasks }: TaskTabContentProps) {
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tasks.map((task) => (
-              <div key={task.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <h3 className="font-semibold text-gray-900 mb-2">{task.title}</h3>
-                <p className="text-sm text-gray-600 mb-3">{task.description}</p>
-                <div className="flex gap-2 text-xs">
-                  <span className="px-2 py-1 rounded bg-gray-100">{t(`task.filters.${task.status}`)}</span>
-                  <span className="px-2 py-1 rounded bg-gray-100">{t(`task.priority.${task.priority}`)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="flex-1 overflow-auto">
+          <TaskTable 
+            tasks={filteredTasks} 
+            onTaskClick={handleTaskClick}
+          />
         </div>
       )}
+
+      {/* 创建任务抽屉（习惯和日常任务） */}
+      <CreateTaskDrawer
+        isOpen={isCreateDrawerOpen}
+        onClose={() => setIsCreateDrawerOpen(false)}
+        projectId={projectId}
+        onTaskCreated={onTaskCreated}
+      />
+
+      {/* 创建待办事项抽屉 */}
+      <CreateTodoDrawer
+        isOpen={isCreateTodoDrawerOpen}
+        onClose={() => setIsCreateTodoDrawerOpen(false)}
+        projectId={projectId}
+        onTaskCreated={onTaskCreated}
+      />
+
+      {/* 任务详情抽屉 */}
+      <TaskDetailDrawer
+        isOpen={!!selectedTask}
+        onClose={handleCloseDetail}
+        task={selectedTask}
+        projectId={projectId}
+        onTaskUpdated={onTaskCreated}
+      />
     </div>
   );
 }

@@ -385,9 +385,9 @@ function TableRow({
 
 
 
-export default function RequirementTable({ 
-  requirements, 
-  onRequirementClick, 
+export default function RequirementTable({
+  requirements,
+  onRequirementClick,
   onAddClick,
   selectedIds = [],
   onSelectionChange,
@@ -396,9 +396,47 @@ export default function RequirementTable({
 }: RequirementTableProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState({ message: '', visible: false });
+  const [statusFilter, setStatusFilter] = useState<string>('全部');
+  const [priorityFilter, setPriorityFilter] = useState<string>('全部优先级');
   const { t } = useLanguage();
 
-  const treeData = useMemo(() => buildTree(requirements), [requirements]);
+  // 过滤后的需求数据
+  const filteredRequirements = useMemo(() => {
+    return requirements.filter(req => {
+      // 状态过滤
+      if (statusFilter !== '全部') {
+        const statusMap: Record<string, string> = {
+          '待办': 'todo',
+          '进行中': 'in_progress',
+          '已完成': 'done',
+          '已验收': 'accepted',
+          '已取消': 'cancelled',
+          '已关闭': 'closed',
+        };
+        if (req.status !== statusMap[statusFilter]) {
+          return false;
+        }
+      }
+
+      // 优先级过滤
+      if (priorityFilter !== '全部优先级') {
+        const priorityMap: Record<string, string> = {
+          'P0': 'p0',
+          'P1': 'p1',
+          'P2': 'p2',
+          'P3': 'p3',
+          'P4': 'p4',
+        };
+        if (req.priority !== priorityMap[priorityFilter]) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [requirements, statusFilter, priorityFilter]);
+
+  const treeData = useMemo(() => buildTree(filteredRequirements), [filteredRequirements]);
 
   const showToast = useCallback((message: string) => {
     setToast({ message, visible: true });
@@ -443,14 +481,15 @@ export default function RequirementTable({
               className="flex items-center gap-1 p-1 rounded-xl"
               style={{ backgroundColor: 'rgba(26, 29, 46, 0.04)' }}
             >
-              {['全部', '待办', '进行中', '已完成'].map((filter, index) => (
+              {['全部', '待办', '进行中', '已完成', '已验收', '已取消', '已关闭'].map((filter) => (
                 <button
                   key={filter}
+                  onClick={() => setStatusFilter(filter)}
                   className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
                   style={{
-                    backgroundColor: index === 0 ? 'white' : 'transparent',
-                    color: index === 0 ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
-                    boxShadow: index === 0 ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
+                    backgroundColor: statusFilter === filter ? 'white' : 'transparent',
+                    color: statusFilter === filter ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
+                    boxShadow: statusFilter === filter ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
                   }}
                 >
                   {filter}
@@ -463,14 +502,15 @@ export default function RequirementTable({
               className="flex items-center gap-1 p-1 rounded-xl"
               style={{ backgroundColor: 'rgba(26, 29, 46, 0.04)' }}
             >
-              {['全部优先级', 'P0', 'P1', 'P2'].map((filter, index) => (
+              {['全部优先级', 'P0', 'P1', 'P2', 'P3', 'P4'].map((filter) => (
                 <button
                   key={filter}
+                  onClick={() => setPriorityFilter(filter)}
                   className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
                   style={{
-                    backgroundColor: index === 0 ? 'white' : 'transparent',
-                    color: index === 0 ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
-                    boxShadow: index === 0 ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
+                    backgroundColor: priorityFilter === filter ? 'white' : 'transparent',
+                    color: priorityFilter === filter ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
+                    boxShadow: priorityFilter === filter ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
                   }}
                 >
                   {filter}
@@ -483,16 +523,16 @@ export default function RequirementTable({
           <button
             onClick={onAddClick}
             className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white transition-all"
-            style={{ 
-              backgroundColor: '#E8944A',
-              boxShadow: '0 2px 8px rgba(232, 148, 74, 0.3)',
+            style={{
+              backgroundColor: '#D4843A',
+              boxShadow: '0 2px 8px rgba(212, 132, 58, 0.3)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#D4843A';
+              e.currentTarget.style.backgroundColor = '#C4742A';
               e.currentTarget.style.transform = 'translateY(-1px)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#E8944A';
+              e.currentTarget.style.backgroundColor = '#D4843A';
               e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
@@ -504,9 +544,45 @@ export default function RequirementTable({
         </div>
 
         {/* 空状态或表格 */}
-        {requirements.length === 0 ? (
-          <div className="flex-1 flex items-start justify-start">
-            <EmptyRequirementState onAddClick={onAddClick} className="items-start pl-6 pt-8" />
+        {filteredRequirements.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            {requirements.length === 0 ? (
+              <EmptyRequirementState onAddClick={onAddClick} />
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 px-4">
+                <div className="relative mb-6">
+                  <svg
+                    width="120"
+                    height="90"
+                    viewBox="0 0 120 90"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect x="35" y="20" width="50" height="60" rx="4" fill="#F3F4F6" stroke="#D1D5DB" strokeWidth="1.5"/>
+                    <line x1="45" y1="35" x2="75" y2="35" stroke="#E5E7EB" strokeWidth="2" strokeLinecap="round"/>
+                    <line x1="45" y1="45" x2="70" y2="45" stroke="#E5E7EB" strokeWidth="2" strokeLinecap="round"/>
+                    <line x1="45" y1="55" x2="65" y2="55" stroke="#E5E7EB" strokeWidth="2" strokeLinecap="round"/>
+                    <circle cx="85" cy="25" r="12" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1.5"/>
+                    <line x1="80" y1="25" x2="90" y2="25" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <h3 className="text-base font-medium text-gray-600 mb-2">
+                  没有找到匹配的需求
+                </h3>
+                <p className="text-sm text-gray-400">
+                  请尝试调整筛选条件
+                </p>
+                <button
+                  onClick={() => {
+                    setStatusFilter('全部');
+                    setPriorityFilter('全部优先级');
+                  }}
+                  className="mt-4 px-4 py-2 text-sm text-[#E8944A] hover:bg-orange-50 rounded-lg transition-colors"
+                >
+                  清除筛选条件
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <>
