@@ -11,7 +11,7 @@ export default function RewardsPage() {
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Rewards</h1>
+        <h1 className="text-xl font-bold text-gray-900">Rewards</h1>
         <p className="mt-2 text-gray-600">
           用你赚取的金币购买奖励，激励自己完成任务
         </p>

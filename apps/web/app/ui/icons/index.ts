@@ -10,6 +10,7 @@ export { RewardIcon } from './navigation/RewardIcon';
 
 // Action Icons
 export { ChevronRightIcon } from './action/ChevronRightIcon';
+export { ChevronDownIcon } from './action/ChevronDownIcon';
 export { PlusIcon } from './action/PlusIcon';
 export { CheckIcon } from './action/CheckIcon';
 export { PencilIcon } from './action/PencilIcon';

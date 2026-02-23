@@ -181,6 +181,7 @@ export const zhCN = {
     title: '项目管理',
     subtitle: '管理和跟踪您的项目进度，协调团队协作',
     empty: '没有找到符合条件的项目',
+    emptyHint: '尝试调整筛选条件或创建一个新项目',
     progress: '进度',
     loading: '加载中...',
     create: '创建项目',
@@ -266,6 +267,11 @@ export const zhCN = {
     list: {
       emptyHint: '暂无项目，点击下方按钮新建',
     },
+    unsavedChanges: {
+      title: '未保存的更改',
+      description: '您有未保存的更改，确定要放弃吗？',
+      discard: '放弃更改',
+    },
   },
   projectDetail: {
     backToProjectList: '返回项目列表',
@@ -282,6 +288,8 @@ export const zhCN = {
       backToProjectList: '返回项目列表',
       switchProject: '切换项目',
       noProjects: '暂无其他项目',
+      currentProject: '当前项目',
+      otherProjects: '其他项目',
     },
   },
   requirement: {
@@ -341,6 +349,29 @@ export const zhCN = {
       dueDate: '截止日期',
       storyPoints: '故事点数',
       tags: '标签',
+    },
+    sub: {
+      createTitle: '新增子需求',
+      parentLabel: '父需求',
+      nameLabel: '子需求名称',
+      namePlaceholder: '请输入子需求名称',
+      createButton: '创建子需求',
+      startDate: '开始时间',
+      endDate: '截止时间',
+      points: '可获得积分',
+      description: '描述',
+      descriptionPlaceholder: '简要描述子需求内容...',
+      empty: '暂无子需求',
+      create: '创建一个',
+    },
+    error: {
+      parentNotFound: '父需求不存在',
+      circularReference: '不能将需求设为自己的子需求',
+      nameRequired: '子需求名称不能为空',
+      nameMinLength: '子需求名称至少需要2个字符',
+      nameMaxLength: '子需求名称不能超过100个字符',
+      endDateBeforeStart: '截止时间不能早于开始时间',
+      pointsNegative: '积分不能为负数',
     },
   },
   rewards: {

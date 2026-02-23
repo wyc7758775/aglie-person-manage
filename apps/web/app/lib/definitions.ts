@@ -188,9 +188,12 @@ export type Requirement = {
   storyPoints: number;
   points: number;
   tags: string[];
+  parentId?: string | null;
 };
 
-export type RequirementCreateRequest = Omit<Requirement, 'id'>;
+export type RequirementCreateRequest = Omit<Requirement, 'id'> & {
+  parentId?: string | null;
+};
 
 export type RequirementUpdateRequest = Partial<Omit<Requirement, 'id'>>;
 
@@ -260,4 +263,127 @@ export type DefectResponse = {
   success: boolean;
   defect?: Defect;
   message?: string;
+};
+
+// 需求评论类型
+export type RequirementComment = {
+  id: string;
+  requirementId: string;
+  userId: string;
+  userNickname: string;
+  content: string;
+  attachments?: Attachment[];
+  createdAt: string;
+};
+
+export type RequirementCommentCreateRequest = Omit<RequirementComment, 'id' | 'userNickname' | 'createdAt'>;
+
+// 操作日志类型
+export type OperationLog = {
+  id: string;
+  entityType: 'requirement' | 'task' | 'defect' | 'project';
+  entityId: string;
+  userId: string;
+  userNickname: string;
+  action: 'create' | 'update' | 'delete' | 'status_change';
+  fieldName?: string;
+  oldValue?: string;
+  newValue?: string;
+  createdAt: string;
+};
+
+// 附件类型
+export type Attachment = {
+  id: string;
+  entityType: 'requirement_comment' | 'task' | 'defect';
+  entityId: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  uploadedBy: string;
+  createdAt: string;
+};
+
+// 待办事项（To-Do）类型定义
+export type TodoStatus = 'todo' | 'in_progress' | 'blocked' | 'done' | 'cancelled';
+
+export type TodoPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export type LinkType = 'blocks' | 'blocked_by' | 'related_to';
+
+export type Todo = {
+  id: string;
+  title: string;
+  description: string;
+  status: TodoStatus;
+  priority: TodoPriority;
+  assignee: string;
+  startDate: string | null;
+  dueDate: string | null;
+  points: number;
+  tags: string[];
+  projectId?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TodoCreateRequest = Omit<Todo, 'id' | 'createdAt' | 'updatedAt'>;
+
+export type TodoUpdateRequest = Partial<Omit<Todo, 'id' | 'createdAt' | 'updatedAt'>>;
+
+export type TodoResponse = {
+  success: boolean;
+  todo?: Todo;
+  message?: string;
+};
+
+// 子任务类型定义
+export type Subtask = {
+  id: string;
+  todoId: string;
+  title: string;
+  completed: boolean;
+  assignee?: string;
+  createdAt: string;
+};
+
+export type SubtaskCreateRequest = Omit<Subtask, 'id' | 'todoId' | 'createdAt'>;
+
+export type SubtaskUpdateRequest = Partial<Omit<Subtask, 'id' | 'todoId' | 'createdAt'>>;
+
+// 关联任务类型定义
+export type TodoLink = {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  linkType: LinkType;
+  createdAt: string;
+};
+
+export type TodoLinkCreateRequest = {
+  targetId: string;
+  linkType: LinkType;
+};
+
+// 待办事项评论类型定义
+export type TodoComment = {
+  id: string;
+  todoId: string;
+  userId: string;
+  userNickname: string;
+  content: string;
+  createdAt: string;
+};
+
+export type TodoCommentCreateRequest = Omit<TodoComment, 'id' | 'todoId' | 'userNickname' | 'createdAt'>;
+
+// 待办事项操作记录类型定义
+export type TodoActivity = {
+  id: string;
+  todoId: string;
+  userId: string;
+  userNickname: string;
+  action: string;
+  details?: string;
+  createdAt: string;
 };

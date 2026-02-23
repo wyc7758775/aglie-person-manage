@@ -325,6 +325,7 @@ export default function MarkdownEditorField({
             maxHeight: `${maxHeight}px`,
             overflowY: 'auto'
           }}
+          data-testid={`project-${fieldName}-input`}
         >
           <EditorContent editor={editor} />
           {isSaving && (

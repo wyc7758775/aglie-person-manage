@@ -40,9 +40,34 @@ export async function getRequirementById(id: string): Promise<Requirement | null
   return db.getRequirementById(id);
 }
 
-export async function createRequirement(data: RequirementCreateRequest): Promise<Requirement> {
-  const db = await import('./db');
-  return db.createRequirement(data);
+export async function createRequirement(data: RequirementCreateRequest, userId?: string): Promise<Requirement> {
+  try {
+    const db = await import('./db');
+    const requirement = await db.createRequirement(data);
+    
+    // 记录创建操作日志
+    if (userId) {
+      try {
+        await db.createOperationLog({
+          entityType: 'requirement',
+          entityId: requirement.id,
+          userId,
+          action: 'create',
+          fieldName: undefined,
+          oldValue: undefined,
+          newValue: undefined,
+        });
+      } catch (logError) {
+        console.error('记录操作日志失败:', logError);
+        // 日志记录失败不应影响主流程
+      }
+    }
+    
+    return requirement;
+  } catch (error) {
+    console.error('createRequirement 错误:', error);
+    throw error;
+  }
 }
 
 export async function updateRequirement(
@@ -59,6 +84,39 @@ export async function updateRequirement(
 
   const updated = await db.updateRequirement(id, data);
   if (!updated) return null;
+
+  // 记录操作日志
+  if (userId) {
+    // 记录状态变更
+    if (data.status && data.status !== oldStatus) {
+      await db.createOperationLog({
+        entityType: 'requirement',
+        entityId: id,
+        userId,
+        action: 'status_change',
+        fieldName: 'status',
+        oldValue: oldStatus,
+        newValue: data.status,
+      });
+    }
+    // 记录其他字段变更
+    const fieldsToLog = ['title', 'description', 'priority', 'assignee'] as const;
+    for (const field of fieldsToLog) {
+      const oldValue = oldRequirement[field];
+      const newValue = data[field];
+      if (newValue !== undefined && newValue !== oldValue) {
+        await db.createOperationLog({
+          entityType: 'requirement',
+          entityId: id,
+          userId,
+          action: 'update',
+          fieldName: field,
+          oldValue: String(oldValue || ''),
+          newValue: String(newValue || ''),
+        });
+      }
+    }
+  }
 
   if (oldStatus !== 'completed' && newStatus === 'completed' && userId) {
     const pointsToAdd = oldRequirement.points || 0;

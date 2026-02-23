@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRequirements, createRequirement, calculateRequirementPoints } from '@/app/lib/requirements';
+import { getRequirementById } from '@/app/lib/db';
 import { RequirementStatus, RequirementPriority, RequirementType } from '@/app/lib/definitions';
+import { getCurrentUser } from '@/app/lib/auth-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +47,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { projectId, title, description, type, status, priority, assignee, reporter, createdDate, dueDate, storyPoints, tags, points, autoCalculatePoints } = body;
+    const { projectId, title, description, type, status, priority, assignee, reporter, createdDate, dueDate, storyPoints, tags, points, autoCalculatePoints, parentId } = body;
 
     if (!projectId || typeof projectId !== 'string' || projectId.trim().length === 0) {
       return NextResponse.json(
@@ -98,10 +100,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 验证父需求是否存在
+    if (parentId) {
+      const parentRequirement = await getRequirementById(parentId);
+      if (!parentRequirement) {
+        return NextResponse.json(
+          { success: false, message: '父需求不存在，无法创建子需求' },
+          { status: 400 }
+        );
+      }
+    }
+
     // 自动计算积分
     if (autoCalculatePoints && priority) {
       finalPoints = calculateRequirementPoints(priority);
     }
+
+    // 获取当前用户
+    const currentUser = await getCurrentUser(request);
+    const userId = currentUser?.id;
 
     const requirement = await createRequirement({
       projectId: projectId.trim(),
@@ -116,8 +133,9 @@ export async function POST(request: NextRequest) {
       dueDate: dueDate || '',
       storyPoints: storyPoints || 0,
       points: finalPoints,
-      tags: tags || []
-    });
+      tags: tags || [],
+      parentId: parentId || null
+    }, userId);
 
     return NextResponse.json(
       { success: true, requirement },
@@ -125,8 +143,9 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : '服务器内部错误';
     return NextResponse.json(
-      { success: false, message: '服务器内部错误' },
+      { success: false, message: errorMessage },
       { status: 500 }
     );
   }

@@ -8,9 +8,10 @@
     "build:docs": "pnpm --filter docs build",
     "dev:docs": "pnpm --filter docs dev",
     "docker-build": "./plugins/docker-build.sh",
-    "devtools": "chrome-devtools-mcp",
-    "dev:all": "concurrently \"pnpm dev\" \"pnpm devtools\"",
-    "docs:reorganize": "node .opencode/skills/reorganize-prd/reorganize.js"
+    "devtools": "./node_modules/.bin/chrome-devtools-mcp",
+    "dev:all": "export PATH=\"/opt/homebrew/bin:$PATH\" && concurrently \"pnpm dev\" \"pnpm devtools\"",
+    "docs:reorganize": "node .opencode/skills/reorganize-prd/reorganize.js",
+    "chrome:debug": "./scripts/start-chrome-debug.sh"
   },
   "devDependencies": {
     "chrome-devtools-mcp": "^0.17.1",

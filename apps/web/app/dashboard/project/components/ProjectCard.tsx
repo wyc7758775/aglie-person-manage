@@ -243,21 +243,19 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
     router.push(`/dashboard/project/${project.id}`);
   };
 
-  const handleEnterProject = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    router.push(`/dashboard/project/${project.id}`);
-  };
-
   return (
     <div
+      data-testid="project-card"
       className={clsx(
         'group relative rounded-2xl overflow-hidden cursor-pointer',
-        'transition-all duration-500 ease-out',
-        'hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-1',
-        'border border-white/60',
-        'flex flex-col'
+        'transition-all duration-300 ease-out',
+        'hover:shadow-2xl hover:shadow-indigo-500/20 hover:-translate-y-1.5',
+        'border border-white/60 hover:border-indigo-200/50',
+        'flex flex-col',
+        'active:translate-y-0 active:shadow-lg',
+        'focus:outline-none focus:ring-2 focus:ring-indigo-500/30'
       )}
-      style={hasCover ? { 
+      style={hasCover ? {
         backgroundImage: `url(${project.coverImageUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -298,86 +296,104 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
         isHovered && 'opacity-100'
       )} />
 
-      <div className="relative z-10 p-4 flex flex-col h-full">
+      <div className="relative z-10 p-3 flex flex-col h-full">
         {/* 头部：图标和菜单 */}
         <div className="flex items-start justify-between mb-2 flex-shrink-0">
           <div className={clsx(
-            'w-12 h-12 rounded-xl flex items-center justify-center text-2xl',
+            'w-10 h-10 rounded-xl flex items-center justify-center text-xl',
             'backdrop-blur-sm shadow-lg shadow-black/5',
             'border transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3',
-            hasCover 
-              ? 'bg-white/90 border-white/70' 
+            hasCover
+              ? 'bg-white/90 border-white/70'
               : 'bg-white/80 border-white/50'
           )}>
             {project.avatar || getTypeIcon(project.type)}
           </div>
 
-          {/* 更多菜单 */}
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(!showMenu);
-              }}
-              className={clsx(
-                'p-2 rounded-xl transition-all duration-200 backdrop-blur-sm',
-                hasCover 
-                  ? 'text-white/80 hover:text-white hover:bg-white/20'
-                  : 'text-slate-400 hover:text-slate-600 hover:bg-white/60',
-                'hover:shadow-md',
-                showMenu && (hasCover ? 'bg-white/20 text-white shadow-md' : 'bg-white/80 text-slate-600 shadow-md')
-              )}
-            >
-              <EllipsisVerticalIcon className="w-5 h-5" />
-            </button>
-            
-            {showMenu && (
-              <div 
+          {/* 右侧：进入指示箭头 + 更多菜单 */}
+          <div className="flex items-center gap-1">
+            {/* 进入项目指示箭头 */}
+            <div className={clsx(
+              'p-1.5 rounded-xl transition-all duration-300',
+              'opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0',
+              hasCover
+                ? 'text-white bg-white/20'
+                : 'text-indigo-500 bg-indigo-50'
+            )}>
+              <ArrowRightIcon className="h-3.5 w-3.5" />
+            </div>
+
+            {/* 更多菜单 */}
+            <div className="relative">
+              <button
+                data-testid="project-menu"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(!showMenu);
+                }}
                 className={clsx(
-                  'absolute right-0 top-10 z-50 w-36',
-                  'bg-white/95 backdrop-blur-xl rounded-xl',
-                  'shadow-2xl shadow-black/10',
-                  'border border-white/60',
-                  'overflow-hidden',
-                  'animate-in fade-in zoom-in-95 duration-200'
+                  'p-2 rounded-xl transition-all duration-200 backdrop-blur-sm',
+                  hasCover
+                    ? 'text-white/80 hover:text-white hover:bg-white/20'
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-white/60',
+                  'hover:shadow-md',
+                  showMenu && (hasCover ? 'bg-white/20 text-white shadow-md' : 'bg-white/80 text-slate-600 shadow-md')
                 )}
               >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(project);
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-pink-50 transition-all duration-200"
+                <EllipsisVerticalIcon className="w-4 h-4" />
+              </button>
+              
+              {showMenu && (
+                <div 
+                  className={clsx(
+                    'absolute right-0 top-10 z-50 w-36',
+                    'bg-white/95 backdrop-blur-xl rounded-xl',
+                    'shadow-2xl shadow-black/10',
+                    'border border-white/60',
+                    'overflow-hidden',
+                    'animate-in fade-in zoom-in-95 duration-200'
+                  )}
                 >
-                  {t('project.edit')}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(project.id);
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-3 text-left text-sm text-rose-600 hover:bg-gradient-to-r hover:from-rose-50 hover:to-pink-50 transition-all duration-200"
-                >
-                  {t('project.delete')}
-                </button>
-              </div>
-            )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(project);
+                      setShowMenu(false);
+                    }}
+                    className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-pink-50 transition-all duration-200"
+                  >
+                    {t('project.edit')}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(project.id);
+                      setShowMenu(false);
+                    }}
+                    className="w-full px-4 py-3 text-left text-sm text-rose-600 hover:bg-gradient-to-r hover:from-rose-50 hover:to-pink-50 transition-all duration-200"
+                  >
+                    {t('project.delete')}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* 项目名称和积分 - 固定两行高度 */}
-        <div className="mb-2 h-[48px] flex-shrink-0">
+        <div className="mb-2 h-[44px] flex-shrink-0">
           <div className="flex items-start justify-between gap-3">
-            <h3 className={clsx(
-              'text-lg font-bold leading-tight line-clamp-2 flex-1',
-              hasCover ? 'text-white drop-shadow-md' : 'text-slate-800'
-            )}>
+            <h3
+              data-testid="project-name"
+              className={clsx(
+                'text-base font-bold leading-tight line-clamp-2 flex-1',
+                hasCover ? 'text-white drop-shadow-md' : 'text-slate-800'
+              )}
+            >
               {project.name}
             </h3>
             <span className={clsx(
-              'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold',
+              'flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-bold',
               'bg-gradient-to-r from-amber-400 to-orange-400',
               'text-white shadow-lg shadow-orange-500/30',
               'border border-white/40'
@@ -388,7 +404,7 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
         </div>
 
         {/* 描述 - 固定两行高度 */}
-        <div className="h-[40px] mb-3 flex-shrink-0">
+        <div className="h-[36px] mb-3 flex-shrink-0">
           {stripHtml(project.description) ? (
             <p className={clsx(
               'text-sm line-clamp-2 leading-relaxed',
@@ -407,7 +423,7 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
         </div>
 
         {/* 标签区域 - 统一使用图标+文字格式 */}
-        <div className="flex flex-wrap gap-2 mb-3 h-[26px] flex-shrink-0">
+        <div className="flex flex-wrap gap-2 mb-3 h-[24px] flex-shrink-0">
           {/* 状态标签 */}
           {(() => {
             const statusStyle = getStatusStyle(project.status);
@@ -442,7 +458,7 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
         </div>
 
         {/* 进度条 - 增强视觉效果 */}
-        <div className="mb-3 flex-shrink-0">
+        <div className="mb-2 flex-shrink-0">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className={clsx(
               'font-medium',
@@ -491,10 +507,10 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
         </div>
 
         {/* 截止日期区域 - 保持高度一致 */}
-        <div className="flex-shrink-0 h-[36px]">
+        <div className="flex-shrink-0 h-[32px]">
           {isSprintProject ? (
             <div className={clsx(
-              'flex items-center gap-2 px-3 py-1.5 rounded-lg h-full',
+              'flex items-center gap-2 px-3 py-1 rounded-lg h-full',
               hasCover ? 'bg-white/10 backdrop-blur-sm' : deadlineBgClass
             )}>
               <CalendarIcon className={clsx('w-4 h-4 flex-shrink-0', hasCover ? 'text-white/80' : deadlineClass)} />
@@ -510,7 +526,7 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
           ) : (
             /* slow-burn 项目显示持续进行中占位 */
             <div className={clsx(
-              'flex items-center gap-2 px-3 py-1.5 rounded-lg h-full',
+              'flex items-center gap-2 px-3 py-1 rounded-lg h-full',
               hasCover ? 'bg-white/10 backdrop-blur-sm' : 'bg-slate-50/50'
             )}>
               <span className={clsx('text-sm font-medium', hasCover ? 'text-white/60' : 'text-slate-400')}>
@@ -520,30 +536,6 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
           )}
         </div>
 
-        {/* 进入项目按钮 - 统一使用蓝色主色调 */}
-        <div className="mt-auto pt-3">
-          <button
-            onClick={handleEnterProject}
-            className={clsx(
-              'w-full flex items-center justify-center gap-2',
-              'px-4 py-2.5 rounded-xl',
-              'text-sm font-semibold',
-              'transition-all duration-300 ease-out',
-              'group/btn',
-              // 统一使用蓝色主色调
-              'bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white',
-              'shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50',
-              'hover:-translate-y-0.5 hover:scale-[1.02]',
-              'active:scale-[0.98] active:translate-y-0'
-            )}
-          >
-            <span>进入项目</span>
-            <ArrowRightIcon className={clsx(
-              'w-4 h-4 transition-transform duration-300',
-              'group-hover/btn:translate-x-1'
-            )} />
-          </button>
-        </div>
       </div>
 
       {/* 底部装饰 */}

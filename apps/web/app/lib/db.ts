@@ -27,6 +27,20 @@ import {
   DefectType,
   DefectCreateRequest,
   DefectUpdateRequest,
+  Todo,
+  TodoStatus,
+  TodoPriority,
+  TodoCreateRequest,
+  TodoUpdateRequest,
+  Subtask,
+  SubtaskCreateRequest,
+  SubtaskUpdateRequest,
+  TodoLink,
+  TodoLinkCreateRequest,
+  LinkType,
+  TodoComment,
+  TodoCommentCreateRequest,
+  TodoActivity,
 } from './definitions';
 
 let _sql: ReturnType<typeof postgres> | null = null;
@@ -150,6 +164,44 @@ export async function initializeDatabase() {
       );
     `;
 
+    // 修改日期字段允许 NULL（兼容已存在的表）
+    await getSql()`
+      DO $$ BEGIN
+        ALTER TABLE requirements ALTER COLUMN created_date DROP NOT NULL;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        ALTER TABLE requirements ALTER COLUMN due_date DROP NOT NULL;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+
+    // 添加 parent_id 字段支持子需求
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'requirements' AND column_name = 'parent_id') THEN
+          ALTER TABLE requirements ADD COLUMN parent_id VARCHAR(100) REFERENCES requirements(id) ON DELETE CASCADE;
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+
+    // 添加 related_tasks 字段支持任务关联
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'requirements' AND column_name = 'related_tasks') THEN
+          ALTER TABLE requirements ADD COLUMN related_tasks JSONB DEFAULT '[]';
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+
     await getSql()`
       CREATE TABLE IF NOT EXISTS defects (
         id VARCHAR(100) PRIMARY KEY,
@@ -170,7 +222,116 @@ export async function initializeDatabase() {
       );
     `;
 
+    // 待办事项（Todo）表
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS todos (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        title VARCHAR(500) NOT NULL,
+        description TEXT DEFAULT '',
+        status VARCHAR(50) NOT NULL DEFAULT 'todo',
+        priority VARCHAR(50) NOT NULL DEFAULT 'medium',
+        assignee VARCHAR(255) DEFAULT '',
+        start_date DATE,
+        due_date DATE,
+        points INT NOT NULL DEFAULT 0,
+        tags JSONB DEFAULT '[]',
+        project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_todos_user_id ON todos(user_id)`;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_todos_status ON todos(status)`;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_todos_project_id ON todos(project_id)`;
+
+    // 子任务表
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS subtasks (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        todo_id UUID NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
+        title VARCHAR(500) NOT NULL,
+        completed BOOLEAN NOT NULL DEFAULT false,
+        assignee VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_subtasks_todo_id ON subtasks(todo_id)`;
+
+    // 关联任务表
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS todo_links (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        source_id UUID NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
+        target_id UUID NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
+        link_type VARCHAR(50) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(source_id, target_id, link_type)
+      );
+    `;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_todo_links_source ON todo_links(source_id)`;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_todo_links_target ON todo_links(target_id)`;
+
+    // 待办事项评论表
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS todo_comments (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        todo_id UUID NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id),
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_todo_comments_todo_id ON todo_comments(todo_id)`;
+
+    // 待办事项操作记录表
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS todo_activities (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        todo_id UUID NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id),
+        action VARCHAR(100) NOT NULL,
+        details TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_todo_activities_todo_id ON todo_activities(todo_id)`;
+
+    // 创建需求评论表
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS requirement_comments (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        requirement_id VARCHAR(100) NOT NULL REFERENCES requirements(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id),
+        content TEXT NOT NULL,
+        attachments JSONB DEFAULT '[]',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_requirement_comments_requirement_id ON requirement_comments(requirement_id)`;
+
+    // 创建操作日志表
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS operation_logs (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        entity_type VARCHAR(50) NOT NULL,
+        entity_id VARCHAR(100) NOT NULL,
+        user_id UUID NOT NULL REFERENCES users(id),
+        action VARCHAR(50) NOT NULL,
+        field_name VARCHAR(100),
+        old_value TEXT,
+        new_value TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_operation_logs_entity ON operation_logs(entity_type, entity_id)`;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_operation_logs_created_at ON operation_logs(created_at DESC)`;
+
     console.log('数据库表结构初始化完成');
+    
+    // 初始化示例数据（仅在 requirements 表为空时）
+    await initializeSampleRequirements();
+    
     return { success: true };
   } catch (error) {
     const err = error as { code?: string; errors?: Array<{ code?: string }> };
@@ -180,6 +341,107 @@ export async function initializeDatabase() {
       console.error('数据库初始化失败:', error);
     }
     throw error;
+  }
+}
+
+/**
+ * 初始化示例需求数据（仅在 requirements 表为空时）
+ */
+async function initializeSampleRequirements() {
+  try {
+    // 检查是否已有数据
+    const count = await getSql()`SELECT COUNT(*) as count FROM requirements`;
+    if (count[0].count > 0) {
+      return; // 已有数据，不插入示例数据
+    }
+    
+    // 获取第一个项目作为示例项目
+    const projectResult = await getSql()`SELECT id FROM projects LIMIT 1`;
+    if (projectResult.length === 0) {
+      console.log('没有项目，跳过示例需求数据初始化');
+      return;
+    }
+    const projectId = projectResult[0].id;
+    
+    // 示例需求数据
+    const sampleRequirements = [
+      {
+        id: `REQ-${String(Date.now()).slice(-8)}-001`,
+        title: '用户登录功能开发',
+        description: '实现用户登录功能，包括手机号、邮箱、微信等多种登录方式',
+        type: 'feature',
+        status: 'development',
+        priority: 'high',
+        assignee: '张三',
+        reporter: '产品经理',
+        points: 200,
+      },
+      {
+        id: `REQ-${String(Date.now() + 1000).slice(-8)}-002`,
+        title: '订单管理系统',
+        description: '开发订单管理模块，支持订单创建、查询、修改、取消等功能',
+        type: 'feature',
+        status: 'draft',
+        priority: 'critical',
+        assignee: '李四',
+        reporter: '产品经理',
+        points: 500,
+      },
+      {
+        id: `REQ-${String(Date.now() + 2000).slice(-8)}-003`,
+        title: '库存同步功能',
+        description: '实现库存实时同步功能，确保各渠道库存数据一致性',
+        type: 'feature',
+        status: 'review',
+        priority: 'medium',
+        assignee: '王五',
+        reporter: '产品经理',
+        points: 300,
+      },
+      {
+        id: `REQ-${String(Date.now() + 3000).slice(-8)}-004`,
+        title: '物流跟踪模块',
+        description: '对接第三方物流接口，实现订单物流信息实时跟踪',
+        type: 'feature',
+        status: 'approved',
+        priority: 'high',
+        assignee: '赵六',
+        reporter: '产品经理',
+        points: 400,
+      },
+      {
+        id: `REQ-${String(Date.now() + 4000).slice(-8)}-005`,
+        title: '评价系统开发',
+        description: '开发用户评价系统，支持评分、文字评价、图片上传等功能',
+        type: 'feature',
+        status: 'testing',
+        priority: 'medium',
+        assignee: '钱七',
+        reporter: '产品经理',
+        points: 250,
+      },
+    ];
+    
+    for (const req of sampleRequirements) {
+      await getSql()`
+        INSERT INTO requirements (
+          id, project_id, title, description, type, status, priority, 
+          assignee, reporter, created_date, due_date, story_points, points, tags, parent_id
+        ) VALUES (
+          ${req.id}, ${projectId}, ${req.title}, ${req.description}, ${req.type}, 
+          ${req.status}, ${req.priority}, ${req.assignee}, ${req.reporter},
+          ${new Date().toISOString().split('T')[0]}, 
+          ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]},
+          0, ${req.points}, ${JSON.stringify([])}, null
+        )
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+    
+    console.log(`已初始化 ${sampleRequirements.length} 条示例需求数据`);
+  } catch (error) {
+    console.error('初始化示例需求数据失败:', error);
+    // 不抛出错误，避免影响主流程
   }
 }
 
@@ -280,6 +542,31 @@ export async function getUsers(): Promise<{ id: string; nickname: string; role: 
     }));
   } catch (error) {
     console.error('获取用户列表失败:', error);
+    throw error;
+  }
+}
+
+/**
+ * 根据ID获取用户信息
+ */
+export async function getUserById(id: string): Promise<{ id: string; nickname: string; role: string; totalPoints: number } | null> {
+  try {
+    const result = await getSql()`
+      SELECT id, nickname, role, COALESCE(total_points, 0) AS total_points 
+      FROM users 
+      WHERE id = ${id}
+      LIMIT 1
+    `;
+    if (result.length === 0) return null;
+    const row = result[0] as unknown as { id: string; nickname: string; role: string; total_points: number };
+    return {
+      id: String(row.id),
+      nickname: row.nickname,
+      role: row.role,
+      totalPoints: Number(row.total_points) || 0,
+    };
+  } catch (error) {
+    console.error('获取用户信息失败:', error);
     throw error;
   }
 }
@@ -642,6 +929,7 @@ function rowToRequirement(row: Record<string, unknown>): Requirement {
     storyPoints: Number(row.story_points) || 0,
     points: Number(row.points) || 0,
     tags: parseJsonField(row.tags),
+    parentId: row.parent_id ? String(row.parent_id) : null,
   };
 }
 
@@ -683,8 +971,13 @@ export async function getRequirementById(id: string): Promise<Requirement | null
 export async function createRequirement(data: RequirementCreateRequest): Promise<Requirement> {
   try {
     const id = `REQ-${String(Date.now()).slice(-8)}-${Math.random().toString(36).slice(2, 6)}`;
+
+    // 处理日期字段：空字符串转为 null
+    const createdDate = data.createdDate && data.createdDate.trim() !== '' ? data.createdDate : null;
+    const dueDate = data.dueDate && data.dueDate.trim() !== '' ? data.dueDate : null;
+
     await getSql()`
-      INSERT INTO requirements (id, project_id, title, description, type, status, priority, assignee, reporter, created_date, due_date, story_points, points, tags)
+      INSERT INTO requirements (id, project_id, title, description, type, status, priority, assignee, reporter, created_date, due_date, story_points, points, tags, parent_id)
       VALUES (
         ${id},
         ${data.projectId},
@@ -695,11 +988,12 @@ export async function createRequirement(data: RequirementCreateRequest): Promise
         ${data.priority ?? 'medium'},
         ${data.assignee ?? ''},
         ${data.reporter ?? ''},
-        ${data.createdDate ?? ''},
-        ${data.dueDate ?? ''},
+        ${createdDate},
+        ${dueDate},
         ${data.storyPoints ?? 0},
         ${data.points ?? 0},
-        ${JSON.stringify(data.tags ?? [])}
+        ${JSON.stringify(data.tags ?? [])},
+        ${data.parentId ?? null}
       )
     `;
     const created = await getRequirementById(id);
@@ -723,8 +1017,11 @@ export async function updateRequirement(id: string, data: RequirementUpdateReque
     const priority = String(data.priority !== undefined ? data.priority : row.priority);
     const assignee = String(data.assignee !== undefined ? data.assignee : row.assignee ?? '');
     const reporter = String(data.reporter !== undefined ? data.reporter : row.reporter ?? '');
-    const createdDate = String(data.createdDate !== undefined ? data.createdDate : row.created_date ?? '');
-    const dueDate = String(data.dueDate !== undefined ? data.dueDate : row.due_date ?? '');
+    // 处理日期字段：空字符串转为 null
+    const rawCreatedDate = data.createdDate !== undefined ? data.createdDate : row.created_date;
+    const rawDueDate = data.dueDate !== undefined ? data.dueDate : row.due_date;
+    const createdDate = rawCreatedDate && String(rawCreatedDate).trim() !== '' ? String(rawCreatedDate) : null;
+    const dueDate = rawDueDate && String(rawDueDate).trim() !== '' ? String(rawDueDate) : null;
     const storyPoints = Number(data.storyPoints !== undefined ? data.storyPoints : row.story_points ?? 0);
     const points = Number(data.points !== undefined ? data.points : row.points ?? 0);
     const tagsJson = JSON.stringify(data.tags !== undefined ? data.tags : parseJsonField(row.tags));
@@ -917,5 +1214,574 @@ export async function closeDatabaseConnection() {
     await getSql().end();
   } catch (error) {
     console.error('关闭数据库连接失败:', error);
+  }
+}
+
+// ==================== 需求评论相关函数 ====================
+
+export async function initRequirementCommentsTable() {
+  try {
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS requirement_comments (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        requirement_id VARCHAR(100) NOT NULL REFERENCES requirements(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id),
+        content TEXT NOT NULL,
+        attachments JSONB DEFAULT '[]',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+  } catch (error) {
+    console.error('创建需求评论表失败:', error);
+    throw error;
+  }
+}
+
+export async function getRequirementComments(requirementId: string): Promise<RequirementComment[]> {
+  try {
+    const result = await getSql()`
+      SELECT 
+        c.id,
+        c.requirement_id,
+        c.user_id,
+        u.nickname as user_nickname,
+        c.content,
+        c.attachments,
+        c.created_at
+      FROM requirement_comments c
+      JOIN users u ON c.user_id = u.id
+      WHERE c.requirement_id = ${requirementId}
+      ORDER BY c.created_at DESC
+    `;
+    return result.map(row => ({
+      id: String(row.id ?? ''),
+      requirementId: String(row.requirement_id ?? ''),
+      userId: String(row.user_id ?? ''),
+      userNickname: String(row.user_nickname ?? ''),
+      content: String(row.content ?? ''),
+      attachments: parseJsonField(row.attachments) as Attachment[],
+      createdAt: row.created_at ? new Date(row.created_at as string).toISOString() : new Date().toISOString(),
+    }));
+  } catch (error) {
+    console.error('获取需求评论失败:', error);
+    throw error;
+  }
+}
+
+export async function createRequirementComment(data: RequirementCommentCreateRequest): Promise<RequirementComment> {
+  try {
+    const result = await getSql()`
+      INSERT INTO requirement_comments (requirement_id, user_id, content, attachments)
+      VALUES (${data.requirementId}, ${data.userId}, ${data.content}, ${JSON.stringify(data.attachments || [])})
+      RETURNING id, requirement_id, user_id, content, attachments, created_at
+    `;
+    const row = result[0];
+    const user = await getUserById(String(row.user_id));
+    return {
+      id: String(row.id),
+      requirementId: String(row.requirement_id),
+      userId: String(row.user_id),
+      userNickname: user?.nickname || '',
+      content: String(row.content),
+      attachments: parseJsonField(row.attachments) as Attachment[],
+      createdAt: String(row.created_at),
+    };
+  } catch (error) {
+    console.error('创建需求评论失败:', error);
+    throw error;
+  }
+}
+
+export async function deleteRequirementComment(id: string, userId: string): Promise<boolean> {
+  try {
+    const result = await getSql()`
+      DELETE FROM requirement_comments 
+      WHERE id = ${id} AND user_id = ${userId}
+      RETURNING id
+    `;
+    return Array.isArray(result) && result.length > 0;
+  } catch (error) {
+    console.error('删除需求评论失败:', error);
+    throw error;
+  }
+}
+
+// ==================== 操作日志相关函数 ====================
+
+export async function initOperationLogsTable() {
+  try {
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS operation_logs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        entity_type VARCHAR(50) NOT NULL,
+        entity_id VARCHAR(100) NOT NULL,
+        user_id UUID NOT NULL REFERENCES users(id),
+        action VARCHAR(50) NOT NULL,
+        field_name VARCHAR(100),
+        old_value TEXT,
+        new_value TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_operation_logs_entity ON operation_logs(entity_type, entity_id)`;
+    await getSql()`CREATE INDEX IF NOT EXISTS idx_operation_logs_created_at ON operation_logs(created_at DESC)`;
+  } catch (error) {
+    console.error('创建操作日志表失败:', error);
+    throw error;
+  }
+}
+
+export async function getOperationLogs(entityType: string, entityId: string): Promise<OperationLog[]> {
+  try {
+    const result = await getSql()`
+      SELECT 
+        l.id,
+        l.entity_type as entityType,
+        l.entity_id as entityId,
+        l.user_id as userId,
+        u.nickname as userNickname,
+        l.action,
+        l.field_name as fieldName,
+        l.old_value as oldValue,
+        l.new_value as newValue,
+        l.created_at as createdAt
+      FROM operation_logs l
+      JOIN users u ON l.user_id = u.id
+      WHERE l.entity_type = ${entityType} AND l.entity_id = ${entityId}
+      ORDER BY l.created_at DESC
+    `;
+    return result.map(row => ({
+      id: String(row.id),
+      entityType: String(row.entityType) as OperationLog['entityType'],
+      entityId: String(row.entityId),
+      userId: String(row.userId),
+      userNickname: String(row.userNickname),
+      action: String(row.action) as OperationLog['action'],
+      fieldName: row.fieldName ? String(row.fieldName) : undefined,
+      oldValue: row.oldValue ? String(row.oldValue) : undefined,
+      newValue: row.newValue ? String(row.newValue) : undefined,
+      createdAt: String(row.createdAt),
+    }));
+  } catch (error) {
+    console.error('获取操作日志失败:', error);
+    throw error;
+  }
+}
+
+export async function createOperationLog(data: Omit<OperationLog, 'id' | 'userNickname' | 'createdAt'>): Promise<OperationLog> {
+  try {
+    // 将 undefined 转换为 null，因为 Postgres 不允许插入 undefined
+    const fieldName = data.fieldName ?? null;
+    const oldValue = data.oldValue ?? null;
+    const newValue = data.newValue ?? null;
+    
+    const result = await getSql()`
+      INSERT INTO operation_logs (entity_type, entity_id, user_id, action, field_name, old_value, new_value)
+      VALUES (${data.entityType}, ${data.entityId}, ${data.userId}, ${data.action}, ${fieldName}, ${oldValue}, ${newValue})
+      RETURNING id, entity_type, entity_id, user_id, action, field_name, old_value, new_value, created_at
+    `;
+    const row = result[0];
+    const user = await getUserById(String(row.user_id));
+    return {
+      id: String(row.id),
+      entityType: String(row.entity_type) as OperationLog['entityType'],
+      entityId: String(row.entity_id),
+      userId: String(row.user_id),
+      userNickname: user?.nickname || '',
+      action: String(row.action) as OperationLog['action'],
+      fieldName: row.field_name ? String(row.field_name) : undefined,
+      oldValue: row.old_value ? String(row.old_value) : undefined,
+      newValue: row.new_value ? String(row.new_value) : undefined,
+      createdAt: String(row.created_at),
+    };
+  } catch (error) {
+    console.error('创建操作日志失败:', error);
+    throw error;
+  }
+}
+
+// ==================== 待办事项（Todo）CRUD ====================
+
+function rowToTodo(row: Record<string, unknown>): Todo {
+  return {
+    id: String(row.id),
+    title: String(row.title ?? ''),
+    description: String(row.description ?? ''),
+    status: (row.status as TodoStatus) || 'todo',
+    priority: (row.priority as TodoPriority) || 'medium',
+    assignee: String(row.assignee ?? ''),
+    startDate: row.start_date ? String(row.start_date) : null,
+    dueDate: row.due_date ? String(row.due_date) : null,
+    points: Number(row.points) || 0,
+    tags: parseJsonField(row.tags),
+    projectId: row.project_id ? String(row.project_id) : undefined,
+    createdAt: row.created_at ? new Date(row.created_at as string).toISOString() : new Date().toISOString(),
+    updatedAt: row.updated_at ? new Date(row.updated_at as string).toISOString() : new Date().toISOString(),
+  };
+}
+
+export async function getTodos(filters?: {
+  userId?: string;
+  projectId?: string;
+  status?: TodoStatus;
+  priority?: TodoPriority;
+  assignee?: string;
+}): Promise<Todo[]> {
+  try {
+    let result;
+    if (filters?.userId) {
+      result = await getSql()`SELECT * FROM todos WHERE user_id = ${filters.userId}`;
+    } else if (filters?.projectId) {
+      result = await getSql()`SELECT * FROM todos WHERE project_id = ${filters.projectId}`;
+    } else {
+      result = await getSql()`SELECT * FROM todos`;
+    }
+    let list = result as unknown as Record<string, unknown>[];
+    if (filters?.status) list = list.filter((r) => r.status === filters.status);
+    if (filters?.priority) list = list.filter((r) => r.priority === filters.priority);
+    if (filters?.assignee) list = list.filter((r) => r.assignee === filters.assignee);
+    return list.map(rowToTodo);
+  } catch (error) {
+    console.error('获取待办事项列表失败:', error);
+    throw error;
+  }
+}
+
+export async function getTodoById(id: string): Promise<Todo | null> {
+  try {
+    const result = await getSql()`SELECT * FROM todos WHERE id = ${id} LIMIT 1`;
+    if (result.length === 0) return null;
+    return rowToTodo(result[0] as unknown as Record<string, unknown>);
+  } catch (error) {
+    console.error('获取待办事项详情失败:', error);
+    throw error;
+  }
+}
+
+export async function createTodo(data: TodoCreateRequest, userId: string): Promise<Todo> {
+  try {
+    const result = await getSql()`
+      INSERT INTO todos (title, description, status, priority, assignee, start_date, due_date, points, tags, project_id, user_id)
+      VALUES (
+        ${data.title},
+        ${data.description ?? ''},
+        ${data.status ?? 'todo'},
+        ${data.priority ?? 'medium'},
+        ${data.assignee ?? ''},
+        ${data.startDate ?? null},
+        ${data.dueDate ?? null},
+        ${data.points ?? 0},
+        ${JSON.stringify(data.tags ?? [])},
+        ${data.projectId ?? null},
+        ${userId}
+      )
+      RETURNING *
+    `;
+    return rowToTodo(result[0] as unknown as Record<string, unknown>);
+  } catch (error) {
+    console.error('创建待办事项失败:', error);
+    throw error;
+  }
+}
+
+export async function updateTodo(id: string, data: TodoUpdateRequest): Promise<Todo | null> {
+  try {
+    const existing = await getSql()`SELECT * FROM todos WHERE id = ${id} LIMIT 1`;
+    if (existing.length === 0) return null;
+    const row = existing[0] as unknown as Record<string, unknown>;
+    const title = data.title !== undefined ? data.title : String(row.title);
+    const description = data.description !== undefined ? data.description : String(row.description ?? '');
+    const status = data.status !== undefined ? data.status : String(row.status);
+    const priority = data.priority !== undefined ? data.priority : String(row.priority);
+    const assignee = data.assignee !== undefined ? data.assignee : String(row.assignee ?? '');
+    const startDate = data.startDate !== undefined ? (data.startDate ?? null) : (row.start_date ? String(row.start_date) : null);
+    const dueDate = data.dueDate !== undefined ? (data.dueDate ?? null) : (row.due_date ? String(row.due_date) : null);
+    const points = data.points !== undefined ? data.points : Number(row.points ?? 0);
+    const tagsJson = JSON.stringify(data.tags !== undefined ? data.tags : parseJsonField(row.tags));
+    const projectId = data.projectId !== undefined ? (data.projectId ?? null) : (row.project_id ? String(row.project_id) : null);
+    const result = await getSql()`
+      UPDATE todos SET
+        title = ${title},
+        description = ${description},
+        status = ${status},
+        priority = ${priority},
+        assignee = ${assignee},
+        start_date = ${startDate},
+        due_date = ${dueDate},
+        points = ${points},
+        tags = ${tagsJson},
+        project_id = ${projectId},
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    if (result.length === 0) return null;
+    return rowToTodo(result[0] as unknown as Record<string, unknown>);
+  } catch (error) {
+    console.error('更新待办事项失败:', error);
+    throw error;
+  }
+}
+
+export async function deleteTodo(id: string): Promise<boolean> {
+  try {
+    const result = await getSql()`DELETE FROM todos WHERE id = ${id} RETURNING id`;
+    return Array.isArray(result) && result.length > 0;
+  } catch (error) {
+    console.error('删除待办事项失败:', error);
+    throw error;
+  }
+}
+
+// ==================== 子任务（Subtask）CRUD ====================
+
+function rowToSubtask(row: Record<string, unknown>): Subtask {
+  return {
+    id: String(row.id),
+    todoId: String(row.todo_id),
+    title: String(row.title ?? ''),
+    completed: Boolean(row.completed),
+    assignee: row.assignee ? String(row.assignee) : undefined,
+    createdAt: row.created_at ? new Date(row.created_at as string).toISOString() : new Date().toISOString(),
+  };
+}
+
+export async function getSubtasks(todoId: string): Promise<Subtask[]> {
+  try {
+    const result = await getSql()`SELECT * FROM subtasks WHERE todo_id = ${todoId} ORDER BY created_at ASC`;
+    return (result as unknown as Record<string, unknown>[]).map(rowToSubtask);
+  } catch (error) {
+    console.error('获取子任务列表失败:', error);
+    throw error;
+  }
+}
+
+export async function getSubtaskById(id: string): Promise<Subtask | null> {
+  try {
+    const result = await getSql()`SELECT * FROM subtasks WHERE id = ${id} LIMIT 1`;
+    if (result.length === 0) return null;
+    return rowToSubtask(result[0] as unknown as Record<string, unknown>);
+  } catch (error) {
+    console.error('获取子任务详情失败:', error);
+    throw error;
+  }
+}
+
+export async function createSubtask(todoId: string, data: SubtaskCreateRequest): Promise<Subtask> {
+  try {
+    const result = await getSql()`
+      INSERT INTO subtasks (todo_id, title, completed, assignee)
+      VALUES (${todoId}, ${data.title}, ${data.completed ?? false}, ${data.assignee ?? null})
+      RETURNING *
+    `;
+    return rowToSubtask(result[0] as unknown as Record<string, unknown>);
+  } catch (error) {
+    console.error('创建子任务失败:', error);
+    throw error;
+  }
+}
+
+export async function updateSubtask(id: string, data: SubtaskUpdateRequest): Promise<Subtask | null> {
+  try {
+    const existing = await getSql()`SELECT * FROM subtasks WHERE id = ${id} LIMIT 1`;
+    if (existing.length === 0) return null;
+    const row = existing[0] as unknown as Record<string, unknown>;
+    const title = data.title !== undefined ? data.title : String(row.title);
+    const completed = data.completed !== undefined ? data.completed : Boolean(row.completed);
+    const assignee = data.assignee !== undefined ? (data.assignee ?? null) : (row.assignee ? String(row.assignee) : null);
+    const result = await getSql()`
+      UPDATE subtasks SET title = ${title}, completed = ${completed}, assignee = ${assignee}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    if (result.length === 0) return null;
+    return rowToSubtask(result[0] as unknown as Record<string, unknown>);
+  } catch (error) {
+    console.error('更新子任务失败:', error);
+    throw error;
+  }
+}
+
+export async function deleteSubtask(id: string): Promise<boolean> {
+  try {
+    const result = await getSql()`DELETE FROM subtasks WHERE id = ${id} RETURNING id`;
+    return Array.isArray(result) && result.length > 0;
+  } catch (error) {
+    console.error('删除子任务失败:', error);
+    throw error;
+  }
+}
+
+// ==================== 关联任务（TodoLink）CRUD ====================
+
+function rowToTodoLink(row: Record<string, unknown>): TodoLink {
+  return {
+    id: String(row.id),
+    sourceId: String(row.source_id),
+    targetId: String(row.target_id),
+    linkType: row.link_type as LinkType,
+    createdAt: row.created_at ? new Date(row.created_at as string).toISOString() : new Date().toISOString(),
+  };
+}
+
+export async function getTodoLinks(todoId: string): Promise<TodoLink[]> {
+  try {
+    const result = await getSql()`
+      SELECT * FROM todo_links 
+      WHERE source_id = ${todoId} OR target_id = ${todoId}
+      ORDER BY created_at DESC
+    `;
+    return (result as unknown as Record<string, unknown>[]).map(rowToTodoLink);
+  } catch (error) {
+    console.error('获取关联任务列表失败:', error);
+    throw error;
+  }
+}
+
+export async function createTodoLink(todoId: string, data: TodoLinkCreateRequest): Promise<TodoLink> {
+  try {
+    const result = await getSql()`
+      INSERT INTO todo_links (source_id, target_id, link_type)
+      VALUES (${todoId}, ${data.targetId}, ${data.linkType})
+      ON CONFLICT (source_id, target_id, link_type) DO NOTHING
+      RETURNING *
+    `;
+    if (result.length === 0) {
+      throw new Error('关联已存在');
+    }
+    return rowToTodoLink(result[0] as unknown as Record<string, unknown>);
+  } catch (error) {
+    console.error('创建关联任务失败:', error);
+    throw error;
+  }
+}
+
+export async function deleteTodoLink(linkId: string): Promise<boolean> {
+  try {
+    const result = await getSql()`DELETE FROM todo_links WHERE id = ${linkId} RETURNING id`;
+    return Array.isArray(result) && result.length > 0;
+  } catch (error) {
+    console.error('删除关联任务失败:', error);
+    throw error;
+  }
+}
+
+// ==================== 待办事项评论（TodoComment）CRUD ====================
+
+function rowToTodoComment(row: Record<string, unknown>): TodoComment {
+  return {
+    id: String(row.id),
+    todoId: String(row.todo_id),
+    userId: String(row.user_id),
+    userNickname: String(row.user_nickname ?? ''),
+    content: String(row.content),
+    createdAt: row.created_at ? new Date(row.created_at as string).toISOString() : new Date().toISOString(),
+  };
+}
+
+export async function getTodoComments(todoId: string): Promise<TodoComment[]> {
+  try {
+    const result = await getSql()`
+      SELECT c.*, u.nickname as user_nickname
+      FROM todo_comments c
+      JOIN users u ON c.user_id = u.id
+      WHERE c.todo_id = ${todoId}
+      ORDER BY c.created_at DESC
+    `;
+    return (result as unknown as Record<string, unknown>[]).map(rowToTodoComment);
+  } catch (error) {
+    console.error('获取待办事项评论失败:', error);
+    throw error;
+  }
+}
+
+export async function createTodoComment(todoId: string, data: TodoCommentCreateRequest): Promise<TodoComment> {
+  try {
+    const result = await getSql()`
+      INSERT INTO todo_comments (todo_id, user_id, content)
+      VALUES (${todoId}, ${data.userId}, ${data.content})
+      RETURNING *
+    `;
+    const row = result[0];
+    const user = await getUserById(String(row.user_id));
+    return {
+      id: String(row.id),
+      todoId: String(row.todo_id),
+      userId: String(row.user_id),
+      userNickname: user?.nickname || '',
+      content: String(row.content),
+      createdAt: String(row.created_at),
+    };
+  } catch (error) {
+    console.error('创建待办事项评论失败:', error);
+    throw error;
+  }
+}
+
+export async function deleteTodoComment(id: string, userId: string): Promise<boolean> {
+  try {
+    const result = await getSql()`
+      DELETE FROM todo_comments 
+      WHERE id = ${id} AND user_id = ${userId}
+      RETURNING id
+    `;
+    return Array.isArray(result) && result.length > 0;
+  } catch (error) {
+    console.error('删除待办事项评论失败:', error);
+    throw error;
+  }
+}
+
+// ==================== 待办事项操作记录（TodoActivity）CRUD ====================
+
+function rowToTodoActivity(row: Record<string, unknown>): TodoActivity {
+  return {
+    id: String(row.id),
+    todoId: String(row.todo_id),
+    userId: String(row.user_id),
+    userNickname: String(row.user_nickname ?? ''),
+    action: String(row.action),
+    details: row.details ? String(row.details) : undefined,
+    createdAt: row.created_at ? new Date(row.created_at as string).toISOString() : new Date().toISOString(),
+  };
+}
+
+export async function getTodoActivities(todoId: string): Promise<TodoActivity[]> {
+  try {
+    const result = await getSql()`
+      SELECT a.*, u.nickname as user_nickname
+      FROM todo_activities a
+      JOIN users u ON a.user_id = u.id
+      WHERE a.todo_id = ${todoId}
+      ORDER BY a.created_at DESC
+    `;
+    return (result as unknown as Record<string, unknown>[]).map(rowToTodoActivity);
+  } catch (error) {
+    console.error('获取待办事项操作记录失败:', error);
+    throw error;
+  }
+}
+
+export async function createTodoActivity(todoId: string, userId: string, action: string, details?: string): Promise<TodoActivity> {
+  try {
+    const result = await getSql()`
+      INSERT INTO todo_activities (todo_id, user_id, action, details)
+      VALUES (${todoId}, ${userId}, ${action}, ${details ?? null})
+      RETURNING *
+    `;
+    const row = result[0];
+    const user = await getUserById(String(row.user_id));
+    return {
+      id: String(row.id),
+      todoId: String(row.todo_id),
+      userId: String(row.user_id),
+      userNickname: user?.nickname || '',
+      action: String(row.action),
+      details: row.details ? String(row.details) : undefined,
+      createdAt: String(row.created_at),
+    };
+  } catch (error) {
+    console.error('创建待办事项操作记录失败:', error);
+    throw error;
   }
 }

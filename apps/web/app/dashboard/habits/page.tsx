@@ -12,7 +12,7 @@ export default function HabitsPage() {
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Habits</h1>
+        <h1 className="text-xl font-bold text-gray-900">Habits</h1>
         <p className="mt-2 text-gray-600">
           管理你的日常习惯，建立积极的生活方式
         </p>
