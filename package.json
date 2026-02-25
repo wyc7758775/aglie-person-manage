@@ -11,7 +11,13 @@
     "devtools": "./node_modules/.bin/chrome-devtools-mcp",
     "dev:all": "export PATH=\"/opt/homebrew/bin:$PATH\" && concurrently \"pnpm dev\" \"pnpm devtools\"",
     "docs:reorganize": "node .opencode/skills/reorganize-prd/reorganize.js",
-    "chrome:debug": "./scripts/start-chrome-debug.sh"
+    "chrome:debug": "./scripts/start-chrome-debug.sh",
+    "verify": "opencode /verify",
+    "verify:ui": "opencode /verify --ui",
+    "verify:all": "opencode /verify --all",
+    "verify:incremental": "opencode /verify --incremental",
+    "verify:full": "opencode /verify --full",
+    "verify:list": "opencode /verify --list"
   },
   "devDependencies": {
     "chrome-devtools-mcp": "^0.17.1",
