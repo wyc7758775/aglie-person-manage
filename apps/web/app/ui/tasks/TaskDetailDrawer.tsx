@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Task, TaskType, TaskStatus, TaskDifficulty, TaskPriority } from '@/app/lib/definitions';
 import TaskEditDrawer from './TaskEditDrawer';
+import HabitDetailDrawer from '../habits/HabitDetailDrawer';
 
 interface TaskDetailDrawerProps {
   isOpen: boolean;
@@ -46,6 +47,19 @@ export default function TaskDetailDrawer({ isOpen, onClose, task, projectId, onT
   const [isCompleting, setIsCompleting] = useState(false);
 
   if (!isOpen || !task) return null;
+
+  // 如果是习惯类型，使用新的 HabitDetailDrawer
+  if (task.type === 'habit') {
+    return (
+      <HabitDetailDrawer
+        isOpen={isOpen}
+        onClose={onClose}
+        task={task}
+        projectId={projectId}
+        onTaskUpdated={onTaskUpdated}
+      />
+    );
+  }
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {

@@ -64,6 +64,8 @@ function getSql(): ReturnType<typeof postgres> {
   return _sql;
 }
 
+export const sql = getSql();
+
 /**
  * 初始化数据库表结构（users 含 role，projects 含 user_id）
  */
@@ -127,7 +129,7 @@ export async function initializeDatabase() {
 
     await getSql()`
       CREATE TABLE IF NOT EXISTS tasks (
-        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        id VARCHAR(100) PRIMARY KEY,
         project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
         title VARCHAR(500) NOT NULL,
         description TEXT DEFAULT '',
@@ -156,6 +158,81 @@ export async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `;
+
+    // 迁移：将现有的 UUID id 转换为短格式 TASK-xxxxxx-xxxx
+    // 处理外键约束和列类型转换
+    await getSql()`
+      DO $$
+      DECLARE
+        constraint_name TEXT;
+        row RECORD;
+        new_id_val VARCHAR(100);
+        old_id_val TEXT;
+        task_history_exists BOOLEAN;
+        col_type TEXT;
+      BEGIN
+        -- 获取 tasks.id 列的实际类型
+        SELECT data_type INTO col_type
+        FROM information_schema.columns
+        WHERE table_name = 'tasks' AND column_name = 'id';
+        
+        -- 检查 task_history 表是否存在
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_name = 'task_history'
+        ) INTO task_history_exists;
+        
+        -- 如果 id 列是 UUID 或其他非 varchar 类型
+        IF col_type IS NOT NULL AND col_type NOT IN ('character varying', 'varchar') THEN
+          -- 如果 task_history 表存在，处理外键约束
+          IF task_history_exists THEN
+            -- 删除 task_history 的外键约束（如果存在）
+            FOR constraint_name IN
+              SELECT tc.constraint_name
+              FROM information_schema.table_constraints tc
+              JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
+              WHERE tc.table_name = 'task_history' 
+                AND tc.constraint_type = 'FOREIGN KEY'
+                AND kcu.column_name = 'task_id'
+            LOOP
+              EXECUTE format('ALTER TABLE task_history DROP CONSTRAINT %I', constraint_name);
+            END LOOP;
+            
+            -- 修改 task_history.task_id 为 TEXT 类型
+            ALTER TABLE task_history ALTER COLUMN task_id TYPE TEXT;
+          END IF;
+          
+          -- 第一步：将 tasks.id 转换为 TEXT 类型（中间类型）
+          ALTER TABLE tasks ALTER COLUMN id TYPE TEXT;
+          
+          -- 第二步： UUID 格式的 id迁移 到短格式
+          FOR row IN SELECT id FROM tasks LOOP
+            old_id_val := row.id;
+            IF old_id_val ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
+              new_id_val := 'TASK-' || substr(md5(old_id_val), 1, 6) || '-' || substr(md5(old_id_val), 7, 4);
+              -- 如果 task_history 存在，更新其中的引用
+              IF task_history_exists THEN
+                UPDATE task_history SET task_id = new_id_val WHERE task_id = old_id_val;
+              END IF;
+              -- 更新 tasks 表
+              UPDATE tasks SET id = new_id_val WHERE id = old_id_val;
+            END IF;
+          END LOOP;
+          
+          -- 第三步：将 tasks.id 从 TEXT 转换为 VARCHAR(100)
+          ALTER TABLE tasks ALTER COLUMN id TYPE VARCHAR(100);
+          
+          -- 如果 task_history 存在，恢复外键约束
+          IF task_history_exists THEN
+            ALTER TABLE task_history ALTER COLUMN task_id TYPE VARCHAR(100);
+            ALTER TABLE task_history ADD CONSTRAINT fk_task_history_task_id 
+              FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE;
+          END IF;
+        END IF;
+      EXCEPTION WHEN others THEN
+        RAISE NOTICE '迁移出错: %', SQLERRM;
+      END $$;
     `;
 
     await getSql()`
@@ -352,6 +429,39 @@ export async function initializeDatabase() {
       EXCEPTION WHEN others THEN
         NULL;
       END $$;
+    `;
+
+    // 添加 current_count 和 target_count 字段
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'current_count') THEN
+          ALTER TABLE tasks ADD COLUMN current_count INT NOT NULL DEFAULT 0;
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+    await getSql()`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'tasks' AND column_name = 'target_count') THEN
+          ALTER TABLE tasks ADD COLUMN target_count INT NOT NULL DEFAULT 12;
+        END IF;
+      EXCEPTION WHEN others THEN
+        NULL;
+      END $$;
+    `;
+
+    // 创建 task_history 表（如果不存在）
+    await getSql()`
+      CREATE TABLE IF NOT EXISTS task_history (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        task_id VARCHAR(100) NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+        action VARCHAR(50) NOT NULL,
+        description TEXT DEFAULT '',
+        user_id UUID,
+        user_nickname VARCHAR(255),
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `;
 
     // 修改 due_date 字段允许 NULL
@@ -1032,14 +1142,17 @@ export async function getTaskById(id: string): Promise<Task | null> {
 
 export async function createTask(data: TaskCreateRequest): Promise<Task> {
   try {
+    const id = `TASK-${String(Date.now()).slice(-6)}-${Math.random().toString(36).slice(2, 6)}`;
+    
     const result = await getSql()`
       INSERT INTO tasks (
-        project_id, title, description, type, status, priority, difficulty,
+        id, project_id, title, description, type, status, priority, difficulty,
         assignee, points, gold_reward, gold_penalty, streak, total_count,
         frequency, repeat_days, start_date, due_date, tags, sub_tasks, comments, history, direction,
         reset_period
       )
       VALUES (
+        ${id},
         ${data.projectId},
         ${data.title ?? ''},
         ${data.description ?? ''},

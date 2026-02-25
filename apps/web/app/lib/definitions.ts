@@ -265,6 +265,8 @@ export type Task = {
   // 习惯类型特有字段
   streak: number;
   totalCount: number;
+  currentCount: number;  // 当前完成次数（今日）
+  targetCount: number;   // 目标完成次数
   direction: TaskDirection;
   resetPeriod: ResetPeriod;
   // 频率相关字段
@@ -283,9 +285,11 @@ export type Task = {
   updatedAt: string;
 };
 
-export type TaskCreateRequest = Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'streak' | 'totalCount' | 'subTasks' | 'comments' | 'history'> & {
+export type TaskCreateRequest = Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'streak' | 'totalCount' | 'currentCount' | 'targetCount' | 'subTasks' | 'comments' | 'history'> & {
   streak?: number;
   totalCount?: number;
+  currentCount?: number;
+  targetCount?: number;
 };
 
 // 任务重置周期选项
