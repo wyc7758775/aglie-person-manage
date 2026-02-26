@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteTodoLink, createTodoActivity } from '@/app/lib/db';
+import { deleteTodoLink, createOperationLog } from '@/app/lib/db';
 import { getCurrentUser } from '@/app/lib/auth-utils';
 
 export async function DELETE(
@@ -25,7 +25,15 @@ export async function DELETE(
       );
     }
 
-    await createTodoActivity(id, currentUser.id, 'link_deleted', '删除关联');
+    await createOperationLog({
+      entityType: 'task',
+      entityId: id,
+      userId: currentUser.id,
+      action: 'delete',
+      fieldName: 'link',
+      oldValue: '已删除的关联',
+      newValue: undefined,
+    });
 
     return NextResponse.json(
       { success: true, message: '关联已删除' },

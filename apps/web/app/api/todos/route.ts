@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTodos, createTodo } from '@/app/lib/db';
+import { getTodos, createTodo, createOperationLog } from '@/app/lib/db';
 import { TodoStatus, TodoPriority } from '@/app/lib/definitions';
 import { getCurrentUser } from '@/app/lib/auth-utils';
 
@@ -110,6 +110,21 @@ export async function POST(request: NextRequest) {
       tags: tags || [],
       projectId: projectId || undefined,
     }, currentUser.id);
+
+    // 记录创建操作日志
+    try {
+      await createOperationLog({
+        entityType: 'task',
+        entityId: todo.id,
+        userId: currentUser.id,
+        action: 'create',
+        fieldName: undefined,
+        oldValue: undefined,
+        newValue: undefined,
+      });
+    } catch (logError) {
+      console.error('记录操作日志失败:', logError);
+    }
 
     return NextResponse.json(
       { success: true, todo },

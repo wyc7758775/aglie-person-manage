@@ -40,7 +40,6 @@ import {
   LinkType,
   TodoComment,
   TodoCommentCreateRequest,
-  TodoActivity,
 } from './definitions';
 
 let _sql: ReturnType<typeof postgres> | null = null;
@@ -554,19 +553,6 @@ export async function initializeDatabase() {
       );
     `;
     await getSql()`CREATE INDEX IF NOT EXISTS idx_todo_comments_todo_id ON todo_comments(todo_id)`;
-
-    // 待办事项操作记录表
-    await getSql()`
-      CREATE TABLE IF NOT EXISTS todo_activities (
-        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-        todo_id UUID NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
-        user_id UUID NOT NULL REFERENCES users(id),
-        action VARCHAR(100) NOT NULL,
-        details TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-    await getSql()`CREATE INDEX IF NOT EXISTS idx_todo_activities_todo_id ON todo_activities(todo_id)`;
 
     // 创建需求评论表
     await getSql()`
@@ -1730,31 +1716,31 @@ export async function getOperationLogs(entityType: string, entityId: string): Pr
     const result = await getSql()`
       SELECT 
         l.id,
-        l.entity_type as entityType,
-        l.entity_id as entityId,
-        l.user_id as userId,
-        u.nickname as userNickname,
+        l.entity_type as "entityType",
+        l.entity_id as "entityId",
+        l.user_id as "userId",
+        u.nickname as "userNickname",
         l.action,
-        l.field_name as fieldName,
-        l.old_value as oldValue,
-        l.new_value as newValue,
-        l.created_at as createdAt
+        l.field_name as "fieldName",
+        l.old_value as "oldValue",
+        l.new_value as "newValue",
+        l.created_at as "createdAt"
       FROM operation_logs l
       JOIN users u ON l.user_id = u.id
       WHERE l.entity_type = ${entityType} AND l.entity_id = ${entityId}
       ORDER BY l.created_at DESC
     `;
     return result.map(row => ({
-      id: String(row.id),
-      entityType: String(row.entityType) as OperationLog['entityType'],
-      entityId: String(row.entityId),
-      userId: String(row.userId),
-      userNickname: String(row.userNickname),
-      action: String(row.action) as OperationLog['action'],
-      fieldName: row.fieldName ? String(row.fieldName) : undefined,
-      oldValue: row.oldValue ? String(row.oldValue) : undefined,
-      newValue: row.newValue ? String(row.newValue) : undefined,
-      createdAt: String(row.createdAt),
+      id: String(row.id || ''),
+      entityType: String(row.entityType || '') as OperationLog['entityType'],
+      entityId: String(row.entityId || ''),
+      userId: String(row.userId || ''),
+      userNickname: String(row.userNickname || ''),
+      action: String(row.action || '') as OperationLog['action'],
+      fieldName: row.fieldName && row.fieldName !== 'null' ? String(row.fieldName) : undefined,
+      oldValue: row.oldValue && row.oldValue !== 'null' ? String(row.oldValue) : undefined,
+      newValue: row.newValue && row.newValue !== 'null' ? String(row.newValue) : undefined,
+      createdAt: row.createdAt && row.createdAt !== 'null' ? String(row.createdAt) : new Date().toISOString(),
     }));
   } catch (error) {
     console.error('获取操作日志失败:', error);
@@ -2126,56 +2112,4 @@ export async function deleteTodoComment(id: string, userId: string): Promise<boo
   }
 }
 
-// ==================== 待办事项操作记录（TodoActivity）CRUD ====================
-
-function rowToTodoActivity(row: Record<string, unknown>): TodoActivity {
-  return {
-    id: String(row.id),
-    todoId: String(row.todo_id),
-    userId: String(row.user_id),
-    userNickname: String(row.user_nickname ?? ''),
-    action: String(row.action),
-    details: row.details ? String(row.details) : undefined,
-    createdAt: row.created_at ? new Date(row.created_at as string).toISOString() : new Date().toISOString(),
-  };
-}
-
-export async function getTodoActivities(todoId: string): Promise<TodoActivity[]> {
-  try {
-    const result = await getSql()`
-      SELECT a.*, u.nickname as user_nickname
-      FROM todo_activities a
-      JOIN users u ON a.user_id = u.id
-      WHERE a.todo_id = ${todoId}
-      ORDER BY a.created_at DESC
-    `;
-    return (result as unknown as Record<string, unknown>[]).map(rowToTodoActivity);
-  } catch (error) {
-    console.error('获取待办事项操作记录失败:', error);
-    throw error;
-  }
-}
-
-export async function createTodoActivity(todoId: string, userId: string, action: string, details?: string): Promise<TodoActivity> {
-  try {
-    const result = await getSql()`
-      INSERT INTO todo_activities (todo_id, user_id, action, details)
-      VALUES (${todoId}, ${userId}, ${action}, ${details ?? null})
-      RETURNING *
-    `;
-    const row = result[0];
-    const user = await getUserById(String(row.user_id));
-    return {
-      id: String(row.id),
-      todoId: String(row.todo_id),
-      userId: String(row.user_id),
-      userNickname: user?.nickname || '',
-      action: String(row.action),
-      details: row.details ? String(row.details) : undefined,
-      createdAt: String(row.created_at),
-    };
-  } catch (error) {
-    console.error('创建待办事项操作记录失败:', error);
-    throw error;
-  }
-}
+// ==================== 需求评论 CRUD ====================

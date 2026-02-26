@@ -461,9 +461,9 @@ export default function CommentSection({ requirementId, onCountChange }: Comment
                   {/* 附件列表 */}
                   {comment.attachments && comment.attachments.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {comment.attachments.map((attachment) => (
+                      {comment.attachments.map((attachment, index) => (
                         <a
-                          key={attachment.id}
+                          key={attachment.id || `attachment-${index}`}
                           href={attachment.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -525,7 +525,7 @@ export default function CommentSection({ requirementId, onCountChange }: Comment
             <div className="px-3 pb-2 flex flex-wrap gap-2">
               {attachments.map((att, index) => (
                 <div 
-                  key={att.id} 
+                  key={att.id || `att-${index}`} 
                   className="inline-flex items-center gap-1.5 px-2 py-1 rounded border text-xs"
                   style={{ 
                     backgroundColor: 'white',

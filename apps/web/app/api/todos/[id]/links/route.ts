@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTodoLinks, createTodoLink, getTodoById, createTodoActivity } from '@/app/lib/db';
+import { getTodoLinks, createTodoLink, getTodoById, createOperationLog } from '@/app/lib/db';
 import { LinkType } from '@/app/lib/definitions';
 import { getCurrentUser } from '@/app/lib/auth-utils';
 
@@ -86,7 +86,15 @@ export async function POST(
 
     const link = await createTodoLink(id, { targetId, linkType });
 
-    await createTodoActivity(id, currentUser.id, 'link_created', `创建关联: ${linkType} -> "${targetTodo.title}"`);
+    await createOperationLog({
+      entityType: 'task',
+      entityId: id,
+      userId: currentUser.id,
+      action: 'update',
+      fieldName: 'link',
+      oldValue: undefined,
+      newValue: `${linkType}: ${targetTodo.title}`,
+    });
 
     return NextResponse.json(
       { success: true, link },

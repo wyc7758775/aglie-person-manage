@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTodoById, updateTodo, deleteTodo, createTodoActivity, updateUserTotalPoints } from '@/app/lib/db';
+import { getTodoById, updateTodo, deleteTodo, createOperationLog, updateUserTotalPoints } from '@/app/lib/db';
 import { getCurrentUser } from '@/app/lib/auth-utils';
 
 export async function GET(
@@ -65,21 +65,43 @@ export async function PUT(
     }
 
     if (body.status && body.status !== oldStatus) {
-      await createTodoActivity(
-        id,
-        currentUser.id,
-        'status_change',
-        `将状态从"${oldStatus}"改为"${body.status}"`
-      );
+      await createOperationLog({
+        entityType: 'task',
+        entityId: id,
+        userId: currentUser.id,
+        action: 'status_change',
+        fieldName: 'status',
+        oldValue: oldStatus,
+        newValue: body.status,
+      });
 
       if (body.status === 'done' && oldStatus !== 'done') {
         await updateUserTotalPoints(currentUser.id, existingTodo.points);
-        await createTodoActivity(
-          id,
-          currentUser.id,
-          'points_awarded',
-          `获得 ${existingTodo.points} 积分`
-        );
+        await createOperationLog({
+          entityType: 'task',
+          entityId: id,
+          userId: currentUser.id,
+          action: 'update',
+          fieldName: 'points',
+          oldValue: '0',
+          newValue: String(existingTodo.points),
+        });
+      }
+    }
+
+    // 记录其他字段变更
+    const fieldsToLog = ['title', 'description', 'priority', 'assignee', 'dueDate', 'points'] as const;
+    for (const field of fieldsToLog) {
+      if (body[field] !== undefined && body[field] !== existingTodo[field]) {
+        await createOperationLog({
+          entityType: 'task',
+          entityId: id,
+          userId: currentUser.id,
+          action: 'update',
+          fieldName: field,
+          oldValue: String(existingTodo[field] || ''),
+          newValue: String(body[field] || ''),
+        });
       }
     }
 
@@ -132,6 +154,21 @@ export async function DELETE(
         { success: false, message: '删除失败' },
         { status: 500 }
       );
+    }
+
+    // 记录删除操作日志
+    try {
+      await createOperationLog({
+        entityType: 'task',
+        entityId: id,
+        userId: currentUser.id,
+        action: 'delete',
+        fieldName: undefined,
+        oldValue: undefined,
+        newValue: undefined,
+      });
+    } catch (logError) {
+      console.error('记录操作日志失败:', logError);
     }
 
     return NextResponse.json(

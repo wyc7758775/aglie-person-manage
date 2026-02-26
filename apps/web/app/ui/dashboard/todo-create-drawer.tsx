@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Todo, TodoStatus, TodoPriority, Subtask, TodoLink, TodoComment, TodoActivity } from '@/app/lib/definitions';
+import { Todo, TodoStatus, TodoPriority, Subtask, TodoLink, TodoComment } from '@/app/lib/definitions';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import FieldChangeLog from './field-change-log';
 
 interface TodoCreateDrawerProps {
   isOpen: boolean;
@@ -61,7 +62,6 @@ export default function TodoCreateDrawer({ isOpen, onClose, onSubmit, projectId,
   const [newSubtask, setNewSubtask] = useState('');
   const [comments, setComments] = useState<TodoComment[]>([]);
   const [newComment, setNewComment] = useState('');
-  const [activities, setActivities] = useState<TodoActivity[]>([]);
   const [links, setLinks] = useState<TodoLink[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -89,7 +89,6 @@ export default function TodoCreateDrawer({ isOpen, onClose, onSubmit, projectId,
     }
     setSubtasks([]);
     setComments([]);
-    setActivities([]);
     setLinks([]);
     setActiveTab('subtasks');
   }, [editingTodo, isOpen]);
@@ -358,7 +357,7 @@ export default function TodoCreateDrawer({ isOpen, onClose, onSubmit, projectId,
                 { key: 'subtasks', label: '子任务', count: subtasks.length },
                 { key: 'related', label: '关联任务', count: links.length },
                 { key: 'comments', label: '评论', count: comments.length },
-                { key: 'history', label: '操作记录', count: activities.length },
+                { key: 'history', label: '操作记录' },
               ].map(tab => (
                 <button
                   key={tab.key}
@@ -370,7 +369,7 @@ export default function TodoCreateDrawer({ isOpen, onClose, onSubmit, projectId,
                   }`}
                 >
                   {tab.label}
-                  {tab.count > 0 && (
+                  {tab.count !== undefined && tab.count > 0 && (
                     <span className={`ml-1 text-xs ${activeTab === tab.key ? 'text-[#E8944A88]' : 'text-[#1A1D2E55]'}`}>
                       {tab.count}
                     </span>
@@ -457,23 +456,13 @@ export default function TodoCreateDrawer({ isOpen, onClose, onSubmit, projectId,
               )}
 
               {activeTab === 'history' && (
-                <div className="space-y-3">
-                  {activities.length === 0 ? (
-                    <div className="py-8 text-center text-sm text-[#1A1D2E55]">暂无操作记录</div>
-                  ) : (
-                    activities.map(act => (
-                      <div key={act.id} className="flex items-start gap-3">
-                        <div className="w-2 h-2 mt-1.5 rounded-full bg-[#E8944A]" />
-                        <div className="flex-1">
-                          <p className="text-xs text-[#1A1D2E]">{act.details || act.action}</p>
-                          <p className="text-xs text-[#1A1D2E55] mt-0.5">
-                            {act.userNickname} · {new Date(act.createdAt).toLocaleString('zh-CN')}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+                editingTodo ? (
+                  <FieldChangeLog entityType="task" entityId={editingTodo.id} />
+                ) : (
+                  <div className="py-8 text-center text-sm text-[#1A1D2E55]">
+                    保存后可查看操作记录
+                  </div>
+                )
               )}
             </div>
           </div>

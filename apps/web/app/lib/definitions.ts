@@ -457,14 +457,3 @@ export type TodoComment = {
 };
 
 export type TodoCommentCreateRequest = Omit<TodoComment, 'id' | 'todoId' | 'userNickname' | 'createdAt'>;
-
-// 待办事项操作记录类型定义
-export type TodoActivity = {
-  id: string;
-  todoId: string;
-  userId: string;
-  userNickname: string;
-  action: string;
-  details?: string;
-  createdAt: string;
-};

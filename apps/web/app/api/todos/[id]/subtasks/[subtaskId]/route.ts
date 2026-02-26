@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSubtaskById, updateSubtask, deleteSubtask, createTodoActivity } from '@/app/lib/db';
+import { getSubtaskById, updateSubtask, deleteSubtask, createOperationLog } from '@/app/lib/db';
 import { getCurrentUser } from '@/app/lib/auth-utils';
 
 export async function PUT(
@@ -36,12 +36,15 @@ export async function PUT(
     }
 
     if (body.completed !== undefined && body.completed !== existingSubtask.completed) {
-      await createTodoActivity(
-        id,
-        currentUser.id,
-        body.completed ? 'subtask_completed' : 'subtask_uncompleted',
-        `${body.completed ? '完成' : '取消完成'}子任务"${subtask.title}"`
-      );
+      await createOperationLog({
+        entityType: 'task',
+        entityId: id,
+        userId: currentUser.id,
+        action: 'update',
+        fieldName: 'subtask',
+        oldValue: existingSubtask.title,
+        newValue: body.completed ? `${subtask.title} (已完成)` : subtask.title,
+      });
     }
 
     return NextResponse.json(
@@ -88,7 +91,15 @@ export async function DELETE(
       );
     }
 
-    await createTodoActivity(id, currentUser.id, 'subtask_deleted', `删除子任务"${subtask.title}"`);
+    await createOperationLog({
+      entityType: 'task',
+      entityId: id,
+      userId: currentUser.id,
+      action: 'delete',
+      fieldName: 'subtask',
+      oldValue: subtask.title,
+      newValue: undefined,
+    });
 
     return NextResponse.json(
       { success: true, message: '子任务已删除' },

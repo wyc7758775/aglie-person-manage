@@ -11,6 +11,7 @@ import MarkdownEditorField from './markdown-editor-field';
 import CommentSection from './comment-section';
 import SubRequirementModal, { SubRequirementFormData } from './sub-requirement-modal';
 import { convertToExtendedRequirement } from '@/app/lib/requirement-utils';
+import { OperationLog } from '@/app/lib/definitions';
 
 interface RequirementSlidePanelProps {
   open: boolean;
@@ -73,6 +74,10 @@ export default function RequirementSlidePanel({
   const [displayedRequirement, setDisplayedRequirement] = useState<Requirement | null>(null);
   const [viewStack, setViewStack] = useState<Requirement[]>([]); // 用于记录查看历史，支持返回
 
+  // 操作记录状态
+  const [operationLogs, setOperationLogs] = useState<OperationLog[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+
   // 获取当前登录用户
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -123,6 +128,32 @@ export default function RequirementSlidePanel({
       loadSubRequirements();
     }
   }, [open, displayedRequirement?.id, requirement?.id, loadSubRequirements]);
+
+  // 加载操作记录
+  const loadOperationLogs = useCallback(async () => {
+    const currentRequirementId = displayedRequirement?.id || requirement?.id;
+    if (!currentRequirementId || isCreateMode) return;
+    
+    setLoadingLogs(true);
+    try {
+      const response = await fetch(`/api/requirements/${currentRequirementId}/logs`);
+      const data = await response.json();
+      if (data.success) {
+        setOperationLogs(data.logs || []);
+      }
+    } catch (error) {
+      console.error('加载操作记录失败:', error);
+    } finally {
+      setLoadingLogs(false);
+    }
+  }, [displayedRequirement?.id, requirement?.id, isCreateMode]);
+
+  // 当显示的需求变化或切换到操作记录 tab 时，加载操作记录
+  useEffect(() => {
+    if (open && !isCreateMode && (displayedRequirement || requirement)) {
+      loadOperationLogs();
+    }
+  }, [open, displayedRequirement?.id, requirement?.id, isCreateMode, loadOperationLogs]);
 
   // 初始化显示的需求
   useEffect(() => {
@@ -422,6 +453,7 @@ export default function RequirementSlidePanel({
     const style = statusMap[statusKey] || statusMap['todo'];
     return (
       <div 
+        data-testid="status-badge"
         className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium hover:opacity-80 transition-opacity"
         style={{ backgroundColor: style.bgColor, color: style.textColor }}
       >
@@ -460,9 +492,10 @@ export default function RequirementSlidePanel({
       
       {/* Panel */}
       <div 
+        data-testid="requirement-slide-panel"
         className="fixed inset-y-0 right-0 z-50 flex flex-col bg-white animate-in slide-in-from-right duration-300"
         style={{
-          width: '900px',
+          width: isCreateMode ? '600px' : '900px',
           boxShadow: '-8px 0 40px rgba(26, 29, 46, 0.3)'
         }}
       >
@@ -576,6 +609,7 @@ export default function RequirementSlidePanel({
                     const style = statusMap[option.value as RequirementStatus] || statusMap['todo'];
                     return (
                       <div 
+                        data-testid="status-option"
                         className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
                         style={{ backgroundColor: style.bgColor, color: style.textColor }}
                       >
@@ -907,7 +941,7 @@ export default function RequirementSlidePanel({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto" style={{ padding: '16px' }}>
+            <div className="flex-1 overflow-y-auto" style={{ padding: activeTab === 'activity' ? '20px 16px' : '16px' }}>
               {!isCreateMode && (displayedRequirement || requirement) ? (
                 activeTab === 'comments' ? (
                   <CommentSection 
@@ -915,12 +949,25 @@ export default function RequirementSlidePanel({
                     onCountChange={setCommentCount}
                   />
                 ) : (
-                  <div 
-                    className="text-center py-8 text-sm"
-                    style={{ color: 'rgba(26, 29, 46, 0.4)' }}
-                  >
-                    暂无操作记录
-                  </div>
+                  loadingLogs ? (
+                    <div className="text-center py-8 text-sm" style={{ color: 'rgba(26, 29, 46, 0.4)' }}>
+                      加载中...
+                    </div>
+                  ) : operationLogs.length === 0 ? (
+                    <div className="text-center py-8 text-sm" style={{ color: 'rgba(26, 29, 46, 0.4)' }}>
+                      暂无操作记录
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                      {operationLogs.map((log, index) => (
+                        <RequirementOperationLogItem 
+                          key={log.id} 
+                          log={log} 
+                          isLast={index === operationLogs.length - 1}
+                        />
+                      ))}
+                    </div>
+                  )
                 )
               ) : (
                 <div 
@@ -963,5 +1010,280 @@ export default function RequirementSlidePanel({
         />
       )}
     </>
+  );
+}
+
+// 操作记录项组件
+function RequirementOperationLogItem({ log, isLast }: { log: OperationLog; isLast?: boolean }) {
+  const getActionText = (action: string) => {
+    switch (action) {
+      case 'create':
+        return '创建了需求';
+      case 'update':
+        return '更新了字段';
+      case 'delete':
+        return '删除了需求';
+      case 'status_change':
+        return '更新了状态';
+      default:
+        return '进行了操作';
+    }
+  };
+
+  const getFieldName = (fieldName?: string): string => {
+    const fieldMap: Record<string, string> = {
+      'title': '标题',
+      'description': '描述',
+      'status': '状态',
+      'priority': '优先级',
+      'assignee': '负责人',
+      'dueDate': '截止时间',
+      'points': '积分',
+    };
+    return fieldMap[fieldName || ''] || fieldName || '字段';
+  };
+
+  const formatTime = (dateString: string): string => {
+    if (!dateString) return '-';
+    
+    try {
+      const date = new Date(dateString);
+      
+      if (isNaN(date.getTime())) {
+        return '-';
+      }
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hour = String(date.getHours()).padStart(2, '0');
+      const minute = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hour}:${minute}`;
+    } catch (error) {
+      return '-';
+    }
+  };
+
+  const getStatusStyle = (status?: string) => {
+    if (!status) return null;
+    
+    const statusMap: Record<string, { label: string; bgColor: string; textColor: string }> = {
+      'draft': { label: '待处理', bgColor: '#1A1D2E10', textColor: 'rgba(26, 29, 46, 0.53)' },
+      'development': { label: '进行中', bgColor: '#3B82F622', textColor: '#3B82F6' },
+      'completed': { label: '已完成', bgColor: '#22C55E22', textColor: '#22C55E' },
+      'rejected': { label: '已拒绝', bgColor: '#EF444422', textColor: '#EF4444' },
+      'todo': { label: '待处理', bgColor: '#1A1D2E10', textColor: 'rgba(26, 29, 46, 0.53)' },
+      'in_progress': { label: '进行中', bgColor: '#3B82F622', textColor: '#3B82F6' },
+      'done': { label: '已完成', bgColor: '#22C55E22', textColor: '#22C55E' },
+      'cancelled': { label: '已取消', bgColor: '#6B728022', textColor: '#6B7280' },
+    };
+    
+    return statusMap[status] || null;
+  };
+
+  const renderLogContent = () => {
+    // 检查值是否有效（不是 undefined 字符串）
+    const isValidValue = (value: string | undefined): boolean => {
+      return !!value && value !== 'undefined' && value !== 'null';
+    };
+
+    if (log.action === 'create') {
+      return <span style={{ color: '#1A1D2E', fontSize: '13px', fontWeight: 600 }} data-testid="log-title">创建了需求</span>;
+    }
+
+    if (log.action === 'delete') {
+      return <span style={{ color: '#1A1D2E', fontSize: '13px', fontWeight: 600 }} data-testid="log-title">删除了需求</span>;
+    }
+
+    if (log.action === 'status_change' || (log.fieldName === 'status' && isValidValue(log.oldValue) && isValidValue(log.newValue))) {
+      const fromStyle = getStatusStyle(log.oldValue);
+      const toStyle = getStatusStyle(log.newValue);
+      
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span style={{ color: '#1A1D2E', fontSize: '13px', fontWeight: 600 }} data-testid="log-title">更新了状态</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {fromStyle && (
+              <span 
+                data-testid="status-badge-from"
+                style={{ 
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  backgroundColor: fromStyle.bgColor,
+                  color: fromStyle.textColor,
+                  position: 'relative'
+                }}
+              >
+                <span style={{ 
+                  textDecoration: 'line-through',
+                  opacity: 0.5
+                }}>
+                  {fromStyle.label}
+                </span>
+              </span>
+            )}
+            <svg data-testid="status-change-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(26, 29, 46, 0.33)" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            {toStyle && (
+              <span 
+                data-testid="status-badge-to"
+                style={{ 
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  backgroundColor: toStyle.bgColor,
+                  color: toStyle.textColor
+                }}
+              >
+                {toStyle.label}
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (log.fieldName === 'title' && isValidValue(log.oldValue) && isValidValue(log.newValue)) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span style={{ color: '#1A1D2E', fontSize: '13px', fontWeight: 600 }} data-testid="log-title">更新了标题</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <span 
+              style={{ 
+                padding: '2px 8px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(26, 29, 46, 0.06)',
+                color: 'rgba(26, 29, 46, 0.53)',
+                fontSize: '11px',
+                maxWidth: '150px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                textDecoration: 'line-through',
+                opacity: 0.5
+              }}
+            >
+              {log.oldValue}
+            </span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(26, 29, 46, 0.33)" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            <span 
+              style={{ 
+                padding: '2px 8px',
+                borderRadius: '6px',
+                backgroundColor: '#E8944A22',
+                color: '#E8944A',
+                fontSize: '11px',
+                maxWidth: '150px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {log.newValue}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    if (log.fieldName && isValidValue(log.oldValue) && isValidValue(log.newValue)) {
+      const fieldText = getFieldName(log.fieldName);
+      
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span style={{ color: '#1A1D2E', fontSize: '13px', fontWeight: 600 }} data-testid="log-title">
+            更新了{fieldText}
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+            <span 
+              style={{ 
+                padding: '2px 8px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(26, 29, 46, 0.06)',
+                color: 'rgba(26, 29, 46, 0.53)',
+                textDecoration: 'line-through',
+                opacity: 0.5
+              }}
+            >
+              {log.oldValue || '(空)'}
+            </span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(26, 29, 46, 0.33)" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            <span 
+              style={{ 
+                padding: '2px 8px',
+                borderRadius: '6px',
+                backgroundColor: '#E8944A22',
+                color: '#E8944A'
+              }}
+            >
+              {log.newValue || '(空)'}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    return <span style={{ color: '#1A1D2E', fontSize: '13px', fontWeight: 600 }} data-testid="log-title">{getActionText(log.action)}</span>;
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: '12px' }} data-testid="operation-log-item">
+      {/* 左侧时间线 */}
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center',
+        width: '20px',
+        flexShrink: 0
+      }}>
+        <div 
+          data-testid="log-timeline-dot"
+          style={{ 
+            width: '10px', 
+            height: '10px', 
+            borderRadius: '5px',
+            backgroundColor: '#E8944A',
+            flexShrink: 0
+          }} 
+        />
+        {!isLast && (
+          <div 
+            data-testid="log-timeline-line"
+            style={{ 
+              width: '2px',
+              flex: 1,
+              backgroundColor: 'rgba(26, 29, 46, 0.06)',
+              marginTop: '0px'
+            }} 
+          />
+        )}
+      </div>
+
+      {/* 右侧内容 */}
+      <div style={{ 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '4px',
+        paddingBottom: isLast ? '0' : '20px'
+      }}>
+        {renderLogContent()}
+        <span style={{ fontSize: '11px', color: 'rgba(26, 29, 46, 0.67)' }} data-testid="log-time">
+          {formatTime(log.createdAt)}
+        </span>
+      </div>
+    </div>
   );
 }
