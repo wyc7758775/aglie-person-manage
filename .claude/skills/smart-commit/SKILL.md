@@ -7,7 +7,6 @@ voice:
   - 分批提交更改
   - smart commit
 license: MIT
-compatibility: opencode
 metadata:
   author: user
   version: "1.0.0"
