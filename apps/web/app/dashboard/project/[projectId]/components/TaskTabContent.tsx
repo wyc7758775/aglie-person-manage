@@ -280,6 +280,7 @@ export default function TaskTabContent({ tasks, projectId, onTaskCreated }: Task
           <TaskTable 
             tasks={filteredTasks} 
             onTaskClick={handleTaskClick}
+            onTaskUpdated={onTaskCreated}
           />
         </div>
       )}
