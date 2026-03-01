@@ -1,0 +1,37 @@
+{
+  "_comment": "自动化工作流配置文件",
+  "version": "1.0.0",
+  
+  "approval": {
+    "auto_approve_proposal": false,
+    "require_approval_for_changes": true
+  },
+  
+  "testing": {
+    "max_test_retries": 3,
+    "auto_fix_on_failure": true,
+    "fail_fast": false,
+    "required_coverage": 80
+  },
+  
+  "commit": {
+    "push_on_success": true,
+    "create_pr_on_success": false,
+    "auto_archive": false,
+    "commit_message_style": "conventional",
+    "include_change_id_in_message": true
+  },
+  
+  "notifications": {
+    "enabled": false,
+    "slack_webhook": "",
+    "email": ""
+  },
+  
+  "ai": {
+    "enabled": true,
+    "model": "claude",
+    "auto_implement": false,
+    "max_auto_fix_attempts": 3
+  }
+}

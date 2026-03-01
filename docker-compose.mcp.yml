@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Pencil MCP Server - UI Design Generation
+  pencil-mcp:
+    build:
+      context: ./mcp-servers/pencil-mcp
+      dockerfile: Dockerfile
+    container_name: pencil-mcp-server
+    ports:
+      - "${PENCIL_MCP_PORT:-3001}:3001"
+    volumes:
+      # 挂载 OpenSpec 目录用于读取 PRD
+      - ./openspec:/app/openspec:ro
+      # 挂载设计输出目录
+      - ./design-outputs:/app/outputs
+      # 挂载报告目录
+      - ./reports/ui-validation:/app/reports
+    environment:
+      - PORT=3001
+      - MCP_TRANSPORT=sse
+      - OUTPUT_DIR=/app/outputs
+      - REPORT_DIR=/app/reports
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/sse"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Chrome DevTools MCP Server - UI Validation
+  chrome-devtools-mcp:
+    build:
+      context: ./mcp-servers/chrome-devtools-mcp
+      dockerfile: Dockerfile
+    container_name: chrome-devtools-mcp-server
+    ports:
+      - "${CHROME_DEVTOOLS_MCP_PORT:-3002}:3002"
+    volumes:
+      # 挂载设计稿目录
+      - ./openspec:/app/openspec:ro
+      # 挂载报告输出目录
+      - ./reports/ui-validation:/app/reports
+    environment:
+      - PORT=3002
+      - MCP_TRANSPORT=sse
+      - REPORT_DIR=/app/reports
+      - NODE_ENV=production
+    restart: unless-stopped
+    # 使用 host 网络模式以便访问宿主机上的应用
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3002/sse"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis - 可选，用于任务队列
+  redis:
+    image: redis:7-alpine
+    container_name: workflow-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    profiles:
+      - queue
+
+  # Nginx - 可选，用于反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: workflow-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./mcp-servers/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - pencil-mcp
+      - chrome-devtools-mcp
+    profiles:
+      - proxy
+
+volumes:
+  redis-data:

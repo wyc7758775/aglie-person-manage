@@ -1,0 +1,21 @@
+{
+  "name": "chrome-devtools-mcp-server",
+  "version": "1.0.0",
+  "description": "Chrome DevTools MCP Server - UI Validation and Testing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "express": "^4.18.2",
+    "puppeteer": "^21.6.1",
+    "pixelmatch": "^5.3.0",
+    "pngjs": "^7.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

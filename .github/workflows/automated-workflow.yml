@@ -1,0 +1,112 @@
+name: Automated Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      prd_file:
+        description: 'PRD 文件路径'
+        required: true
+        type: string
+      auto_approve:
+        description: '自动批准提案'
+        required: false
+        default: false
+        type: boolean
+      skip_tests:
+        description: '跳过测试'
+        required: false
+        default: false
+        type: boolean
+      start_phase:
+        description: '起始阶段 (1-5)'
+        required: false
+        default: 1
+        type: number
+
+jobs:
+  workflow:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: agile_user
+          POSTGRES_PASSWORD: agile_password
+          POSTGRES_DB: agile_person_manage
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Install Playwright
+        run: pnpm exec playwright install chromium
+      
+      - name: Setup environment
+        run: |
+          echo "POSTGRES_URL=postgresql://agile_user:agile_password@localhost:5432/agile_person_manage" >> .env
+          echo "AUTH_SECRET=test-secret-for-ci" >> .env
+          echo "AUTH_URL=http://localhost:3000/api/auth" >> .env
+      
+      - name: Run Phase 1 - Parse PRD
+        if: ${{ inputs.start_phase <= 1 }}
+        run: |
+          node scripts/automated-workflow/phases/phase-1-parse-prd.js ${{ inputs.prd_file }}
+          echo "CHANGE_ID=$(grep '\[WORKFLOW_STATE\] change_id=' logs/workflow-*.log | tail -1 | sed 's/.*change_id=//')" >> $GITHUB_ENV
+      
+      - name: Run Phase 2 - Generate Tests
+        if: ${{ inputs.start_phase <= 2 }}
+        run: node scripts/automated-workflow/phases/phase-2-generate-tests.js $CHANGE_ID
+      
+      - name: Run Phase 3 - Approve
+        if: ${{ inputs.start_phase <= 3 && inputs.auto_approve }}
+        run: node scripts/automated-workflow/phases/phase-3-approve.js $CHANGE_ID --auto
+      
+      - name: Wait for Approval
+        if: ${{ inputs.start_phase <= 3 && !inputs.auto_approve }}
+        run: |
+          echo "请手动批准提案: openspec/changes/$CHANGE_ID/proposal.md"
+          echo "然后重新运行工作流，设置 start_phase=4"
+          exit 1
+      
+      - name: Run Phase 4 - Implement
+        if: ${{ inputs.start_phase <= 4 }}
+        run: |
+          echo "注意: 阶段 4 需要 AI 或人工实现"
+          node scripts/automated-workflow/phases/phase-4-implement.js $CHANGE_ID --dry-run
+      
+      - name: Run Phase 5 - Verify and Commit
+        if: ${{ inputs.start_phase <= 5 }}
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+        run: |
+          ARGS="$CHANGE_ID"
+          [ "$SKIP_TESTS" = "true" ] && ARGS="$ARGS --skip-tests"
+          node scripts/automated-workflow/phases/phase-5-verify-and-commit.js $ARGS
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workflow-logs
+          path: logs/

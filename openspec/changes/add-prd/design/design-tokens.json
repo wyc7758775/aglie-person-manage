@@ -1,0 +1,172 @@
+{
+  "version": "1.0.0",
+  "project": "Be.run Login Interface",
+  "description": "登录界面设计令牌 - 基于 PRD v1.0 生成",
+  "tokens": {
+    "colors": {
+      "primary": {
+        "base": { "value": "#4F46E5", "type": "color" },
+        "hover": { "value": "#4338CA", "type": "color" },
+        "active": { "value": "#3730A3", "type": "color" },
+        "light": { "value": "#EEF2FF", "type": "color" },
+        "border": { "value": "#C7D2FE", "type": "color" },
+        "focus-ring": { "value": "rgba(79, 70, 229, 0.1)", "type": "color" }
+      },
+      "neutral": {
+        "background": { "value": "#F9FAFB", "type": "color" },
+        "surface": { "value": "#FFFFFF", "type": "color" },
+        "text-primary": { "value": "#111827", "type": "color" },
+        "text-secondary": { "value": "#6B7280", "type": "color" },
+        "text-muted": { "value": "#9CA3AF", "type": "color" },
+        "border": { "value": "#E5E7EB", "type": "color" },
+        "border-hover": { "value": "#D1D5DB", "type": "color" }
+      },
+      "semantic": {
+        "error": { "value": "#EF4444", "type": "color" },
+        "error-bg": { "value": "#FEF2F2", "type": "color" },
+        "error-border": { "value": "#FECACA", "type": "color" },
+        "error-text": { "value": "#DC2626", "type": "color" },
+        "success": { "value": "#10B981", "type": "color" },
+        "success-bg": { "value": "#D1FAE5", "type": "color" },
+        "warning": { "value": "#F59E0B", "type": "color" },
+        "warning-bg": { "value": "#FEF3C7", "type": "color" }
+      },
+      "button": {
+        "primary-bg": { "value": "#4F46E5", "type": "color" },
+        "primary-text": { "value": "#FFFFFF", "type": "color" },
+        "primary-hover": { "value": "#4338CA", "type": "color" },
+        "primary-active": { "value": "#3730A3", "type": "color" },
+        "primary-disabled": { "value": "#A5B4FC", "type": "color" },
+        "secondary-bg": { "value": "#F3F4F6", "type": "color" },
+        "secondary-text": { "value": "#4F46E5", "type": "color" },
+        "secondary-hover": { "value": "#E5E7EB", "type": "color" }
+      }
+    },
+    "typography": {
+      "font-family": {
+        "base": { "value": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", "type": "fontFamily" },
+        "mono": { "value": "'JetBrains Mono', 'Fira Code', monospace", "type": "fontFamily" }
+      },
+      "font-size": {
+        "xs": { "value": "12px", "type": "fontSize" },
+        "sm": { "value": "14px", "type": "fontSize" },
+        "base": { "value": "16px", "type": "fontSize" },
+        "lg": { "value": "18px", "type": "fontSize" },
+        "xl": { "value": "20px", "type": "fontSize" },
+        "2xl": { "value": "24px", "type": "fontSize" }
+      },
+      "font-weight": {
+        "normal": { "value": "400", "type": "fontWeight" },
+        "medium": { "value": "500", "type": "fontWeight" },
+        "semibold": { "value": "600", "type": "fontWeight" },
+        "bold": { "value": "700", "type": "fontWeight" }
+      },
+      "line-height": {
+        "tight": { "value": "1.25", "type": "lineHeight" },
+        "normal": { "value": "1.5", "type": "lineHeight" },
+        "relaxed": { "value": "1.625", "type": "lineHeight" }
+      }
+    },
+    "spacing": {
+      "xs": { "value": "4px", "type": "spacing" },
+      "sm": { "value": "8px", "type": "spacing" },
+      "md": { "value": "16px", "type": "spacing" },
+      "lg": { "value": "24px", "type": "spacing" },
+      "xl": { "value": "32px", "type": "spacing" },
+      "2xl": { "value": "40px", "type": "spacing" },
+      "3xl": { "value": "48px", "type": "spacing" }
+    },
+    "border-radius": {
+      "sm": { "value": "6px", "type": "borderRadius" },
+      "md": { "value": "8px", "type": "borderRadius" },
+      "lg": { "value": "12px", "type": "borderRadius" },
+      "xl": { "value": "16px", "type": "borderRadius" }
+    },
+    "shadow": {
+      "sm": { "value": "0 1px 2px 0 rgba(0, 0, 0, 0.05)", "type": "boxShadow" },
+      "md": { "value": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", "type": "boxShadow" },
+      "lg": { "value": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)", "type": "boxShadow" },
+      "xl": { "value": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)", "type": "boxShadow" },
+      "2xl": { "value": "0 25px 50px -12px rgba(0, 0, 0, 0.25)", "type": "boxShadow" }
+    },
+    "sizing": {
+      "input-height": { "value": "44px", "type": "sizing" },
+      "button-height": { "value": "44px", "type": "sizing" },
+      "button-height-sm": { "value": "36px", "type": "sizing" },
+      "logo-size": { "value": "64px", "type": "sizing" },
+      "container-max-width": { "value": "420px", "type": "sizing" }
+    },
+    "animation": {
+      "duration": {
+        "fast": { "value": "100ms", "type": "duration" },
+        "normal": { "value": "200ms", "type": "duration" },
+        "slow": { "value": "300ms", "type": "duration" }
+      },
+      "easing": {
+        "ease-out": { "value": "cubic-bezier(0, 0, 0.2, 1)", "type": "easing" },
+        "ease-in-out": { "value": "cubic-bezier(0.4, 0, 0.2, 1)", "type": "easing" }
+      }
+    },
+    "breakpoints": {
+      "mobile": { "value": "375px", "type": "breakpoint" },
+      "tablet": { "value": "768px", "type": "breakpoint" },
+      "desktop": { "value": "1024px", "type": "breakpoint" },
+      "wide": { "value": "1440px", "type": "breakpoint" }
+    }
+  },
+  "components": {
+    "login-card": {
+      "padding": { "desktop": "40px", "mobile": "24px" },
+      "max-width": { "desktop": "420px", "tablet": "380px", "mobile": "100%" },
+      "border-radius": "16px",
+      "background": "rgba(255, 255, 255, 0.95)",
+      "backdrop-blur": "10px",
+      "shadow": "2xl"
+    },
+    "input": {
+      "height": "44px",
+      "padding": "12px 16px",
+      "border-radius": "8px",
+      "border-width": "1px",
+      "border-color": "{colors.neutral.border}",
+      "focus-border-color": "{colors.primary.base}",
+      "focus-shadow": "0 0 0 3px {colors.primary.focus-ring}"
+    },
+    "button-primary": {
+      "height": "44px",
+      "padding": "12px 24px",
+      "border-radius": "8px",
+      "background": "{colors.button.primary-bg}",
+      "color": "{colors.button.primary-text}",
+      "font-weight": "600"
+    },
+    "button-secondary": {
+      "height": "36px",
+      "padding": "8px 16px",
+      "border-radius": "6px",
+      "background": "{colors.button.secondary-bg}",
+      "color": "{colors.button.secondary-text}",
+      "font-weight": "500"
+    },
+    "tab": {
+      "padding": "12px 20px",
+      "font-size": "14px",
+      "active-border": "2px solid {colors.primary.base}",
+      "active-color": "{colors.primary.base}",
+      "inactive-color": "{colors.neutral.text-secondary}"
+    },
+    "error-alert": {
+      "padding": "12px",
+      "border-radius": "8px",
+      "background": "{colors.semantic.error-bg}",
+      "border": "1px solid {colors.semantic.error-border}",
+      "color": "{colors.semantic.error-text}"
+    }
+  },
+  "meta": {
+    "generatedBy": "Pencil MCP",
+    "generatedAt": "2026-03-01T13:40:00Z",
+    "prdVersion": "v1.0",
+    "changeId": "add-prd"
+  }
+}
