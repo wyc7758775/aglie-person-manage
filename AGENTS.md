@@ -533,3 +533,8 @@ docker run -p 8080:80 agile-docs
 3. **认证**: 默认访问 `/dashboard` 需要登录
 4. **测试**: 所有变更必须通过测试验证
 5. **E2E**: E2E 测试会启动独立 web 服务器，确保端口 3000 可用
+6. **自动代码质量检查**: 项目配置了 opencode plugin，每次文件修改后会自动运行：
+   - 代码格式化 (Prettier)
+   - Lint 检查 (ESLint)
+   - TypeScript 类型检查
+   - 详见 `.opencode/plugins/post-edit-hook-lite.ts`

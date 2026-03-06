@@ -1,0 +1,176 @@
+{
+  "syncId": "task-management-sync-20260303",
+  "source": {
+    "url": "http://localhost:3000/dashboard/project",
+    "pageTitle": "项目管理",
+    "capturedAt": "2026-03-03T00:08:38+08:00"
+  },
+  "targetNodes": ["u6Jf1", "FX7ab", "AJhSP", "6hvSW", "v6EZ2"],
+  "screenshot": "product-designs/task-management-screenshot.png",
+  "layout": {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "structure": {
+      "header": {
+        "title": "项目管理",
+        "badge": "4",
+        "elements": ["u6Jf1"]
+      },
+      "toolbar": {
+        "addButton": "+ 添加项目",
+        "filters": {
+          "status": ["全部", "正常", "有风险", "失控"],
+          "type": ["全部", "冲刺项目", "慢燃项目"]
+        },
+        "elements": ["FX7ab"]
+      },
+      "content": {
+        "type": "grid",
+        "columns": 4,
+        "cards": [
+          {
+            "id": "card-1",
+            "title": "44444",
+            "score": "10分",
+            "status": "正常",
+            "priority": "中",
+            "progress": "未开始",
+            "deadline": "2026-03-04",
+            "remaining": "剩1天",
+            "element": "AJhSP"
+          },
+          {
+            "id": "card-2",
+            "title": "冲刺项目",
+            "score": "10分",
+            "description": "测试未保存功能",
+            "status": "正常",
+            "priority": "中",
+            "progress": "未开始",
+            "deadline": "2026-03-04",
+            "remaining": "剩1天",
+            "element": "6hvSW"
+          },
+          {
+            "id": "card-3",
+            "title": "测试 233bbbbbbccc",
+            "score": "10分",
+            "description": "阿东发送到",
+            "status": "正常",
+            "priority": "中",
+            "progress": "未开始",
+            "deadline": "2026-03-04",
+            "remaining": "剩1天",
+            "element": "v6EZ2"
+          },
+          {
+            "id": "card-4",
+            "title": "测试",
+            "score": "10分",
+            "description": "艾森的 艾森的 艾森的 艾森的赛凡似懂非懂安抚...",
+            "status": "失控",
+            "priority": "中",
+            "progress": "未开始",
+            "type": "🌱 持续进行中",
+            "element": "u6Jf1-extra"
+          }
+        ]
+      }
+    }
+  },
+  "designTokens": {
+    "colors": {
+      "primary": {
+        "gradient": "from-indigo-500 to-blue-500",
+        "solid": "#4F46E5"
+      },
+      "status": {
+        "normal": "#10B981",
+        "warning": "#F59E0B",
+        "danger": "#EF4444"
+      },
+      "background": "#F9FAFB",
+      "card": "#FFFFFF"
+    },
+    "typography": {
+      "heading": {
+        "size": "24px",
+        "weight": 600
+      },
+      "body": {
+        "size": "14px",
+        "weight": 400
+      },
+      "caption": {
+        "size": "12px",
+        "weight": 400
+      }
+    },
+    "spacing": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px"
+    },
+    "borderRadius": {
+      "card": "16px",
+      "button": "8px",
+      "badge": "9999px"
+    },
+    "shadows": {
+      "card": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+    }
+  },
+  "componentSpecs": {
+    "projectCard": {
+      "width": "fill_container",
+      "height": "auto",
+      "padding": "24px",
+      "gap": "16px",
+      "elements": {
+        "icon": {
+          "type": "emoji",
+          "variants": ["⚡", "🌱"]
+        },
+        "title": {
+          "type": "text",
+          "fontSize": 18,
+          "fontWeight": 600
+        },
+        "scoreBadge": {
+          "type": "badge",
+          "background": "#FEF3C7",
+          "textColor": "#D97706"
+        },
+        "statusTag": {
+          "type": "tag",
+          "variants": {
+            "正常": { "background": "#D1FAE5", "text": "#059669" },
+            "失控": { "background": "#FEE2E2", "text": "#DC2626" }
+          }
+        },
+        "progressBar": {
+          "type": "progress",
+          "height": "8px",
+          "borderRadius": "4px"
+        }
+      }
+    },
+    "filterButton": {
+      "type": "button",
+      "variants": {
+        "active": {
+          "background": "#4F46E5",
+          "text": "#FFFFFF"
+        },
+        "inactive": {
+          "background": "transparent",
+          "text": "#6B7280"
+        }
+      }
+    }
+  }
+}

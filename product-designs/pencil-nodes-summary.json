@@ -1,0 +1,42 @@
+{
+  "u6Jf1": {
+    "name": "任务列表页",
+    "type": "frame",
+    "width": 1440,
+    "height": 900,
+    "layout": "vertical",
+    "childrenCount": 2
+  },
+  "FX7ab": {
+    "name": "新建任务面板",
+    "type": "frame",
+    "width": 1440,
+    "height": 900,
+    "layout": "none",
+    "childrenCount": 2
+  },
+  "AJhSP": {
+    "name": "任务详情面板",
+    "type": "frame",
+    "width": 1440,
+    "height": 900,
+    "layout": "none",
+    "childrenCount": 2
+  },
+  "6hvSW": {
+    "name": "新建习惯面板",
+    "type": "frame",
+    "width": 1440,
+    "height": 900,
+    "layout": "none",
+    "childrenCount": 2
+  },
+  "v6EZ2": {
+    "name": "新建待办事项面板",
+    "type": "frame",
+    "width": 1440,
+    "height": 900,
+    "layout": "none",
+    "childrenCount": 2
+  }
+}
