@@ -2,6 +2,27 @@
 
 本文档定义了 Be.run 项目管理系统的 UI 设计规范，确保界面视觉一致性。
 
+**最后更新**: 2026-03-07  
+**适用范围**: apps/web 项目所有 UI 开发
+
+---
+
+## 目录
+
+- [色彩系统](#1-色彩系统)
+- [组件规范](#2-组件规范)
+- [布局规范](#3-布局规范)
+- [间距规范](#4-间距规范)
+- [动画规范](#5-动画规范)
+- [响应式断点](#6-响应式断点)
+- [文字排版](#7-文字排版)
+- [图标规范](#8-图标规范)
+- [阴影规范](#9-阴影规范)
+- [边框圆角](#10-边框圆角)
+- [最佳实践](#11-最佳实践)
+- [组件索引](#12-组件索引)
+- [页面模板](#13-页面模板)
+
 ## 1. 色彩系统
 
 ### 1.1 主色调
@@ -213,29 +234,73 @@
 </div>
 ```
 
-## 3. 间距规范
+## 3. 布局规范
 
-### 3.1 容器间距
+### 3.1 页面结构标准（参考需求列表页 t2B5Z）
+
+```
+┌─────────────────────────────────────────┐
+│              Top Nav (60px)             │  bg-white, 底部 1px 边框 #1A1D2E10
+├─────────────────────────────────────────┤
+│                                         │
+│           Content Area                  │  padding: 16px 24px 24px 24px
+│  ┌───────────────────────────────────┐  │
+│  │         Filter Row                │  │  筛选/操作区域
+│  └───────────────────────────────────┘  │
+│  ┌───────────────────────────────────┐  │
+│  │         Table Card                │  │  cornerRadius: 16, bg-white
+│  │  ┌─────────────────────────────┐  │  │
+│  │  │       Table Content         │  │  │
+│  │  └─────────────────────────────┘  │  │
+│  └───────────────────────────────────┘  │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### 3.2 导航栏规范
+- **高度**: 60px
+- **背景**: `bg-white`
+- **底部边框**: `1px solid #1A1D2E10` (slate-100 约等于)
+- **内边距**: `px-8` (32px)
+- **左侧**: Logo + 导航链接
+- **右侧**: 用户操作区
+
+### 3.3 内容区规范
+- **容器宽度**: `w-full` (配合 max-width)
+- **最小高度**: `min-h-[calc(100vh-60px)]`
+- **背景**: `bg-slate-50/50` 或 `bg-white`
+- **内边距**: `p-6` (24px)
+- **间距**: `gap-5` (20px) 内容区块之间
+
+### 3.4 表格卡片规范
+- **背景**: `bg-white`
+- **圆角**: `rounded-2xl` (16px)
+- **阴影**: `shadow-lg shadow-slate-200/50`
+- **溢出**: `overflow-hidden` 或 `overflow-x-auto`
+
+## 4. 间距规范
+
+### 4.1 容器间距
 - 区域容器内边距: `p-5`
 - 区域容器间距: `gap-5`
 - 网格间距: `gap-5`
 - 卡片内边距: `p-5`
 
-### 3.2 组件间距
+### 4.2 组件间距
 - 标题下方: `mb-4`
 - 标签组间距: `gap-2`
 - 按钮组间距: `gap-2`
 - 表单元素间距: `gap-4`
 
-### 3.3 固定高度（卡片内）
+### 4.3 固定高度（卡片内）
 - 标题区域: `h-[48px]`
 - 描述区域: `h-[40px]`
 - 标签区域: `h-[26px]`
 - 日期区域: `h-[36px]`
 
-## 4. 动画规范
+## 5. 动画规范
 
-### 4.1 悬停效果
+### 5.1 悬停效果
 ```css
 /* 卡片悬停 */
 transition-all duration-500 ease-out
@@ -250,7 +315,7 @@ transition-transform duration-300
 group-hover:translate-x-1
 ```
 
-### 4.2 进度条光泽动画
+### 5.2 进度条光泽动画
 ```css
 @keyframes shimmer {
   0% { background-position: 200% 0; }
@@ -262,51 +327,51 @@ group-hover:translate-x-1
 }
 ```
 
-### 4.3 弹窗动画
+### 5.3 弹窗动画
 ```tsx
 className="animate-in fade-in zoom-in-95 duration-200"
 ```
 
-## 5. 响应式断点
+## 6. 响应式断点
 
 - **Mobile**: 默认单列
 - **Tablet (md)**: `grid-cols-2`
 - **Desktop (lg)**: `grid-cols-3`
 - **Wide (xl)**: `grid-cols-4`
 
-## 6. 文字排版
+## 7. 文字排版
 
-### 6.1 字体大小
+### 7.1 字体大小
 - 页面标题: `text-xl font-bold tracking-tight`
 - 卡片标题: `text-lg font-bold leading-tight line-clamp-2`
 - 正文: `text-sm leading-relaxed line-clamp-2`
 - 标签文字: `text-xs font-medium`
 - 徽章数字: `text-xs font-semibold`
 
-### 6.2 行高限制
+### 7.2 行高限制
 - 标题: `line-clamp-2`
 - 描述: `line-clamp-2`
 
-## 7. 图标规范
+## 8. 图标规范
 
-### 7.1 尺寸
+### 8.1 尺寸
 - 按钮图标: `w-4 h-4`
 - 菜单图标: `w-5 h-5`
 - 标签图标: `text-[10px]`
 
-### 7.2 优先级图标
+### 8.2 优先级图标
 - 高: `🔥`
 - 中: `⚡`
 - 低: `🌱`
 
-## 8. 阴影规范
+## 9. 阴影规范
 
 - 容器阴影: `shadow-lg shadow-slate-200/50`
 - 卡片悬停: `hover:shadow-2xl hover:shadow-slate-500/10`
 - 按钮阴影: `shadow-lg shadow-indigo-500/30`
 - 按钮悬停: `hover:shadow-indigo-500/50`
 
-## 9. 边框圆角
+## 10. 边框圆角
 
 - 大容器: `rounded-2xl`
 - 按钮: `rounded-xl`
@@ -314,7 +379,7 @@ className="animate-in fade-in zoom-in-95 duration-200"
 - 输入框: `rounded-lg`
 - 小元素: `rounded-full` 或 `rounded-md`
 
-## 10. 最佳实践
+## 11. 最佳实践
 
 1. **颜色一致性**: 所有主交互元素使用 Indigo/Blue 渐变
 2. **状态可见性**: 状态标签使用圆点 + 颜色区分，优先级使用图标区分
@@ -324,3 +389,250 @@ className="animate-in fade-in zoom-in-95 duration-200"
 6. **进度为0**: 显示"未开始"和引导提示而非"0%"
 7. **动效适度**: 使用 300-500ms 过渡，避免过度动画
 8. **间距统一**: 遵循 4px 基线网格系统
+9. **组件复用**: 优先使用已有组件，避免重复造轮子
+10. **类型安全**: 所有组件必须提供完整的 TypeScript Props 类型定义
+
+---
+
+## 12. 组件索引
+
+### 12.1 基础组件 (app/components/ui/)
+
+| 组件 | 路径 | 用途 | 关键 Props |
+|------|------|------|-----------|
+| **Button** | `app/ui/button.tsx` | 主按钮 | `variant`, `size`, `children` |
+| **Modal** | `app/components/ui/modal.tsx` | 模态弹窗 | `isOpen`, `onClose`, `title`, `children` |
+| **ConfirmDialog** | `app/components/ui/confirm-dialog.tsx` | 确认对话框 | `isOpen`, `onConfirm`, `onCancel`, `title` |
+| **FormInput** | `app/components/ui/form-input.tsx` | 表单输入框 | `label`, `error`, `...inputProps` |
+| **FormSelect** | `app/components/ui/form-select.tsx` | 表单下拉选择 | `label`, `options`, `value`, `onChange` |
+| **FormDatePicker** | `app/components/ui/form-date-picker.tsx` | 日期选择器 | `label`, `value`, `onChange` |
+| **FormRadio** | `app/components/ui/form-radio.tsx` | 单选按钮组 | `label`, `options`, `value`, `onChange` |
+| **FormLabel** | `app/components/ui/form-label.tsx` | 表单标签 | `required`, `children` |
+| **Toast** | `app/ui/toast.tsx` | 消息提示 | `type`, `message`, `onClose` |
+
+### 12.2 仪表盘组件 (app/ui/dashboard/)
+
+#### 需求管理
+| 组件 | 路径 | 用途 |
+|------|------|------|
+| **RequirementTable** | `requirement-table.tsx` | 需求列表表格 |
+| **RequirementCard** | `requirement-card.tsx` | 需求卡片展示 |
+| **RequirementForm** | `requirement-form.tsx` | 需求创建/编辑表单 |
+| **RequirementKanban** | `requirement-kanban.tsx` | 需求看板视图 |
+| **RequirementSlidePanel** | `requirement-slide-panel.tsx` | 需求详情侧滑面板 |
+| **RequirementBadges** | `requirement-badges.tsx` | 需求状态徽章 |
+| **SubRequirementList** | `sub-requirement-list.tsx` | 子需求列表 |
+| **SubRequirementModal** | `sub-requirement-modal.tsx` | 子需求弹窗 |
+
+#### 任务管理
+| 组件 | 路径 | 用途 |
+|------|------|------|
+| **TaskCard** | `task-card.tsx` | 任务卡片 |
+| **TodoCreateDrawer** | `todo-create-drawer.tsx` | 待办创建抽屉 |
+| **RelatedTaskList** | `related-task-list.tsx` | 关联任务列表 |
+| **EmptyTaskState** | `empty-task-state.tsx` | 任务空状态 |
+
+#### 习惯管理
+| 组件 | 路径 | 用途 |
+|------|------|------|
+| **HabitDetailDrawer** | `habits/HabitDetailDrawer.tsx` | 习惯详情抽屉 |
+| **StatsCard** | `habits/StatsCard.tsx` | 统计数据卡片 |
+| **PanelHeader** | `habits/PanelHeader.tsx` | 面板头部 |
+| **InfoGrid** | `habits/InfoGrid.tsx` | 信息网格 |
+| **InlineCounter** | `habits/InlineCounter.tsx` | 行内计数器 |
+| **UnsavedChangesDialog** | `habits/UnsavedChangesDialog.tsx` | 未保存提示 |
+
+#### 空状态组件
+| 组件 | 路径 | 用途 |
+|------|------|------|
+| **EmptyProjectState** | `empty-project-state.tsx` | 项目空状态 |
+| **EmptyRequirementState** | `empty-requirement-state.tsx` | 需求空状态 |
+| **EmptyDefectState** | `empty-defect-state.tsx` | 缺陷空状态 |
+| **EmptyTaskState** | `empty-task-state.tsx` | 任务空状态 |
+
+#### 其他仪表盘组件
+| 组件 | 路径 | 用途 |
+|------|------|------|
+| **SideNav** | `sidenav.tsx` | 侧边导航 |
+| **TopNav** | `topnav.tsx` | 顶部导航 |
+| **NavLinks** | `nav-links.tsx` | 导航链接 |
+| **BreadcrumbNav** | `breadcrumb-nav.tsx` | 面包屑导航 |
+| **ViewSwitcher** | `view-switcher.tsx` | 视图切换器 |
+| **ProjectTabMenu** | `project-tab-menu.tsx` | 项目标签菜单 |
+| **SectionContainer** | `section-container.tsx` | 区域容器 |
+| **CommentSection** | `comment-section.tsx` | 评论区域 |
+| **OperationLogList** | `operation-log-list.tsx` | 操作日志列表 |
+| **FieldChangeLog** | `field-change-log.tsx` | 字段变更日志 |
+| **MarkdownEditorField** | `markdown-editor-field.tsx` | Markdown 编辑器 |
+
+### 12.3 图标组件 (app/ui/icons/)
+
+#### Heroicons 封装
+- `heroicons/UserGroupIcon.tsx`
+- `heroicons/CalendarIcon.tsx`
+- `heroicons/DocumentTextIcon.tsx`
+- `heroicons/CurrencyDollarIcon.tsx`
+- `heroicons/ChartBarIcon.tsx`
+- `heroicons/ShieldCheckIcon.tsx`
+- `heroicons/ArrowPathIcon.tsx`
+- `heroicons/GiftIcon.tsx`
+- `heroicons/CalendarDaysIcon.tsx`
+- `heroicons/XMarkIcon.tsx`
+- `heroicons/ClockIcon.tsx`
+- `heroicons/EyeSlashIcon.tsx`
+- `heroicons/HeartIcon.tsx`
+- `heroicons/ArrowRightIcon.tsx`
+- `heroicons/PowerIcon.tsx`
+- `heroicons/MagnifyingGlassIcon.tsx`
+- `heroicons/ArrowLeftIcon.tsx`
+- `heroicons/BellIcon.tsx`
+- `heroicons/HomeIcon.tsx`
+- `heroicons/EllipsisVerticalIcon.tsx`
+- `heroicons/UserCircleIcon.tsx`
+- `heroicons/TagIcon.tsx`
+- `heroicons/CheckCircleIcon.tsx`
+- `heroicons/FlagIcon.tsx`
+
+#### 操作图标
+- `action/PencilIcon.tsx`
+- `action/LogoutIcon.tsx`
+- `action/TrashIcon.tsx`
+- `action/CheckIcon.tsx`
+- `action/PlusIcon.tsx`
+- `action/ChevronRightIcon.tsx`
+- `action/ChevronDownIcon.tsx`
+
+#### 反馈图标
+- `feedback/SettingsIcon.tsx`
+- `feedback/StarIcon.tsx`
+- `feedback/DefectIcon.tsx`
+- `feedback/NotificationIcon.tsx`
+
+#### 导航图标
+- `navigation/DailiesIcon.tsx`
+- `navigation/TodosIcon.tsx`
+- `navigation/ProjectIcon.tsx`
+- `navigation/HabitsIcon.tsx`
+- `navigation/RewardIcon.tsx`
+- `navigation/DashboardIcon.tsx`
+- `navigation/DatabaseIcon.tsx`
+- `navigation/TaskIcon.tsx`
+
+#### 表单图标
+- `form/EyeOffIcon.tsx`
+- `form/LockIcon.tsx`
+- `form/UserIcon.tsx`
+- `form/EyeIcon.tsx`
+
+### 12.4 Skeleton 组件 (app/ui/skeletons/)
+
+| 组件 | 路径 | 用途 |
+|------|------|------|
+| **ProjectCardSkeleton** | `project-card-skeleton.tsx` | 项目卡片骨架屏 |
+| **Skeletons** | `skeletons.tsx` | 通用骨架屏集合 |
+
+---
+
+## 13. 页面模板
+
+### 13.1 列表页模板（如需求列表页 t2B5Z）
+
+```tsx
+export default function ListPage() {
+  return (
+    <div className="min-h-screen bg-slate-50/50">
+      {/* Top Navigation */}
+      <nav className="h-[60px] bg-white border-b border-slate-100 px-8 flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          {/* Logo & Nav Links */}
+        </div>
+        <div className="flex items-center gap-4">
+          {/* User Actions */}
+        </div>
+      </nav>
+
+      {/* Content Area */}
+      <main className="p-6">
+        <div className="max-w-7xl mx-auto space-y-5">
+          {/* Filter Row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Filters */}
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Actions */}
+            </div>
+          </div>
+
+          {/* Table Card */}
+          <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 overflow-hidden">
+            {/* Table Content */}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+```
+
+### 13.2 表单页模板
+
+```tsx
+export default function FormPage() {
+  return (
+    <div className="min-h-screen bg-slate-50/50">
+      <TopNav />
+      <main className="p-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-6">
+            {/* Form Header */}
+            <div className="mb-6 pb-4 border-b border-slate-100">
+              <h1 className="text-xl font-bold text-slate-800">标题</h1>
+            </div>
+            
+            {/* Form Content */}
+            <form className="space-y-4">
+              {/* Form Fields */}
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+```
+
+### 13.3 详情页模板
+
+```tsx
+export default function DetailPage() {
+  return (
+    <div className="min-h-screen bg-slate-50/50">
+      <TopNav />
+      <main className="p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-5">
+              <SectionContainer title="标题" badge="数量">
+                {/* Content */}
+              </SectionContainer>
+            </div>
+            
+            {/* Sidebar */}
+            <div className="space-y-5">
+              <SectionContainer title="侧边栏">
+                {/* Sidebar Content */}
+              </SectionContainer>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+```
+
+---
+
+**文档维护**: 添加新组件时，请同步更新此索引表。

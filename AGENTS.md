@@ -239,6 +239,32 @@ pnpm verify:full        # 完整验证
 pnpm verify:list        # 列出待验证项
 ```
 
+### 代码质量检查（Lint & TypeCheck）
+
+apps/web 项目已配置 ESLint 和 Prettier，每次文件修改后会自动运行检查：
+
+```bash
+# 手动运行代码检查
+pnpm --filter web lint          # ESLint 检查
+pnpm --filter web lint:fix      # ESLint 自动修复
+pnpm --filter web typecheck     # TypeScript 类型检查
+pnpm --filter web format        # Prettier 格式化
+pnpm --filter web check         # 运行所有检查
+
+# 根目录快捷命令
+pnpm lint                       # 检查 apps/web
+pnpm lint:fix                   # 自动修复 apps/web
+pnpm typecheck                  # 类型检查 apps/web
+```
+
+**自动代码质量检查**:  
+项目配置了 opencode plugin（`.opencode/plugins/post-edit-hook-lite.ts`），每次文件修改后会自动运行：
+- 代码格式化 (Prettier)
+- Lint 检查 (ESLint)
+- TypeScript 类型检查
+
+如果发现问题，会自动尝试修复。需要手动修复的问题会在终端显示。
+
 ## Environment Setup
 
 ### 必需环境变量

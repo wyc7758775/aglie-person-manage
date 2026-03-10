@@ -26,7 +26,13 @@
     "verify:all": "opencode /verify --all",
     "verify:incremental": "opencode /verify --incremental",
     "verify:full": "opencode /verify --full",
-    "verify:list": "opencode /verify --list"
+    "verify:list": "opencode /verify --list",
+    "lint": "pnpm --filter web lint",
+    "lint:fix": "pnpm --filter web lint:fix",
+    "format": "pnpm --filter web format",
+    "format:check": "pnpm --filter web format:check",
+    "typecheck": "pnpm --filter web typecheck",
+    "check": "pnpm --filter web check"
   },
   "devDependencies": {
     "chrome-devtools-mcp": "^0.17.1",
