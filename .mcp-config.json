@@ -1,7 +1,7 @@
 {
   "_comment": "MCP Server 配置文件",
   "version": "1.0.0",
-  
+
   "environments": {
     "development": {
       "pencil": {
@@ -13,6 +13,11 @@
         "transport": "stdio",
         "command": "node",
         "args": ["mcp-servers/chrome-devtools-mcp/server.js"]
+      },
+      "playwright": {
+        "transport": "stdio",
+        "command": "node",
+        "args": ["mcp-servers/playwright-mcp/server.js"]
       }
     },
     
@@ -24,6 +29,10 @@
       "chromeDevTools": {
         "transport": "sse",
         "endpoint": "http://localhost:3002"
+      },
+      "playwright": {
+        "transport": "sse",
+        "endpoint": "http://localhost:3003"
       }
     },
     
@@ -35,6 +44,10 @@
       "chromeDevTools": {
         "transport": "sse",
         "endpoint": "${CHROME_DEVTOOLS_MCP_ENDPOINT}"
+      },
+      "playwright": {
+        "transport": "sse",
+        "endpoint": "${PLAYWRIGHT_MCP_ENDPOINT}"
       }
     }
   },

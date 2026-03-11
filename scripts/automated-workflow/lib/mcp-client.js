@@ -227,7 +227,7 @@ class MCPClient {
  */
 function getDefaultMCPConfig() {
   const rootDir = process.cwd();
-  
+
   return {
     pencil: {
       transport: process.env.PENCIL_MCP_TRANSPORT || 'stdio',
@@ -240,6 +240,12 @@ function getDefaultMCPConfig() {
       command: 'node',
       args: [path.join(rootDir, 'mcp-servers/chrome-devtools-mcp/server.js')],
       endpoint: process.env.CHROME_DEVTOOLS_MCP_ENDPOINT || 'http://localhost:3002'
+    },
+    playwright: {
+      transport: process.env.PLAYWRIGHT_MCP_TRANSPORT || 'stdio',
+      command: 'node',
+      args: [path.join(rootDir, 'mcp-servers/playwright-mcp/server.js')],
+      endpoint: process.env.PLAYWRIGHT_MCP_ENDPOINT || 'http://localhost:3003'
     }
   };
 }

@@ -82,8 +82,42 @@ services:
     depends_on:
       - pencil-mcp
       - chrome-devtools-mcp
+      - playwright-mcp
     profiles:
       - proxy
+
+  # Playwright MCP Server - Browser Automation and E2E Testing
+  playwright-mcp:
+    build:
+      context: ./mcp-servers/playwright-mcp
+      dockerfile: Dockerfile
+    container_name: playwright-mcp-server
+    ports:
+      - "${PLAYWRIGHT_MCP_PORT:-3003}:3003"
+    volumes:
+      # 挂载 E2E 测试目录
+      - ./apps/e2e:/app/e2e:ro
+      # 挂载截图输出目录
+      - ./screenshots:/app/screenshots
+      # 挂载测试报告目录
+      - ./reports/e2e:/app/reports
+    environment:
+      - PORT=3003
+      - MCP_TRANSPORT=sse
+      - SCREENSHOT_DIR=/app/screenshots
+      - E2E_DIR=/app/e2e
+      - NODE_ENV=production
+      # 启用 Playwright 浏览器依赖
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3003/sse"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   redis-data:
