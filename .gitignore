@@ -47,3 +47,19 @@ apps/web/node_modules/
 apps/web/.next/
 apps/web/test-results/
 apps/e2e/node_modules/
+
+# MCP servers node_modules
+mcp-servers/*/node_modules/
+
+# Temporary debug scripts
+apps/web/capture-*.js
+apps/web/check-*.js
+apps/web/debug-*.js
+apps/web/final-*.js
+apps/web/full-*.js
+apps/web/login-*.js
+apps/web/navigate-*.js
+
+# opencode temporary files
+.opencode/memory/
+.opencode/package-lock.json
