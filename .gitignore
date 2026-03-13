@@ -59,6 +59,7 @@ apps/web/explore-*.js
 apps/web/final-*.js
 apps/web/full-*.js
 apps/web/login-*.js
+apps/web/login-*.mjs
 apps/web/navigate-*.js
 apps/web/test-*.js
 /capture-*.js
