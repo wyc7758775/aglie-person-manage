@@ -55,10 +55,15 @@ mcp-servers/*/node_modules/
 apps/web/capture-*.js
 apps/web/check-*.js
 apps/web/debug-*.js
+apps/web/explore-*.js
 apps/web/final-*.js
 apps/web/full-*.js
 apps/web/login-*.js
 apps/web/navigate-*.js
+apps/web/test-*.js
+/capture-*.js
+/req-*.js
+screenshots/
 
 # opencode temporary files
 .opencode/memory/
