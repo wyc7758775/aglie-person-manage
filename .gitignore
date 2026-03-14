@@ -69,3 +69,6 @@ screenshots/
 # opencode temporary files
 .opencode/memory/
 .opencode/package-lock.json
+
+# Temporary files
+tmp/
