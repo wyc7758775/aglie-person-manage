@@ -1,0 +1,85 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: agile_user
+          POSTGRES_PASSWORD: agile_password
+          POSTGRES_DB: agile_person_manage
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+        id: pnpm-cache
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup environment
+        run: |
+          echo "POSTGRES_URL=postgresql://agile_user:agile_password@localhost:5432/agile_person_manage" >> apps/web/.env
+          echo "AUTH_SECRET=test-secret-for-ci" >> apps/web/.env
+          echo "AUTH_URL=http://localhost:3000/api/auth" >> apps/web/.env
+
+      - name: TypeScript check
+        run: pnpm typecheck
+
+      - name: ESLint check
+        run: pnpm lint
+
+      - name: Prettier check
+        run: pnpm format:check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run unit tests
+        run: pnpm --filter web test:unit
+
+  # 可选：E2E 测试（较慢，可单独触发）
+  # e2e:
+  #   runs-on: ubuntu-latest
+  #   needs: check
+  #   steps:
+  #     - name: Run E2E tests
+  #       run: pnpm --filter e2e test --project=functional
