@@ -18,6 +18,10 @@
         "transport": "stdio",
         "command": "node",
         "args": ["mcp-servers/playwright-mcp/server.js"]
+      },
+      "playwriter": {
+        "transport": "stdio",
+        "command": "playwriter"
       }
     },
     
@@ -33,6 +37,10 @@
       "playwright": {
         "transport": "sse",
         "endpoint": "http://localhost:3003"
+      },
+      "playwriter": {
+        "transport": "stdio",
+        "command": "playwriter"
       }
     },
     
@@ -48,6 +56,10 @@
       "playwright": {
         "transport": "sse",
         "endpoint": "${PLAYWRIGHT_MCP_ENDPOINT}"
+      },
+      "playwriter": {
+        "transport": "stdio",
+        "command": "playwriter"
       }
     }
   },
