@@ -60,6 +60,54 @@ Track these steps as TODOs and complete them one by one.
 6. **Update checklist** - After all work is done, set every task to `- [x]` so the list reflects reality
 7. **Approval gate** - Do not start implementation until the proposal is reviewed and approved
 
+### Stage 2.5: Verification (Playwriter)
+After implementation, use Playwriter for fast functional verification.
+
+**Why Playwriter?**
+- Reuses your logged-in Chrome session (no re-login needed)
+- Instant feedback during development
+- Complements CI/CD Playwright tests
+
+**Quick Start:**
+```bash
+# 创建带验证脚本的 change
+pnpm create:change add-user-profile -- --with-verify
+
+# 或者让 Claude Code 来做
+"帮我创建一个 OpenSpec change: add-xxx，包含验证脚本"
+```
+
+**Workflow:**
+1. **Create change with verify** - 使用 `pnpm create:change <id> -- --with-verify` 或请求 Claude Code
+2. **Define scenarios** - 编辑 verify.mjs，根据 proposal.md 定义验证场景
+3. **Execute verification** - 在 Claude Code 中请求运行 Playwriter 验证
+4. **Record results** - tasks.md 自动包含验证检查项
+
+**verify.mjs Structure:**
+```javascript
+const CONFIG = {
+  baseUrl: 'http://localhost:3000',
+  changeId: '<change-id>',
+}
+
+const scenarios = [
+  {
+    name: '场景 1: <描述>',
+    steps: [
+      { action: 'goto', url: `${CONFIG.baseUrl}/dashboard` },
+      { action: 'snapshot', search: /关键词/ },
+      { action: 'click', selector: 'button:has-text("创建")' },
+    ],
+    expect: '期望结果'
+  },
+]
+```
+
+**Prerequisites:**
+- Chrome browser open with `localhost:3000`
+- Already logged in (dashboard accessible)
+- Playwriter extension enabled on the tab
+
 ### Stage 3: Archiving Changes
 After deployment, create separate PR to:
 - Move `changes/[name]/` → `changes/archive/YYYY-MM-DD-[name]/`
