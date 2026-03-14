@@ -1,6 +1,8 @@
 {
   "private": true,
   "scripts": {
+    "create:change": "./scripts/create-change.sh",
+    "create:change:verify": "./scripts/create-change.sh",
     "build": "pnpm --filter web build",
     "workflow:start": "./scripts/automated-workflow/start-workflow.sh",
     "workflow:status": "node scripts/automated-workflow/workflow-status.js",
@@ -32,13 +34,28 @@
     "format": "pnpm --filter web format",
     "format:check": "pnpm --filter web format:check",
     "typecheck": "pnpm --filter web typecheck",
-    "check": "pnpm --filter web check"
+    "check": "pnpm --filter web check",
+    "prepare": "husky"
   },
   "devDependencies": {
     "chrome-devtools-mcp": "^0.17.1",
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["bcrypt", "sharp"]
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "sharp"
+    ]
+  },
+  "lint-staged": {
+    "apps/web/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "apps/web/**/*.{json,css,md}": [
+      "prettier --write"
+    ]
   }
 }
