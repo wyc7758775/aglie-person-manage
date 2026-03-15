@@ -29,6 +29,29 @@ openspec show <change-id> --json --deltas-only
 - 每完成一个子任务，在对话中标记进度
 - 遇到问题立即停止并说明
 
+**Step 5.5** — Playwriter 自动验证（Stage 2.5）
+代码实现完成后，**必须自动执行 Playwriter 验证**：
+
+1. **检查前置条件**：
+   - Chrome 浏览器已打开且 Playwriter extension 已启用
+   - 如果不可用，跳过此步骤并在 tasks.md 中标记为"需手动验证"
+
+2. **执行验证**：
+   - 如果存在 `verify.mjs`，使用其定义的场景
+   - 如果不存在，根据 proposal.md 自动生成验证场景：
+     - 登录相关：验证登录/注册流程
+     - 表单相关：验证提交/校验逻辑
+     - 页面跳转：验证导航正确性
+
+3. **记录结果**：
+   - 将验证结果更新到 tasks.md 的验证部分
+   - 所有场景通过后才能进入下一步
+
+4. **验证命令**：
+   ```
+   使用 mcp__playwriter__execute 工具执行验证
+   ```
+
 **Step 6** — 验证实现
 确认 tasks.md 中每一项均已完成，无遗漏。
 
