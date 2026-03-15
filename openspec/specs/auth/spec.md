@@ -98,6 +98,7 @@ TBD - created by archiving change add-superadmin-account. Update Purpose after a
 ---
 
 ### Requirement: 带校验的回车键提交
+
 系统 SHALL 仅在表单校验通过时才允许通过回车键提交登录或注册请求。
 
 #### Scenario: 登录表单校验失败时回车键不提交
@@ -121,6 +122,16 @@ TBD - created by archiving change add-superadmin-account. Update Purpose after a
 - **WHEN** 用户在注册表单中输入有效数据
 - **AND** 用户按回车键
 - **THEN** 系统触发注册操作
+
+#### Scenario: 登录按钮作为表单提交按钮
+- **GIVEN** 用户在登录界面
+- **WHEN** 检查登录按钮的 HTML 属性
+- **THEN** 按钮的 `type` 属性为 `submit`
+
+#### Scenario: 注册按钮作为表单提交按钮
+- **GIVEN** 用户在注册界面
+- **WHEN** 检查注册按钮的 HTML 属性
+- **THEN** 按钮的 `type` 属性为 `submit`
 
 ### Requirement: 用户退出登录
 系统 SHALL 提供退出登录功能，用户可以安全退出系统。
