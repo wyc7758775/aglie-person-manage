@@ -26,14 +26,14 @@ function useProjectData(projectId: string) {
 
   useEffect(() => {
     fetch(`/api/projects/${projectId}`)
-      .then(res => {
+      .then((res) => {
         if (res.status === 401) {
           router.push(`/?next=${encodeURIComponent(`/dashboard/project/${projectId}`)}`);
           throw new Error('Unauthorized');
         }
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         if (data.success && data.project) {
           setProject(data.project);
         } else {
@@ -45,24 +45,28 @@ function useProjectData(projectId: string) {
 
   useEffect(() => {
     fetch('/api/projects')
-      .then(res => res.status === 401 ? null : res.json())
-      .then(data => data?.success && setProjects(data.projects))
+      .then((res) => (res.status === 401 ? null : res.json()))
+      .then((data) => data?.success && setProjects(data.projects))
       .catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!project) return;
     setLoading(true);
-    
+
     Promise.all([
       fetch(`/api/requirements?projectId=${projectId}`),
       fetch(`/api/tasks?projectId=${projectId}`),
       fetch(`/api/defects?projectId=${projectId}`),
     ])
-      .then(([reqRes, taskRes, defectRes]) => Promise.all([reqRes.json(), taskRes.json(), defectRes.json()]))
+      .then(([reqRes, taskRes, defectRes]) =>
+        Promise.all([reqRes.json(), taskRes.json(), defectRes.json()])
+      )
       .then(([reqData, taskData, defectData]) => {
         if (reqData.success) {
-          const mappedRequirements = (reqData.requirements || []).map((req: BaseRequirement) => convertToExtendedRequirement(req));
+          const mappedRequirements = (reqData.requirements || []).map((req: BaseRequirement) =>
+            convertToExtendedRequirement(req)
+          );
           setRequirements(mappedRequirements);
         }
         if (taskData.success) setTasks(taskData.tasks || []);
@@ -74,21 +78,23 @@ function useProjectData(projectId: string) {
 
   const refresh = useCallback(() => {
     if (!project) return;
-    
+
     // 刷新需求列表
     fetch(`/api/requirements?projectId=${projectId}`)
-      .then(res => res.json())
+      .then((res) => res.json())
       .then((reqData) => {
         if (reqData.success) {
-          const mappedRequirements = (reqData.requirements || []).map((req: BaseRequirement) => convertToExtendedRequirement(req));
+          const mappedRequirements = (reqData.requirements || []).map((req: BaseRequirement) =>
+            convertToExtendedRequirement(req)
+          );
           setRequirements(mappedRequirements);
         }
       })
       .catch((err) => console.error('刷新需求列表失败:', err));
-    
+
     // 刷新任务列表
     fetch(`/api/tasks?projectId=${projectId}`)
-      .then(res => res.json())
+      .then((res) => res.json())
       .then((taskData) => {
         if (taskData.success) {
           setTasks(taskData.tasks || []);
@@ -97,7 +103,17 @@ function useProjectData(projectId: string) {
       .catch((err) => console.error('刷新任务列表失败:', err));
   }, [project, projectId]);
 
-  return { project, projects, requirements, setRequirements, tasks, defects, loading, error, refresh };
+  return {
+    project,
+    projects,
+    requirements,
+    setRequirements,
+    tasks,
+    defects,
+    loading,
+    error,
+    refresh,
+  };
 }
 
 export default function ProjectDetailPage() {
@@ -107,9 +123,21 @@ export default function ProjectDetailPage() {
   const { t } = useLanguage();
   const projectId = params.projectId as string;
 
-  const { project, projects, requirements, setRequirements, tasks, defects, loading, error, refresh } = useProjectData(projectId);
+  const {
+    project,
+    projects,
+    requirements,
+    setRequirements,
+    tasks,
+    defects,
+    loading,
+    error,
+    refresh,
+  } = useProjectData(projectId);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [selectedRequirement, setSelectedRequirement] = useState<BaseRequirement | undefined>(undefined);
+  const [selectedRequirement, setSelectedRequirement] = useState<BaseRequirement | undefined>(
+    undefined
+  );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const tab = (searchParams.get('tab') as TabType) || 'requirement';
@@ -130,13 +158,57 @@ export default function ProjectDetailPage() {
   };
 
   const handleDeleteRequirement = (id: string) => {
-    setRequirements(prev => prev.filter(r => r.id !== id));
+    setRequirements((prev) => prev.filter((r) => r.id !== id));
   };
 
-  const handleUpdateRequirement = (id: string, data: Partial<BaseRequirement>) => {
-    setRequirements(prev => prev.map(r => 
-      r.id === id ? { ...r, ...data } : r
-    ));
+  const handleUpdateRequirement = async (id: string, data: Partial<BaseRequirement>) => {
+    // 先更新本地状态（乐观更新）
+    setRequirements((prev) => prev.map((r) => (r.id === id ? { ...r, ...data } : r)));
+
+    // 转换字段格式并调用 API
+    const apiData: Record<string, unknown> = {};
+
+    if (data.status !== undefined) {
+      apiData.status =
+        data.status === 'todo'
+          ? 'draft'
+          : data.status === 'in_progress'
+            ? 'development'
+            : data.status === 'done'
+              ? 'completed'
+              : data.status === 'cancelled'
+                ? 'rejected'
+                : data.status === 'accepted'
+                  ? 'completed'
+                  : 'draft';
+    }
+    if (data.priority !== undefined) {
+      apiData.priority =
+        data.priority === 'p0'
+          ? 'critical'
+          : data.priority === 'p1'
+            ? 'high'
+            : data.priority === 'p2'
+              ? 'medium'
+              : 'low';
+    }
+    if (data.deadline !== undefined) {
+      apiData.dueDate = data.deadline;
+    }
+
+    // 调用 API 持久化
+    try {
+      const res = await fetch(`/api/requirements/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiData),
+      });
+      if (!res.ok) {
+        console.error('更新需求失败');
+      }
+    } catch (err) {
+      console.error('更新需求失败:', err);
+    }
   };
 
   const handleSaveRequirement = async (req: BaseRequirement) => {
@@ -146,14 +218,26 @@ export default function ProjectDetailPage() {
         title: req.name,
         description: req.description || '',
         type: 'feature' as const,
-        status: req.status === 'todo' ? 'draft' : 
-                req.status === 'in_progress' ? 'development' :
-                req.status === 'done' ? 'completed' :
-                req.status === 'cancelled' ? 'rejected' :
-                req.status === 'accepted' ? 'completed' : 'draft',
-        priority: req.priority === 'p0' ? 'critical' :
-                  req.priority === 'p1' ? 'high' :
-                  req.priority === 'p2' ? 'medium' : 'low',
+        status:
+          req.status === 'todo'
+            ? 'draft'
+            : req.status === 'in_progress'
+              ? 'development'
+              : req.status === 'done'
+                ? 'completed'
+                : req.status === 'cancelled'
+                  ? 'rejected'
+                  : req.status === 'accepted'
+                    ? 'completed'
+                    : 'draft',
+        priority:
+          req.priority === 'p0'
+            ? 'critical'
+            : req.priority === 'p1'
+              ? 'high'
+              : req.priority === 'p2'
+                ? 'medium'
+                : 'low',
         assignee: req.assignee?.nickname || '',
         reporter: '',
         createdDate: new Date().toISOString().split('T')[0],
@@ -163,16 +247,18 @@ export default function ProjectDetailPage() {
         tags: [],
       };
 
-      const isUpdate = !!req.id && requirements.some(r => r.id === req.id);
-      
+      const isUpdate = !!req.id && requirements.some((r) => r.id === req.id);
+
       if (isUpdate) {
-        setRequirements(prev => prev.map(r => 
-          r.id === req.id ? { ...r, ...req } : r
-        ));
+        setRequirements((prev) => prev.map((r) => (r.id === req.id ? { ...r, ...req } : r)));
         setSelectedRequirement(req);
       } else {
-        const newReq = { ...req, id: `req-${Date.now()}`, workItemId: `REQ${String(requirements.length + 1).padStart(3, '0')}` };
-        setRequirements(prev => [...prev, newReq]);
+        const newReq = {
+          ...req,
+          id: `req-${Date.now()}`,
+          workItemId: `REQ${String(requirements.length + 1).padStart(3, '0')}`,
+        };
+        setRequirements((prev) => [...prev, newReq]);
         setPanelOpen(false);
         setSelectedRequirement(undefined);
       }
@@ -184,11 +270,11 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div 
+      <div
         className="rounded-2xl overflow-hidden flex flex-col h-full"
-        style={{ 
+        style={{
           backgroundColor: 'white',
-          boxShadow: '0 4px 20px rgba(26, 29, 46, 0.08)'
+          boxShadow: '0 4px 20px rgba(26, 29, 46, 0.08)',
         }}
       >
         <ProjectHeader
@@ -208,11 +294,11 @@ export default function ProjectDetailPage() {
   const showDefectTab = project.type === 'sprint-project';
 
   return (
-    <div 
+    <div
       className="rounded-2xl overflow-hidden flex flex-col h-full"
-      style={{ 
+      style={{
         backgroundColor: 'white',
-        boxShadow: '0 4px 20px rgba(26, 29, 46, 0.08)'
+        boxShadow: '0 4px 20px rgba(26, 29, 46, 0.08)',
       }}
     >
       {/* 顶部导航栏 - 独立于加载状态 */}
@@ -228,11 +314,9 @@ export default function ProjectDetailPage() {
       <div className="flex-1 overflow-hidden flex flex-col">
         {/* 错误提示 */}
         {error && (
-          <div className="flex-1 flex items-center justify-center py-8 text-red-500">
-            {error}
-          </div>
+          <div className="flex-1 flex items-center justify-center py-8 text-red-500">{error}</div>
         )}
-        
+
         {/* 加载状态 */}
         {!error && loading && <LoadingState />}
 
@@ -251,11 +335,7 @@ export default function ProjectDetailPage() {
 
         {/* 任务 Tab */}
         {!error && !loading && tab === 'task' && (
-          <TaskTabContent
-            tasks={tasks}
-            projectId={projectId}
-            onTaskCreated={refresh}
-          />
+          <TaskTabContent tasks={tasks} projectId={projectId} onTaskCreated={refresh} />
         )}
 
         {/* 缺陷 Tab */}

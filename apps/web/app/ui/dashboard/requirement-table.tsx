@@ -3,7 +3,12 @@
 import { useState, useMemo, useCallback } from 'react';
 import clsx from 'clsx';
 import { ChevronRightIcon, ChevronDownIcon } from '@/app/ui/icons';
-import { StatusBadge, PriorityBadge, RequirementStatus, RequirementPriority } from './requirement-badges';
+import {
+  StatusBadge,
+  PriorityBadge,
+  RequirementStatus,
+  RequirementPriority,
+} from './requirement-badges';
 import DropdownOptions from '@/app/ui/dropdown-options';
 import EmptyRequirementState from './empty-requirement-state';
 import { useLanguage } from '@/app/lib/i18n';
@@ -26,10 +31,18 @@ export const PRIORITY_OPTIONS: { value: RequirementPriority; label: string }[] =
 ];
 
 // Toast 提示组件
-function Toast({ message, visible, onClose }: { message: string; visible: boolean; onClose: () => void }) {
+function Toast({
+  message,
+  visible,
+  onClose,
+}: {
+  message: string;
+  visible: boolean;
+  onClose: () => void;
+}) {
   if (!visible) return null;
   return (
-    <div 
+    <div
       className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-sm text-white animate-in fade-in slide-in-from-top-2"
       style={{ backgroundColor: '#22C55E' }}
     >
@@ -81,11 +94,11 @@ function buildTree(requirements: Requirement[]): Requirement[] {
   const map = new Map<string, Requirement & { children?: Requirement[] }>();
   const roots: Requirement[] = [];
 
-  requirements.forEach(req => {
+  requirements.forEach((req) => {
     map.set(req.id, { ...req, children: [] });
   });
 
-  requirements.forEach(req => {
+  requirements.forEach((req) => {
     const node = map.get(req.id)!;
     if (req.parentId && map.has(req.parentId)) {
       const parent = map.get(req.parentId)!;
@@ -101,11 +114,11 @@ function buildTree(requirements: Requirement[]): Requirement[] {
 
 // 面包屑导航组件
 // 状态选择器
-function StatusSelect({ 
-  value, 
-  onChange 
-}: { 
-  value: RequirementStatus; 
+function StatusSelect({
+  value,
+  onChange,
+}: {
+  value: RequirementStatus;
   onChange: (value: RequirementStatus) => void;
 }) {
   return (
@@ -120,11 +133,11 @@ function StatusSelect({
   );
 }
 
-function PrioritySelect({ 
-  value, 
-  onChange 
-}: { 
-  value: RequirementPriority; 
+function PrioritySelect({
+  value,
+  onChange,
+}: {
+  value: RequirementPriority;
   onChange: (value: RequirementPriority) => void;
 }) {
   return (
@@ -140,20 +153,24 @@ function PrioritySelect({
 }
 
 // 日期选择器
-function DateSelect({ 
-  value, 
-  onChange 
-}: { 
-  value?: string; 
-  onChange: (value: string) => void;
-}) {
+function DateSelect({ value, onChange }: { value?: string; onChange: (value: string) => void }) {
+  const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    if ('showPicker' in input && typeof input.showPicker === 'function') {
+      input.showPicker();
+    }
+  };
+
   return (
     <input
       type="date"
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
-      className="text-xs bg-transparent border-0 p-0 focus:ring-0 cursor-pointer"
-      style={{ color: 'rgba(26, 29, 46, 0.7)' }}
+      onClick={handleClick}
+      className="date-select-input text-xs bg-transparent border-0 w-full min-h-[32px] cursor-pointer rounded hover:bg-gray-100 transition-colors"
+      style={{
+        color: 'rgba(26, 29, 46, 0.7)',
+      }}
     />
   );
 }
@@ -173,18 +190,18 @@ interface TableRowProps {
   onRequirementClick?: (requirement: Requirement) => void;
 }
 
-function TableRow({ 
-  requirement, 
-  level, 
-  isExpanded, 
-  onToggle, 
+function TableRow({
+  requirement,
+  level,
+  isExpanded,
+  onToggle,
   onNameClick,
   isSelected,
   onSelect,
   onDelete,
   onUpdate,
   showToast,
-  onRequirementClick
+  onRequirementClick,
 }: TableRowProps) {
   const hasChildren = requirement.children && requirement.children.length > 0;
   const isChild = level > 0;
@@ -218,12 +235,12 @@ function TableRow({
 
   return (
     <>
-      <tr 
+      <tr
         className={clsx(
           'group border-b transition-colors',
           isSelected ? 'bg-indigo-50/50' : isChild ? '' : 'bg-white',
-          isChild 
-            ? 'border-[rgba(26,29,46,0.06)]' 
+          isChild
+            ? 'border-[rgba(26,29,46,0.06)]'
             : 'border-[rgba(26,29,46,0.06)] hover:bg-gray-50/50'
         )}
         style={isChild ? { backgroundColor: '#F5F0F0' } : {}}
@@ -246,7 +263,7 @@ function TableRow({
           <div className="flex items-center gap-2">
             {/* 缩进 */}
             <div style={{ width: `${level * 24}px` }} className="flex-shrink-0" />
-            
+
             {hasChildren && (
               <button
                 onClick={(e) => {
@@ -262,7 +279,7 @@ function TableRow({
                 )}
               </button>
             )}
-            <span 
+            <span
               onClick={onNameClick}
               className="font-medium text-sm truncate group-hover:text-indigo-600 transition-colors cursor-pointer"
               style={{ color: isChild ? 'rgba(26, 29, 46, 0.8)' : '#1A1D2E' }}
@@ -274,7 +291,7 @@ function TableRow({
 
         {/* 工作项 ID - 点击复制 */}
         <td className="py-3 px-2 w-[100px]">
-          <span 
+          <span
             onClick={handleWorkItemIdClick}
             className="text-xs font-mono px-2 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity"
             style={{ backgroundColor: 'rgba(26, 29, 46, 0.06)', color: 'rgba(26, 29, 46, 0.6)' }}
@@ -286,20 +303,17 @@ function TableRow({
 
         {/* 状态 */}
         <td className="py-3 px-2 w-[90px]">
-          <StatusSelect 
-            value={requirement.status} 
-            onChange={handleStatusChange}
-          />
+          <StatusSelect value={requirement.status} onChange={handleStatusChange} />
         </td>
 
         {/* 负责人 */}
         <td className="py-3 px-2 w-[100px]">
           {requirement.assignee ? (
             <div className="flex items-center gap-2">
-              <div 
+              <div
                 className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0"
-                style={{ 
-                  background: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`
+                style={{
+                  background: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`,
                 }}
               >
                 {requirement.assignee.nickname.charAt(0).toUpperCase()}
@@ -309,36 +323,29 @@ function TableRow({
               </span>
             </div>
           ) : (
-            <span className="text-xs" style={{ color: 'rgba(26, 29, 46, 0.4)' }}>-</span>
+            <span className="text-xs" style={{ color: 'rgba(26, 29, 46, 0.4)' }}>
+              -
+            </span>
           )}
         </td>
 
         {/* 优先级 - 可编辑 */}
         <td className="py-3 px-2 w-[80px]">
-          <PrioritySelect 
-            value={requirement.priority} 
-            onChange={handlePriorityChange}
-          />
+          <PrioritySelect value={requirement.priority} onChange={handlePriorityChange} />
         </td>
 
         {/* 截止时间 - 可编辑 */}
         <td className="py-3 px-2 w-[100px]">
-          <DateSelect 
-            value={requirement.deadline}
-            onChange={handleDeadlineChange}
-          />
+          <DateSelect value={requirement.deadline} onChange={handleDeadlineChange} />
         </td>
 
         {/* 可获得积分 */}
         <td className="py-3 px-2 w-[70px]">
-          <span 
-            className="text-xs font-medium"
-            style={{ color: '#E8944A' }}
-          >
+          <span className="text-xs font-medium" style={{ color: '#E8944A' }}>
             {requirement.points}
           </span>
         </td>
-        
+
         {/* 操作 - 仅删除 */}
         <td className="py-3 px-2 w-[60px] text-center">
           <button
@@ -356,34 +363,39 @@ function TableRow({
             title="删除"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
             </svg>
           </button>
         </td>
       </tr>
 
       {/* 递归渲染子需求 */}
-      {hasChildren && isExpanded && requirement.children?.map((child) => (
-        <TableRow
-          key={child.id}
-          requirement={child}
-          level={level + 1}
-          isExpanded={false}
-          onToggle={() => {}}
-          onNameClick={() => onRequirementClick?.(child)}
-          isSelected={isSelected}
-          onSelect={onSelect}
-          onDelete={onDelete}
-          onUpdate={onUpdate}
-          showToast={showToast}
-          onRequirementClick={onRequirementClick}
-        />
-      ))}
+      {hasChildren &&
+        isExpanded &&
+        requirement.children?.map((child) => (
+          <TableRow
+            key={child.id}
+            requirement={child}
+            level={level + 1}
+            isExpanded={false}
+            onToggle={() => {}}
+            onNameClick={() => onRequirementClick?.(child)}
+            isSelected={isSelected}
+            onSelect={onSelect}
+            onDelete={onDelete}
+            onUpdate={onUpdate}
+            showToast={showToast}
+            onRequirementClick={onRequirementClick}
+          />
+        ))}
     </>
   );
 }
-
-
 
 export default function RequirementTable({
   requirements,
@@ -402,16 +414,16 @@ export default function RequirementTable({
 
   // 过滤后的需求数据
   const filteredRequirements = useMemo(() => {
-    return requirements.filter(req => {
+    return requirements.filter((req) => {
       // 状态过滤
       if (statusFilter !== '全部') {
         const statusMap: Record<string, string> = {
-          '待办': 'todo',
-          '进行中': 'in_progress',
-          '已完成': 'done',
-          '已验收': 'accepted',
-          '已取消': 'cancelled',
-          '已关闭': 'closed',
+          待办: 'todo',
+          进行中: 'in_progress',
+          已完成: 'done',
+          已验收: 'accepted',
+          已取消: 'cancelled',
+          已关闭: 'closed',
         };
         if (req.status !== statusMap[statusFilter]) {
           return false;
@@ -421,11 +433,11 @@ export default function RequirementTable({
       // 优先级过滤
       if (priorityFilter !== '全部优先级') {
         const priorityMap: Record<string, string> = {
-          'P0': 'p0',
-          'P1': 'p1',
-          'P2': 'p2',
-          'P3': 'p3',
-          'P4': 'p4',
+          P0: 'p0',
+          P1: 'p1',
+          P2: 'p2',
+          P3: 'p3',
+          P4: 'p4',
         };
         if (req.priority !== priorityMap[priorityFilter]) {
           return false;
@@ -457,181 +469,255 @@ export default function RequirementTable({
 
   const handleSelect = (id: string, checked: boolean) => {
     if (!onSelectionChange) return;
-    
+
     if (checked) {
       onSelectionChange([...selectedIds, id]);
     } else {
-      onSelectionChange(selectedIds.filter(sid => sid !== id));
+      onSelectionChange(selectedIds.filter((sid) => sid !== id));
     }
   };
 
   return (
     <>
-      <Toast message={toast.message} visible={toast.visible} onClose={() => setToast({ ...toast, visible: false })} />
-      
-      {/* 筛选器和新建按钮栏 */}
-        <div 
-          className="flex items-center justify-between px-6 py-3 flex-shrink-0"
-          style={{ borderBottom: '1px solid rgba(26, 29, 46, 0.06)' }}
-        >
-          {/* 左侧：筛选器 */}
-          <div className="flex items-center gap-3">
-            {/* 状态筛选 */}
-            <div 
-              className="flex items-center gap-1 p-1 rounded-xl"
-              style={{ backgroundColor: 'rgba(26, 29, 46, 0.04)' }}
-            >
-              {['全部', '待办', '进行中', '已完成', '已验收', '已取消', '已关闭'].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setStatusFilter(filter)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
-                  style={{
-                    backgroundColor: statusFilter === filter ? 'white' : 'transparent',
-                    color: statusFilter === filter ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
-                    boxShadow: statusFilter === filter ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
-                  }}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
+      <Toast
+        message={toast.message}
+        visible={toast.visible}
+        onClose={() => setToast({ ...toast, visible: false })}
+      />
 
-            {/* 优先级筛选 */}
-            <div 
-              className="flex items-center gap-1 p-1 rounded-xl"
-              style={{ backgroundColor: 'rgba(26, 29, 46, 0.04)' }}
-            >
-              {['全部优先级', 'P0', 'P1', 'P2', 'P3', 'P4'].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setPriorityFilter(filter)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
-                  style={{
-                    backgroundColor: priorityFilter === filter ? 'white' : 'transparent',
-                    color: priorityFilter === filter ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
-                    boxShadow: priorityFilter === filter ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
-                  }}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
+      {/* 筛选器和新建按钮栏 */}
+      <div
+        className="flex items-center justify-between px-6 py-3 flex-shrink-0"
+        style={{ borderBottom: '1px solid rgba(26, 29, 46, 0.06)' }}
+      >
+        {/* 左侧：筛选器 */}
+        <div className="flex items-center gap-3">
+          {/* 状态筛选 */}
+          <div
+            className="flex items-center gap-1 p-1 rounded-xl"
+            style={{ backgroundColor: 'rgba(26, 29, 46, 0.04)' }}
+          >
+            {['全部', '待办', '进行中', '已完成', '已验收', '已取消', '已关闭'].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setStatusFilter(filter)}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
+                style={{
+                  backgroundColor: statusFilter === filter ? 'white' : 'transparent',
+                  color: statusFilter === filter ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
+                  boxShadow: statusFilter === filter ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
+                }}
+              >
+                {filter}
+              </button>
+            ))}
           </div>
 
-          {/* 右侧：新建按钮 */}
-          <button
-            onClick={onAddClick}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white transition-all"
-            style={{
-              backgroundColor: '#D4843A',
-              boxShadow: '0 2px 8px rgba(212, 132, 58, 0.3)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#C4742A';
-              e.currentTarget.style.transform = 'translateY(-1px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#D4843A';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+          {/* 优先级筛选 */}
+          <div
+            className="flex items-center gap-1 p-1 rounded-xl"
+            style={{ backgroundColor: 'rgba(26, 29, 46, 0.04)' }}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            新建需求
-          </button>
+            {['全部优先级', 'P0', 'P1', 'P2', 'P3', 'P4'].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setPriorityFilter(filter)}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
+                style={{
+                  backgroundColor: priorityFilter === filter ? 'white' : 'transparent',
+                  color: priorityFilter === filter ? '#E8944A' : 'rgba(26, 29, 46, 0.6)',
+                  boxShadow: priorityFilter === filter ? '0 1px 3px rgba(26, 29, 46, 0.1)' : 'none',
+                }}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* 空状态或表格 */}
-        {filteredRequirements.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center">
-            {requirements.length === 0 ? (
-              <EmptyRequirementState onAddClick={onAddClick} />
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 px-4">
-                <div className="relative mb-6">
-                  <svg
-                    width="120"
-                    height="90"
-                    viewBox="0 0 120 90"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect x="35" y="20" width="50" height="60" rx="4" fill="#F3F4F6" stroke="#D1D5DB" strokeWidth="1.5"/>
-                    <line x1="45" y1="35" x2="75" y2="35" stroke="#E5E7EB" strokeWidth="2" strokeLinecap="round"/>
-                    <line x1="45" y1="45" x2="70" y2="45" stroke="#E5E7EB" strokeWidth="2" strokeLinecap="round"/>
-                    <line x1="45" y1="55" x2="65" y2="55" stroke="#E5E7EB" strokeWidth="2" strokeLinecap="round"/>
-                    <circle cx="85" cy="25" r="12" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1.5"/>
-                    <line x1="80" y1="25" x2="90" y2="25" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <h3 className="text-base font-medium text-gray-600 mb-2">
-                  没有找到匹配的需求
-                </h3>
-                <p className="text-sm text-gray-400">
-                  请尝试调整筛选条件
-                </p>
-                <button
-                  onClick={() => {
-                    setStatusFilter('全部');
-                    setPriorityFilter('全部优先级');
-                  }}
-                  className="mt-4 px-4 py-2 text-sm text-[#E8944A] hover:bg-orange-50 rounded-lg transition-colors"
+        {/* 右侧：新建按钮 */}
+        <button
+          onClick={onAddClick}
+          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white transition-all"
+          style={{
+            backgroundColor: '#D4843A',
+            boxShadow: '0 2px 8px rgba(212, 132, 58, 0.3)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#C4742A';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#D4843A';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          新建需求
+        </button>
+      </div>
+
+      {/* 空状态或表格 */}
+      {filteredRequirements.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
+          {requirements.length === 0 ? (
+            <EmptyRequirementState onAddClick={onAddClick} />
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="relative mb-6">
+                <svg
+                  width="120"
+                  height="90"
+                  viewBox="0 0 120 90"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  清除筛选条件
-                </button>
+                  <rect
+                    x="35"
+                    y="20"
+                    width="50"
+                    height="60"
+                    rx="4"
+                    fill="#F3F4F6"
+                    stroke="#D1D5DB"
+                    strokeWidth="1.5"
+                  />
+                  <line
+                    x1="45"
+                    y1="35"
+                    x2="75"
+                    y2="35"
+                    stroke="#E5E7EB"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <line
+                    x1="45"
+                    y1="45"
+                    x2="70"
+                    y2="45"
+                    stroke="#E5E7EB"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <line
+                    x1="45"
+                    y1="55"
+                    x2="65"
+                    y2="55"
+                    stroke="#E5E7EB"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <circle
+                    cx="85"
+                    cy="25"
+                    r="12"
+                    fill="#FEF3C7"
+                    stroke="#F59E0B"
+                    strokeWidth="1.5"
+                  />
+                  <line
+                    x1="80"
+                    y1="25"
+                    x2="90"
+                    y2="25"
+                    stroke="#F59E0B"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </div>
-            )}
-          </div>
-        ) : (
-          <>
-            {/* 表格 - 可滚动区域 */}
-            <div className="flex-1 overflow-auto">
-              <table className="w-full">
-                <thead className="sticky top-0 z-10">
-                  <tr style={{ backgroundColor: '#1A1D2E', height: '48px' }}>
-                    <th className="py-3 px-2 w-9 text-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.length === requirements.length && requirements.length > 0}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            onSelectionChange?.(requirements.map(r => r.id));
-                          } else {
-                            onSelectionChange?.([]);
-                          }
-                        }}
-                        className="w-4 h-4 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500"
-                      />
-                    </th>
-                    <th className="py-3 px-2 text-left text-xs font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                      需求名称
-                    </th>
-                    <th className="py-3 px-2 text-left text-xs font-medium w-[100px]" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                      工作项 ID
-                    </th>
-                    <th className="py-3 px-2 text-left text-xs font-medium w-[90px]" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                      状态
-                    </th>
-                    <th className="py-3 px-2 text-left text-xs font-medium w-[100px]" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                      负责人
-                    </th>
-                    <th className="py-3 px-2 text-left text-xs font-medium w-[80px]" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                      优先级
-                    </th>
-                    <th className="py-3 px-2 text-left text-xs font-medium w-[100px]" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                      截止时间
-                    </th>
-                    <th className="py-3 px-2 text-left text-xs font-medium w-[70px]" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                      积分
-                    </th>
-                    <th className="py-3 px-2 text-center text-xs font-medium w-[60px]" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                      操作
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+              <h3 className="text-base font-medium text-gray-600 mb-2">没有找到匹配的需求</h3>
+              <p className="text-sm text-gray-400">请尝试调整筛选条件</p>
+              <button
+                onClick={() => {
+                  setStatusFilter('全部');
+                  setPriorityFilter('全部优先级');
+                }}
+                className="mt-4 px-4 py-2 text-sm text-[#E8944A] hover:bg-orange-50 rounded-lg transition-colors"
+              >
+                清除筛选条件
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* 表格 - 可滚动区域 */}
+          <div className="flex-1 overflow-auto">
+            <table className="w-full">
+              <thead className="sticky top-0 z-10">
+                <tr style={{ backgroundColor: '#1A1D2E', height: '48px' }}>
+                  <th className="py-3 px-2 w-9 text-center">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedIds.length === requirements.length && requirements.length > 0
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          onSelectionChange?.(requirements.map((r) => r.id));
+                        } else {
+                          onSelectionChange?.([]);
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </th>
+                  <th
+                    className="py-3 px-2 text-left text-xs font-medium"
+                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+                  >
+                    需求名称
+                  </th>
+                  <th
+                    className="py-3 px-2 text-left text-xs font-medium w-[100px]"
+                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+                  >
+                    工作项 ID
+                  </th>
+                  <th
+                    className="py-3 px-2 text-left text-xs font-medium w-[90px]"
+                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+                  >
+                    状态
+                  </th>
+                  <th
+                    className="py-3 px-2 text-left text-xs font-medium w-[100px]"
+                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+                  >
+                    负责人
+                  </th>
+                  <th
+                    className="py-3 px-2 text-left text-xs font-medium w-[80px]"
+                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+                  >
+                    优先级
+                  </th>
+                  <th
+                    className="py-3 px-2 text-left text-xs font-medium w-[100px]"
+                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+                  >
+                    截止时间
+                  </th>
+                  <th
+                    className="py-3 px-2 text-left text-xs font-medium w-[70px]"
+                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+                  >
+                    积分
+                  </th>
+                  <th
+                    className="py-3 px-2 text-center text-xs font-medium w-[60px]"
+                    style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+                  >
+                    操作
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
                 {treeData.map((requirement) => (
                   <TableRow
                     key={requirement.id}
@@ -653,7 +739,7 @@ export default function RequirementTable({
           </div>
 
           {/* 分页 */}
-          <div 
+          <div
             className="flex items-center justify-between px-6 py-3 flex-shrink-0"
             style={{ borderTop: '1px solid rgba(26, 29, 46, 0.06)' }}
           >
@@ -661,9 +747,9 @@ export default function RequirementTable({
               共 {requirements.length} 条需求
             </span>
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 className="px-3 py-1.5 rounded-lg text-xs transition-colors"
-                style={{ 
+                style={{
                   color: 'rgba(26, 29, 46, 0.4)',
                   backgroundColor: 'rgba(26, 29, 46, 0.04)',
                 }}
@@ -671,30 +757,30 @@ export default function RequirementTable({
               >
                 上一页
               </button>
-              <button 
+              <button
                 className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                style={{ 
+                style={{
                   color: 'white',
                   backgroundColor: '#E8944A',
                 }}
               >
                 1
               </button>
-              <button 
+              <button
                 className="px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-gray-100"
                 style={{ color: 'rgba(26, 29, 46, 0.6)' }}
               >
                 2
               </button>
-              <button 
+              <button
                 className="px-3 py-1.5 rounded-lg text-xs transition-colors hover:bg-gray-100"
                 style={{ color: 'rgba(26, 29, 46, 0.6)' }}
               >
                 3
               </button>
-              <button 
+              <button
                 className="px-3 py-1.5 rounded-lg text-xs transition-colors"
-                style={{ 
+                style={{
                   color: 'rgba(26, 29, 46, 0.6)',
                   backgroundColor: 'rgba(26, 29, 46, 0.04)',
                 }}
@@ -703,8 +789,8 @@ export default function RequirementTable({
               </button>
             </div>
           </div>
-          </>
-        )}
+        </>
+      )}
     </>
   );
 }
@@ -758,13 +844,14 @@ export function generateMockRequirements(count: number = 30): Requirement[] {
     return {
       id,
       workItemId: `REQ${String(i + 1).padStart(3, '0')}`,
-      name: names[i % names.length] + (i >= names.length ? ` ${Math.floor(i / names.length) + 1}` : ''),
+      name:
+        names[i % names.length] + (i >= names.length ? ` ${Math.floor(i / names.length) + 1}` : ''),
       status: statuses[i % statuses.length],
       priority: priorities[i % priorities.length],
       assignee: {
         nickname: ['张三', '李四', '王五', '赵六', '钱七'][i % 5],
       },
-      deadline: new Date(Date.now() + (i * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
+      deadline: new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       points: [100, 200, 300, 500, 800][i % 5],
       parentId: null as string | null,
       description: `这是需求 ${i + 1} 的描述`,

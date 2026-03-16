@@ -25,21 +25,33 @@ export interface ExtendedRequirement {
 }
 
 const statusMap: Record<string, RequirementStatus> = {
-  'draft': 'todo',
-  'review': 'in_progress',
-  'approved': 'in_progress',
-  'development': 'in_progress',
-  'testing': 'in_progress',
-  'completed': 'done',
-  'rejected': 'cancelled'
+  draft: 'todo',
+  review: 'in_progress',
+  approved: 'in_progress',
+  development: 'in_progress',
+  testing: 'in_progress',
+  completed: 'done',
+  rejected: 'cancelled',
 };
 
 const priorityMap: Record<string, RequirementPriority> = {
-  'critical': 'p0',
-  'high': 'p1',
-  'medium': 'p2',
-  'low': 'p3'
+  critical: 'p0',
+  high: 'p1',
+  medium: 'p2',
+  low: 'p3',
 };
+
+// 将日期转换为 YYYY-MM-DD 格式
+function formatDateForInput(dateValue: string | undefined): string | undefined {
+  if (!dateValue) return undefined;
+  try {
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) return undefined;
+    return date.toISOString().split('T')[0];
+  } catch {
+    return undefined;
+  }
+}
 
 export function convertToExtendedRequirement(req: BaseRequirement): ExtendedRequirement {
   return {
@@ -50,7 +62,7 @@ export function convertToExtendedRequirement(req: BaseRequirement): ExtendedRequ
     priority: priorityMap[req.priority] || 'p2',
     assignee: req.assignee ? { nickname: req.assignee, avatar: undefined } : undefined,
     reporter: req.reporter ? { nickname: req.reporter, avatar: undefined } : undefined,
-    deadline: req.dueDate,
+    deadline: formatDateForInput(req.dueDate),
     points: req.points || 0,
     parentId: req.parentId || null,
     subRequirements: [],
