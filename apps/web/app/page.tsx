@@ -12,6 +12,7 @@ import InfoCard from '@/app/ui/info-card';
 import { ToastContainer } from '@/app/ui/toast';
 import { UserIcon, LockIcon, EyeIcon, EyeOffIcon, ChevronRightIcon } from '@/app/ui/icons';
 import { useLanguage } from '@/app/lib/i18n';
+import { setToken } from '@/app/lib/auth-cookie';
 
 // Declare global showToast method
 declare global {
@@ -238,7 +239,9 @@ export default function Page() {
           ) {
             window.localStorage.setItem('lastLoginNickname', nickname);
             window.localStorage.setItem('lastLoginPassword', password);
-            window.localStorage.setItem('auth_access_token', 'token_' + Date.now());
+            const token = 'token_' + Date.now();
+            window.localStorage.setItem('auth_access_token', token);
+            setToken(token); // 同步到 cookie，供中间件检查
           }
         } catch (error) {
           console.log('Failed to save login info:', error);
